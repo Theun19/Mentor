@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Beveiliging - Mentormap</title>
+    <meta name="theme-color" content="#54851f" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="favicon.svg" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header border-bottom">
+      <div class="container-xl py-3">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <div>
+            <p class="text-uppercase small fw-semibold text-success mb-1">Mentormap</p>
+            <h1 class="h3 fw-bold mb-0">Beveiliging</h1>
+          </div>
+          <a class="btn btn-outline-secondary btn-sm" href="index.html">Terug</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container-xl py-4 py-lg-5">
+      <section class="section-panel security-panel p-4 p-md-5">
+        <h2 class="h4 fw-bold mb-3">Wachtwoord wijzigen</h2>
+        <p class="text-secondary">
+          Dit wachtwoord wordt lokaal op dit apparaat opgeslagen. Er is op dit moment geen login-scherm actief op de mentormap.
+        </p>
+
+        <form class="vstack gap-3" id="securityForm">
+          <div>
+            <label class="form-label" for="currentPassword">Huidig wachtwoord</label>
+            <input class="form-control" id="currentPassword" type="password" autocomplete="current-password" />
+            <div class="form-text" id="currentPasswordHint">Laat leeg als er nog geen wachtwoord is ingesteld.</div>
+          </div>
+          <div>
+            <label class="form-label" for="newPassword">Nieuw wachtwoord</label>
+            <input class="form-control" id="newPassword" type="password" autocomplete="new-password" />
+          </div>
+          <div>
+            <label class="form-label" for="repeatPassword">Herhaal nieuw wachtwoord</label>
+            <input class="form-control" id="repeatPassword" type="password" autocomplete="new-password" />
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <button class="btn btn-success" type="submit">Wachtwoord opslaan</button>
+            <button class="btn btn-outline-secondary" id="removePasswordBtn" type="button">Wachtwoord verwijderen</button>
+          </div>
+          <p class="small mb-0" id="securityMessage" role="alert"></p>
+        </form>
+      </section>
+    </main>
+
+    <script src="security.js"></script>
+  </body>
+</html>
