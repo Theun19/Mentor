@@ -355,8 +355,6 @@ function restoreState() {
     input.value = savedValue || "5";
     updateRatingValue(input);
   });
-
-  restoreSignatures();
 }
 
 function updateRowState(input) {
@@ -628,116 +626,105 @@ function formatDayLabel(timestamp) {
   });
 }
 
-function setupSignaturePads() {
-  document.querySelectorAll(".signature-canvas").forEach((canvas) => {
-    const context = canvas.getContext("2d");
-    let drawing = false;
-
-    resizeSignatureCanvas(canvas);
-
-    canvas.addEventListener("pointerdown", (event) => {
-      drawing = true;
-      canvas.setPointerCapture(event.pointerId);
-      const point = getCanvasPoint(canvas, event);
-      context.beginPath();
-      context.moveTo(point.x, point.y);
-    });
-
-    canvas.addEventListener("pointermove", (event) => {
-      if (!drawing) return;
-      const point = getCanvasPoint(canvas, event);
-      context.lineTo(point.x, point.y);
-      context.strokeStyle = "#18241c";
-      context.lineWidth = 2.5;
-      context.lineCap = "round";
-      context.lineJoin = "round";
-      context.stroke();
-    });
-
-    canvas.addEventListener("pointerup", () => {
-      if (!drawing) return;
-      drawing = false;
-      saveSignature(canvas);
-    });
-
-    canvas.addEventListener("pointercancel", () => {
-      drawing = false;
-    });
+function showSection(targetSelector) {
+  document.querySelectorAll(".app-menu [data-section]").forEach((item) => {
+    item.classList.toggle("active", item.dataset.section === targetSelector);
   });
 
-  document.querySelectorAll(".signature-clear").forEach((button) => {
-    button.addEventListener("click", () => {
-      const canvas = document.getElementById(button.dataset.target);
-      clearSignature(canvas);
-    });
+  document.querySelectorAll(".tab-pane").forEach((pane) => {
+    const isTarget = `#${pane.id}` === targetSelector;
+    pane.classList.toggle("show", isTarget);
+    pane.classList.toggle("active", isTarget);
   });
 
-  window.addEventListener("resize", () => {
-    document.querySelectorAll(".signature-canvas").forEach((canvas) => {
-      const savedSignature = getSaved(canvas.id);
-      resizeSignatureCanvas(canvas);
-      if (savedSignature) drawSignatureImage(canvas, savedSignature);
-    });
+  document.querySelector(targetSelector)?.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
   });
 }
 
-function resizeSignatureCanvas(canvas) {
-  const ratio = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = Math.max(1, Math.floor(rect.width * ratio));
-  canvas.height = Math.max(1, Math.floor(rect.height * ratio));
-  const context = canvas.getContext("2d");
-  context.setTransform(ratio, 0, 0, ratio, 0, 0);
-  context.fillStyle = "#ffffff";
-  context.fillRect(0, 0, rect.width, rect.height);
+function setPrintText(id, value) {
+  document.getElementById(id).textContent = value || "-";
 }
 
-function getCanvasPoint(canvas, event) {
-  const rect = canvas.getBoundingClientRect();
-  return {
-    x: event.clientX - rect.left,
-    y: event.clientY - rect.top,
-  };
-}
+function buildPrintSummary() {
+  const checks = [...document.querySelectorAll(".task-check")];
+  const done = checks.filter((input) => input.checked).length;
+  const percentage = checks.length ? Math.round((done / checks.length) * 100) : 0;
+  const lineSummary = getLineSummary();
+  const openLines = lineSummary.filter((item) => !item.done).length;
+  const openTasks = checks.length - done;
+  let openChecklists = 0;
 
-function saveSignature(canvas) {
-  setSaved(canvas.id, canvas.toDataURL("image/png"));
-}
+  setPrintText("printDate", new Date().toLocaleDateString("nl-NL"));
+  setPrintText("printDriverName", getSaved("driverName"));
+  setPrintText("printPersonnelNumber", getSaved("personnelNumber"));
+  setPrintText("printStartDate", getSaved("startDate"));
+  setPrintText("printEndDate", getSaved("endDate"));
+  setPrintText("printMentorName", getSaved("mentorName"));
+  setPrintText("printProgressPercent", `${percentage}%`);
+  setPrintText("printOpenTasks", openTasks);
+  setPrintText("printDoneTasks", done);
+  setPrintText("printOpenLines", openLines);
 
-function clearSignature(canvas) {
-  const context = canvas.getContext("2d");
-  const rect = canvas.getBoundingClientRect();
-  context.fillStyle = "#ffffff";
-  context.fillRect(0, 0, rect.width, rect.height);
-  localStorage.removeItem(key(canvas.id));
-}
-
-function restoreSignatures() {
-  document.querySelectorAll(".signature-canvas").forEach((canvas) => {
-    const savedSignature = getSaved(canvas.id);
-    if (savedSignature) {
-      drawSignatureImage(canvas, savedSignature);
-    } else {
-      clearSignature(canvas);
-    }
+  const checklistRows = document.getElementById("printChecklistRows");
+  checklistRows.innerHTML = "";
+  checklists.forEach((list, listIndex) => {
+    const listChecks = [...document.querySelectorAll(`[data-id^="list-${listIndex}-item-"]`)];
+    const listDone = listChecks.filter((input) => input.checked).length;
+    const listPercentage = list.items.length ? Math.round((listDone / list.items.length) * 100) : 0;
+    if (listDone < list.items.length) openChecklists += 1;
+    checklistRows.insertAdjacentHTML("beforeend", `
+      <div class="print-row">
+        <span>${list.title}</span>
+        <div class="print-bar"><i style="width: ${listPercentage}%"></i></div>
+        <strong>${listDone}/${list.items.length}</strong>
+      </div>
+    `);
   });
+  setPrintText("printOpenChecklists", openChecklists);
+
+  const ratingRows = document.getElementById("printRatingRows");
+  ratingRows.innerHTML = "";
+  document.querySelectorAll(".rating-range").forEach((input) => {
+    const label = input.closest(".rating-row").querySelector(".rating-label").textContent;
+    ratingRows.insertAdjacentHTML("beforeend", `
+      <div class="print-score">
+        <span>${label}</span>
+        <strong>${getRatingScore(input)}</strong>
+      </div>
+    `);
+  });
+
+  setPrintSignature("printDriverSignature", getSaved("driverSignature"));
+  setPrintSignature("printMentorSignature", getSaved("mentorSignature"));
 }
 
-function drawSignatureImage(canvas, source) {
-  const image = new Image();
-  image.addEventListener("load", () => {
-    const context = canvas.getContext("2d");
-    const rect = canvas.getBoundingClientRect();
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, rect.width, rect.height);
-    context.drawImage(image, 0, 0, rect.width, rect.height);
-  });
-  image.src = source;
+function setPrintSignature(id, source) {
+  const image = document.getElementById(id);
+  if (source) {
+    image.src = source;
+    image.style.visibility = "visible";
+  } else {
+    image.removeAttribute("src");
+    image.style.visibility = "hidden";
+  }
 }
 
 function bindEvents() {
   document.getElementById("appLoginForm").addEventListener("submit", unlockApp);
   document.getElementById("lockBtn").addEventListener("click", lockApp);
+
+  document.querySelectorAll(".app-menu [data-section]").forEach((item) => {
+    item.addEventListener("click", () => {
+      showSection(item.dataset.section);
+      const menu = item.closest(".dropdown-menu");
+      const toggle = menu?.previousElementSibling;
+      if (window.bootstrap && toggle) {
+        window.bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+      }
+    });
+  });
 
   document.querySelectorAll(".task-check").forEach((input) => {
     input.addEventListener("change", () => {
@@ -787,19 +774,23 @@ function bindEvents() {
     });
   });
 
-  document.getElementById("printBtn").addEventListener("click", () => window.print());
+  document.getElementById("printBtn").addEventListener("click", () => {
+    buildPrintSummary();
+    window.print();
+  });
+  window.addEventListener("beforeprint", buildPrintSummary);
 
   document.getElementById("emailShareBtn").addEventListener("click", () => {
     const subject = encodeURIComponent("Mentormap nieuwe chauffeurs Nijmegen");
     const body = encodeURIComponent(
-      `Hallo,\n\nHierbij de checklist Mentormap nieuwe chauffeurs Nijmegen:\n${window.location.href}\n\nGroet,`
+      `Hallo,\n\nHierbij de mentormap nieuwe chauffeurs Nijmegen:\n${window.location.href}\n\nVoor een A4-overzicht met dashboard en chauffeurgegevens: open de mentormap en kies Print / Bewaar als PDF.\n\nGroet,`
     );
 
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   });
 
   document.getElementById("whatsappBtn").addEventListener("click", () => {
-    const text = `Mentormap nieuwe chauffeurs Nijmegen:\n${window.location.href}`;
+    const text = `Mentormap nieuwe chauffeurs Nijmegen:\n${window.location.href}\n\nA4-overzicht delen? Open de mentormap en kies Print / Bewaar als PDF.`;
     const appUrl = `whatsapp://send?text=${encodeURIComponent(text)}`;
     const webUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     let fallbackTimer;
@@ -830,7 +821,6 @@ renderLineTable();
 renderContacts();
 renderRatings();
 renderWebsites();
-setupSignaturePads();
 restoreState();
 bindEvents();
 initAppSecurity();
