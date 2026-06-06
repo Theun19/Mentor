@@ -156,6 +156,7 @@ function getSaved(name) {
 
 function setSaved(name, value) {
   localStorage.setItem(key(name), value);
+  queueCloudSave();
 }
 
 function getSavedJson(name, fallback) {
@@ -168,6 +169,11 @@ function getSavedJson(name, fallback) {
 
 function setSavedJson(name, value) {
   localStorage.setItem(key(name), JSON.stringify(value));
+  queueCloudSave();
+}
+
+function queueCloudSave() {
+  window.MentorCloud?.queueSave();
 }
 
 function getDriverProfiles() {
@@ -181,6 +187,7 @@ function getDriverProfiles() {
 
 function setDriverProfiles(profiles) {
   localStorage.setItem(driverProfilesKey, JSON.stringify(profiles));
+  queueCloudSave();
 }
 
 function cleanDriverName(name) {
@@ -929,6 +936,7 @@ function bindEvents() {
       .filter((name) => name.startsWith(profilePrefix))
       .forEach((name) => localStorage.removeItem(name));
     setSaved("driverName", profileName);
+    queueCloudSave();
     restoreState();
     updateProgress();
     updateRatingAverage();
@@ -946,3 +954,12 @@ restoreState();
 bindEvents();
 updateProgress();
 updateRatingAverage();
+
+window.MentorCloud?.init({
+  onRemoteChange: () => {
+    renderDriverProfiles();
+    restoreState();
+    updateProgress();
+    updateRatingAverage();
+  },
+});

@@ -24,6 +24,11 @@ function getSaved(name) {
 
 function setSaved(name, value) {
   localStorage.setItem(key(name), value);
+  queueCloudSave();
+}
+
+function queueCloudSave() {
+  window.MentorCloud?.queueSave();
 }
 
 function getDriverProfiles() {
@@ -37,6 +42,7 @@ function getDriverProfiles() {
 
 function setDriverProfiles(profiles) {
   localStorage.setItem(driverProfilesKey, JSON.stringify(profiles));
+  queueCloudSave();
 }
 
 function cleanDriverName(name) {
@@ -225,12 +231,13 @@ function saveSignature(canvas) {
   setSaved(canvas.id, canvas.toDataURL("image/png"));
 }
 
-function clearSignature(canvas) {
+function clearSignature(canvas, save = true) {
   const context = canvas.getContext("2d");
   const rect = canvas.getBoundingClientRect();
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, rect.width, rect.height);
   localStorage.removeItem(key(canvas.id));
+  if (save) queueCloudSave();
 }
 
 function restoreSignatures() {
@@ -239,7 +246,7 @@ function restoreSignatures() {
     if (savedSignature) {
       drawSignatureImage(canvas, savedSignature);
     } else {
-      clearSignature(canvas);
+      clearSignature(canvas, false);
     }
   });
 }
@@ -279,3 +286,11 @@ bindProfileEvents();
 restoreFields();
 setupSignaturePads();
 restoreSignatures();
+
+window.MentorCloud?.init({
+  onRemoteChange: () => {
+    renderDriverProfiles();
+    restoreFields();
+    restoreSignatures();
+  },
+});
