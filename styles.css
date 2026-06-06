@@ -830,11 +830,51 @@ body.auth-locked .auth-screen {
   }
 
   .rating-row {
-    padding: 0.7rem;
+    padding: 0.45rem 0.55rem;
   }
 
   .rating-label {
     min-width: 0;
+    font-size: 0.88rem;
+    line-height: 1.15;
+  }
+
+  .rating-control {
+    flex-basis: 100%;
+  }
+
+  .rating-range {
+    min-width: 100%;
+  }
+
+  .rating-value {
+    width: 3.35rem;
+    min-height: 1.8rem;
+    font-size: 0.82rem;
+  }
+
+  .balance-curve {
+    height: 4.8rem;
+    margin-bottom: 0;
+  }
+
+  .balance-curve-path {
+    stroke-width: 3;
+  }
+
+  .balance-curve-marker {
+    stroke-width: 2.5;
+  }
+
+  .balance-curve-label {
+    font-size: 0.52rem;
+  }
+
+  .rating-scale-labels {
+    gap: 0.35rem;
+    margin-top: -0.2rem;
+    font-size: 0.66rem;
+    line-height: 1.1;
   }
 
   .website-link {
