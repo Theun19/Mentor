@@ -1,7 +1,21 @@
 const storagePrefix = "mentor-checklist-nijmegen";
+const passwordKey = `${storagePrefix}:local-password-hash`;
+const usernameKey = `${storagePrefix}:local-username`;
+const authSessionKey = `${storagePrefix}:unlocked`;
+const driverProfilesKey = `${storagePrefix}:driver-profiles`;
+const activeDriverKey = `${storagePrefix}:active-driver-id`;
+const driverDataPrefix = `${storagePrefix}:driver:`;
+
+function baseKey(name) {
+  return `${storagePrefix}:${name}`;
+}
+
+function driverKey(profileId, name) {
+  return `${driverDataPrefix}${profileId}:${name}`;
+}
 
 function key(name) {
-  return `${storagePrefix}:${name}`;
+  return driverKey(getActiveDriverId(), name);
 }
 
 function getSaved(name) {
@@ -12,10 +26,130 @@ function setSaved(name, value) {
   localStorage.setItem(key(name), value);
 }
 
+function getDriverProfiles() {
+  try {
+    const profiles = JSON.parse(localStorage.getItem(driverProfilesKey)) || [];
+    return Array.isArray(profiles) ? profiles : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function setDriverProfiles(profiles) {
+  localStorage.setItem(driverProfilesKey, JSON.stringify(profiles));
+}
+
+function cleanDriverName(name) {
+  return name.trim().replace(/\s+/g, " ");
+}
+
+function makeDriverId() {
+  return `driver-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function createDriverProfile(name) {
+  const profile = {
+    id: makeDriverId(),
+    name: cleanDriverName(name) || "Nieuwe chauffeur",
+    updatedAt: Date.now(),
+  };
+  const profiles = getDriverProfiles();
+  profiles.push(profile);
+  setDriverProfiles(profiles);
+  localStorage.setItem(activeDriverKey, profile.id);
+  return profile;
+}
+
+function getActiveDriverId() {
+  let profiles = getDriverProfiles();
+  let activeId = localStorage.getItem(activeDriverKey);
+
+  if (!profiles.length) {
+    ensureDriverProfiles();
+    profiles = getDriverProfiles();
+    activeId = localStorage.getItem(activeDriverKey);
+  }
+
+  if (!profiles.some((profile) => profile.id === activeId)) {
+    activeId = profiles[0]?.id || createDriverProfile("Nieuwe chauffeur").id;
+    localStorage.setItem(activeDriverKey, activeId);
+  }
+
+  return activeId;
+}
+
+function getActiveDriverProfile() {
+  const activeId = getActiveDriverId();
+  return getDriverProfiles().find((profile) => profile.id === activeId);
+}
+
+function updateActiveDriverName(name) {
+  const cleanedName = cleanDriverName(name);
+  if (!cleanedName) return;
+
+  const activeId = getActiveDriverId();
+  const profiles = getDriverProfiles().map((profile) => (
+    profile.id === activeId
+      ? { ...profile, name: cleanedName, updatedAt: Date.now() }
+      : profile
+  ));
+  setDriverProfiles(profiles);
+  renderDriverProfiles();
+}
+
+function ensureDriverProfiles() {
+  if (getDriverProfiles().length) return;
+
+  const legacyName = localStorage.getItem(baseKey("driverName")) || "Nieuwe chauffeur";
+  const profile = createDriverProfile(legacyName);
+  const reservedKeys = new Set([passwordKey, usernameKey, authSessionKey, driverProfilesKey, activeDriverKey]);
+
+  Object.keys(localStorage)
+    .filter((name) => name.startsWith(`${storagePrefix}:`) && !name.startsWith(driverDataPrefix) && !reservedKeys.has(name))
+    .forEach((name) => {
+      const localName = name.slice(storagePrefix.length + 1);
+      localStorage.setItem(driverKey(profile.id, localName), localStorage.getItem(name));
+      localStorage.removeItem(name);
+    });
+
+  if (!localStorage.getItem(driverKey(profile.id, "driverName"))) {
+    localStorage.setItem(driverKey(profile.id, "driverName"), profile.name);
+  }
+}
+
+function renderDriverProfiles() {
+  const select = document.getElementById("driverProfileSelect");
+  if (!select) return;
+
+  const activeId = getActiveDriverId();
+  select.innerHTML = "";
+  getDriverProfiles().forEach((profile) => {
+    const option = document.createElement("option");
+    option.value = profile.id;
+    option.textContent = profile.name;
+    option.selected = profile.id === activeId;
+    select.appendChild(option);
+  });
+}
+
+function switchDriverProfile(profileId) {
+  if (!getDriverProfiles().some((profile) => profile.id === profileId)) return;
+  localStorage.setItem(activeDriverKey, profileId);
+  restoreFields();
+  restoreSignatures();
+  renderDriverProfiles();
+}
+
 function restoreFields() {
   document.querySelectorAll(".driver-save-field").forEach((input) => {
     input.value = getSaved(input.id);
-    input.addEventListener("input", () => setSaved(input.id, input.value));
+    if (!input.dataset.bound) {
+      input.addEventListener("input", () => {
+        setSaved(input.id, input.value);
+        if (input.id === "driverName") updateActiveDriverName(input.value);
+      });
+      input.dataset.bound = "true";
+    }
   });
 }
 
@@ -122,6 +256,26 @@ function drawSignatureImage(canvas, source) {
   image.src = source;
 }
 
+function bindProfileEvents() {
+  document.getElementById("driverProfileSelect").addEventListener("change", (event) => {
+    switchDriverProfile(event.target.value);
+  });
+
+  document.getElementById("newDriverProfileBtn").addEventListener("click", () => {
+    const name = cleanDriverName(window.prompt("Naam van de nieuwe chauffeur:") || "");
+    if (!name) return;
+    createDriverProfile(name);
+    setSaved("driverName", name);
+    restoreFields();
+    restoreSignatures();
+    renderDriverProfiles();
+    document.getElementById("driverName").focus();
+  });
+}
+
+ensureDriverProfiles();
+renderDriverProfiles();
+bindProfileEvents();
 restoreFields();
 setupSignaturePads();
 restoreSignatures();

@@ -25,6 +25,13 @@
             <h1 class="h3 fw-bold mb-0">Mentormap nieuwe chauffeurs</h1>
           </div>
           <div class="d-flex flex-wrap align-items-start gap-2">
+            <div class="driver-profile-picker">
+              <label class="form-label" for="driverProfileSelect">Chauffeur</label>
+              <div class="d-flex gap-2">
+                <select class="form-select form-select-sm" id="driverProfileSelect"></select>
+                <button class="btn btn-outline-success btn-sm" id="newDriverProfileBtn" type="button">Nieuw</button>
+              </div>
+            </div>
             <button class="btn btn-outline-secondary btn-sm" id="resetBtn" type="button">Reset</button>
             <button class="btn btn-success btn-sm" id="printBtn" type="button">Print</button>
             <div class="dropdown">
@@ -165,7 +172,10 @@
                 <h2 class="h5 fw-bold mb-1">Beoordeling rijgedrag</h2>
                 <p class="text-secondary mb-0">Beoordeel elk onderdeel op een schaal van 1 tot 10.</p>
               </div>
-              <span class="status-pill" id="ratingAverage">Gemiddelde: 0</span>
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <button class="btn btn-outline-success btn-sm" id="saveRatingsBtn" type="button">Meetpunt opslaan</button>
+                <span class="status-pill" id="ratingAverage">Gemiddelde: 0</span>
+              </div>
             </div>
             <div class="vstack gap-3" id="ratingContainer"></div>
           </div>

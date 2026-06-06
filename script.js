@@ -2,6 +2,9 @@ const storagePrefix = "mentor-checklist-nijmegen";
 const passwordKey = `${storagePrefix}:local-password-hash`;
 const usernameKey = `${storagePrefix}:local-username`;
 const authSessionKey = `${storagePrefix}:unlocked`;
+const driverProfilesKey = `${storagePrefix}:driver-profiles`;
+const activeDriverKey = `${storagePrefix}:active-driver-id`;
+const driverDataPrefix = `${storagePrefix}:driver:`;
 
 const ratingItems = [
   { label: "Rijstijl", id: "rating-rijstijl" },
@@ -135,8 +138,16 @@ const websites = [
   ["Diensteninfo", "ruilen.nu", "https://ruilen.nu"],
 ];
 
-function key(name) {
+function baseKey(name) {
   return `${storagePrefix}:${name}`;
+}
+
+function driverKey(profileId, name) {
+  return `${driverDataPrefix}${profileId}:${name}`;
+}
+
+function key(name) {
+  return driverKey(getActiveDriverId(), name);
 }
 
 function getSaved(name) {
@@ -157,6 +168,121 @@ function getSavedJson(name, fallback) {
 
 function setSavedJson(name, value) {
   localStorage.setItem(key(name), JSON.stringify(value));
+}
+
+function getDriverProfiles() {
+  try {
+    const profiles = JSON.parse(localStorage.getItem(driverProfilesKey)) || [];
+    return Array.isArray(profiles) ? profiles : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function setDriverProfiles(profiles) {
+  localStorage.setItem(driverProfilesKey, JSON.stringify(profiles));
+}
+
+function cleanDriverName(name) {
+  return name.trim().replace(/\s+/g, " ");
+}
+
+function makeDriverId() {
+  return `driver-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function createDriverProfile(name) {
+  const profile = {
+    id: makeDriverId(),
+    name: cleanDriverName(name) || "Nieuwe chauffeur",
+    updatedAt: Date.now(),
+  };
+  const profiles = getDriverProfiles();
+  profiles.push(profile);
+  setDriverProfiles(profiles);
+  localStorage.setItem(activeDriverKey, profile.id);
+  return profile;
+}
+
+function getActiveDriverId() {
+  let profiles = getDriverProfiles();
+  let activeId = localStorage.getItem(activeDriverKey);
+
+  if (!profiles.length) {
+    ensureDriverProfiles();
+    profiles = getDriverProfiles();
+    activeId = localStorage.getItem(activeDriverKey);
+  }
+
+  if (!profiles.some((profile) => profile.id === activeId)) {
+    activeId = profiles[0]?.id || createDriverProfile("Nieuwe chauffeur").id;
+    localStorage.setItem(activeDriverKey, activeId);
+  }
+
+  return activeId;
+}
+
+function getActiveDriverProfile() {
+  const activeId = getActiveDriverId();
+  return getDriverProfiles().find((profile) => profile.id === activeId);
+}
+
+function updateActiveDriverName(name) {
+  const cleanedName = cleanDriverName(name);
+  if (!cleanedName) return;
+
+  const activeId = getActiveDriverId();
+  const profiles = getDriverProfiles().map((profile) => (
+    profile.id === activeId
+      ? { ...profile, name: cleanedName, updatedAt: Date.now() }
+      : profile
+  ));
+  setDriverProfiles(profiles);
+  renderDriverProfiles();
+}
+
+function ensureDriverProfiles() {
+  if (getDriverProfiles().length) return;
+
+  const legacyName = localStorage.getItem(baseKey("driverName")) || "Nieuwe chauffeur";
+  const profile = createDriverProfile(legacyName);
+  const reservedKeys = new Set([passwordKey, usernameKey, authSessionKey, driverProfilesKey, activeDriverKey]);
+
+  Object.keys(localStorage)
+    .filter((name) => name.startsWith(`${storagePrefix}:`) && !name.startsWith(driverDataPrefix) && !reservedKeys.has(name))
+    .forEach((name) => {
+      const localName = name.slice(storagePrefix.length + 1);
+      localStorage.setItem(driverKey(profile.id, localName), localStorage.getItem(name));
+      localStorage.removeItem(name);
+    });
+
+  if (!localStorage.getItem(driverKey(profile.id, "driverName"))) {
+    localStorage.setItem(driverKey(profile.id, "driverName"), profile.name);
+  }
+}
+
+function renderDriverProfiles() {
+  const select = document.getElementById("driverProfileSelect");
+  if (!select) return;
+
+  const activeId = getActiveDriverId();
+  select.innerHTML = "";
+  getDriverProfiles().forEach((profile) => {
+    const option = document.createElement("option");
+    option.value = profile.id;
+    option.textContent = profile.name;
+    option.selected = profile.id === activeId;
+    select.appendChild(option);
+  });
+}
+
+function switchDriverProfile(profileId) {
+  if (!getDriverProfiles().some((profile) => profile.id === profileId)) return;
+  localStorage.setItem(activeDriverKey, profileId);
+  restoreState();
+  renderDriverProfiles();
+  updateProgress();
+  updateRatingAverage();
 }
 
 async function hashPassword(password) {
@@ -527,12 +653,12 @@ function getRatingHistory(input) {
   ];
 }
 
-function saveRatingHistory(input) {
+function saveRatingHistory(input, force = false) {
   const history = getRatingHistory(input);
   const value = Number(input.value);
   const last = history[history.length - 1];
 
-  if (last && last.value === value) return;
+  if (!force && last && last.value === value && isSameDay(last.time, Date.now())) return;
 
   history.push({
     time: Date.now(),
@@ -540,6 +666,21 @@ function saveRatingHistory(input) {
   });
 
   setSavedJson(`${input.dataset.id}-history`, history.slice(-30));
+}
+
+function saveAllRatingHistories() {
+  document.querySelectorAll(".rating-range").forEach((input) => {
+    saveRatingHistory(input, true);
+  });
+  updateRatingAverage();
+}
+
+function isSameDay(firstTimestamp, secondTimestamp) {
+  const first = new Date(firstTimestamp);
+  const second = new Date(secondTimestamp);
+  return first.getFullYear() === second.getFullYear()
+    && first.getMonth() === second.getMonth()
+    && first.getDate() === second.getDate();
 }
 
 function renderLineGraph(history, maxValue) {
@@ -617,7 +758,7 @@ function buildPrintSummary() {
   let openChecklists = 0;
 
   setPrintText("printDate", new Date().toLocaleDateString("nl-NL"));
-  setPrintText("printDriverName", getSaved("driverName"));
+  setPrintText("printDriverName", getSaved("driverName") || getActiveDriverProfile()?.name);
   setPrintText("printPersonnelNumber", getSaved("personnelNumber"));
   setPrintText("printStartDate", getSaved("startDate"));
   setPrintText("printEndDate", getSaved("endDate"));
@@ -656,6 +797,8 @@ function buildPrintSummary() {
     `);
   });
 
+  document.getElementById("saveRatingsBtn").addEventListener("click", saveAllRatingHistories);
+
   setPrintSignature("printDriverSignature", getSaved("driverSignature"));
   setPrintSignature("printMentorSignature", getSaved("mentorSignature"));
 }
@@ -672,6 +815,21 @@ function setPrintSignature(id, source) {
 }
 
 function bindEvents() {
+  document.getElementById("driverProfileSelect").addEventListener("change", (event) => {
+    switchDriverProfile(event.target.value);
+  });
+
+  document.getElementById("newDriverProfileBtn").addEventListener("click", () => {
+    const name = cleanDriverName(window.prompt("Naam van de nieuwe chauffeur:") || "");
+    if (!name) return;
+    createDriverProfile(name);
+    setSaved("driverName", name);
+    restoreState();
+    renderDriverProfiles();
+    updateProgress();
+    updateRatingAverage();
+  });
+
   document.querySelectorAll(".app-menu [data-section]").forEach((item) => {
     item.addEventListener("click", () => {
       showSection(item.dataset.section);
@@ -765,19 +923,25 @@ function bindEvents() {
 
   document.getElementById("resetBtn").addEventListener("click", () => {
     if (!window.confirm("Alle afgevinkte onderdelen en notities wissen?")) return;
+    const profilePrefix = `${driverDataPrefix}${getActiveDriverId()}:`;
+    const profileName = getActiveDriverProfile()?.name || "Nieuwe chauffeur";
     Object.keys(localStorage)
-      .filter((name) => name.startsWith(`${storagePrefix}:`) && name !== passwordKey && name !== usernameKey)
+      .filter((name) => name.startsWith(profilePrefix))
       .forEach((name) => localStorage.removeItem(name));
+    setSaved("driverName", profileName);
     restoreState();
     updateProgress();
+    updateRatingAverage();
   });
 }
 
+ensureDriverProfiles();
 renderChecklists();
 renderLineTable();
 renderContacts();
 renderRatings();
 renderWebsites();
+renderDriverProfiles();
 restoreState();
 bindEvents();
 updateProgress();
