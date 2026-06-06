@@ -119,9 +119,10 @@ const contacts = [
   ["Ass. rayonmanager", "Maurice Toonen", "06-81176991"],
   ["Ass. rayonmanager", "Gerrit Jan Weel", "06-41725701"],
   ["Ass. rayonmanager", "Cynthia Ebbers", "06-18905619"],
-  ["Planning Bemmel", "", "088-6255965"],
-  ["Stationschef", "Marco Stellaard", "06-14311034 (alleen WhatsApp), 06-43403987, 030-2849494"],
-  ["ROV Utrecht", "Ziekmelden buiten kantoortijden", "controleren"],
+  ["Planning Bemmel", "", "0886255965"],
+  ["Stationschef", "Marco Stellaard", "06-43403987"],
+  ["WhatsApp stationschef", "Marco Stellaard", "06-14311034"],
+  ["ROV Utrecht", "Ziekmelden buiten kantoortijden", "030-2849494"],
 ];
 
 const websites = [
