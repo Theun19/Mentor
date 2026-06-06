@@ -1,5 +1,6 @@
 const storagePrefix = "mentor-checklist-nijmegen";
 const passwordKey = `${storagePrefix}:local-password-hash`;
+const usernameKey = `${storagePrefix}:local-username`;
 const authSessionKey = `${storagePrefix}:unlocked`;
 
 function setMessage(text, type) {
@@ -18,8 +19,14 @@ async function savePassword(event) {
   event.preventDefault();
   const savedHash = localStorage.getItem(passwordKey);
   const currentPassword = document.getElementById("currentPassword").value;
+  const username = document.getElementById("securityUsername").value.trim().toLowerCase();
   const newPassword = document.getElementById("newPassword").value;
   const repeatPassword = document.getElementById("repeatPassword").value;
+
+  if (!username) {
+    setMessage("Vul een gebruikersnaam in.", "danger");
+    return;
+  }
 
   if (savedHash && await hashPassword(currentPassword) !== savedHash) {
     setMessage("Het huidige wachtwoord klopt niet.", "danger");
@@ -36,6 +43,7 @@ async function savePassword(event) {
     return;
   }
 
+  localStorage.setItem(usernameKey, username);
   localStorage.setItem(passwordKey, await hashPassword(newPassword));
   sessionStorage.setItem(authSessionKey, "true");
   document.getElementById("securityForm").reset();
@@ -45,6 +53,7 @@ async function savePassword(event) {
 
 function removePassword() {
   localStorage.removeItem(passwordKey);
+  localStorage.removeItem(usernameKey);
   sessionStorage.removeItem(authSessionKey);
   document.getElementById("securityForm").reset();
   updateHint();
@@ -53,6 +62,7 @@ function removePassword() {
 
 function updateHint() {
   const savedHash = localStorage.getItem(passwordKey);
+  document.getElementById("securityUsername").value = localStorage.getItem(usernameKey) || "admin";
   document.getElementById("currentPasswordHint").textContent = savedHash
     ? "Vul je huidige wachtwoord in om het te wijzigen."
     : "Laat leeg als er nog geen wachtwoord is ingesteld.";

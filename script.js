@@ -1,5 +1,6 @@
 const storagePrefix = "mentor-checklist-nijmegen";
 const passwordKey = `${storagePrefix}:local-password-hash`;
+const usernameKey = `${storagePrefix}:local-username`;
 const authSessionKey = `${storagePrefix}:unlocked`;
 
 const ratingItems = [
@@ -179,16 +180,19 @@ function initAppSecurity() {
 async function unlockApp(event) {
   event.preventDefault();
   const savedHash = localStorage.getItem(passwordKey);
+  const savedUsername = localStorage.getItem(usernameKey) || "admin";
+  const username = document.getElementById("appUsername").value.trim().toLowerCase();
   const password = document.getElementById("appPassword").value;
   const error = document.getElementById("appLoginError");
   error.textContent = "";
 
-  if (!savedHash || await hashPassword(password) !== savedHash) {
-    error.textContent = "Wachtwoord is onjuist.";
+  if (!savedHash || username !== savedUsername || await hashPassword(password) !== savedHash) {
+    error.textContent = "Gebruikersnaam of wachtwoord is onjuist.";
     return;
   }
 
   sessionStorage.setItem(authSessionKey, "true");
+  document.getElementById("appUsername").value = "";
   document.getElementById("appPassword").value = "";
   document.body.classList.remove("auth-locked");
 }
@@ -196,7 +200,7 @@ async function unlockApp(event) {
 function lockApp() {
   sessionStorage.removeItem(authSessionKey);
   initAppSecurity();
-  document.getElementById("appPassword").focus();
+  document.getElementById("appUsername").focus();
 }
 
 async function hashPassword(password) {

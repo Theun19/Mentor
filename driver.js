@@ -1,5 +1,6 @@
 const storagePrefix = "mentor-checklist-nijmegen";
 const passwordKey = `${storagePrefix}:local-password-hash`;
+const usernameKey = `${storagePrefix}:local-username`;
 const authSessionKey = `${storagePrefix}:unlocked`;
 
 function key(name) {
@@ -41,16 +42,19 @@ function initDriverSecurity() {
 async function unlockDriver(event) {
   event.preventDefault();
   const savedHash = localStorage.getItem(passwordKey);
+  const savedUsername = localStorage.getItem(usernameKey) || "admin";
+  const username = document.getElementById("driverPageUsername").value.trim().toLowerCase();
   const password = document.getElementById("driverPagePassword").value;
   const error = document.getElementById("driverLoginError");
   error.textContent = "";
 
-  if (!savedHash || await hashPassword(password) !== savedHash) {
-    error.textContent = "Wachtwoord is onjuist.";
+  if (!savedHash || username !== savedUsername || await hashPassword(password) !== savedHash) {
+    error.textContent = "Gebruikersnaam of wachtwoord is onjuist.";
     return;
   }
 
   sessionStorage.setItem(authSessionKey, "true");
+  document.getElementById("driverPageUsername").value = "";
   document.getElementById("driverPagePassword").value = "";
   document.body.classList.remove("auth-locked");
 }
@@ -58,7 +62,7 @@ async function unlockDriver(event) {
 function lockDriver() {
   sessionStorage.removeItem(authSessionKey);
   initDriverSecurity();
-  document.getElementById("driverPagePassword").focus();
+  document.getElementById("driverPageUsername").focus();
 }
 
 function restoreFields() {

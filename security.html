@@ -31,12 +31,16 @@
 
     <main class="container-xl py-4 py-lg-5">
       <section class="section-panel security-panel p-4 p-md-5">
-        <h2 class="h4 fw-bold mb-3">Wachtwoord wijzigen</h2>
+        <h2 class="h4 fw-bold mb-3">Gebruikersnaam en wachtwoord wijzigen</h2>
         <p class="text-secondary">
-          Dit wachtwoord wordt lokaal op dit apparaat opgeslagen. Er is op dit moment geen login-scherm actief op de mentormap.
+          Deze gegevens worden lokaal op dit apparaat opgeslagen en worden gebruikt voor het inlogscherm van de mentormap.
         </p>
 
         <form class="vstack gap-3" id="securityForm">
+          <div>
+            <label class="form-label" for="securityUsername">Gebruikersnaam</label>
+            <input class="form-control" id="securityUsername" type="text" autocomplete="username" />
+          </div>
           <div>
             <label class="form-label" for="currentPassword">Huidig wachtwoord</label>
             <input class="form-control" id="currentPassword" type="password" autocomplete="current-password" />
