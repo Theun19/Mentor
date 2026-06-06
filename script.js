@@ -392,7 +392,12 @@ function renderRatings() {
       <div class="d-flex flex-column flex-md-row align-items-md-center gap-2 gap-md-3">
         <label class="rating-label" for="${id}">${item.label}</label>
         <div class="rating-control">
-          <input class="form-range rating-range" id="${id}" type="range" min="1" max="${isBalance ? "9" : "10"}" step="1" value="5" data-id="${id}" data-rating-type="${item.type || "normal"}" />
+          ${
+            isBalance
+              ? renderBalanceParabola(id, item)
+              : ""
+          }
+          <input class="form-range rating-range" id="${id}" type="range" min="0" max="100" step="1" value="50" data-id="${id}" data-rating-type="${item.type || "normal"}" />
           ${
             isBalance
               ? `<div class="rating-scale-labels">
@@ -403,11 +408,25 @@ function renderRatings() {
               : ""
           }
         </div>
-        <output class="rating-value" for="${id}" id="${id}-value">5</output>
+        <output class="rating-value" for="${id}" id="${id}-value">50%</output>
       </div>
     `;
     container.appendChild(row);
   });
+}
+
+function renderBalanceParabola(id, item) {
+  return `
+    <div class="balance-curve" aria-hidden="true">
+      <svg class="balance-curve-svg" viewBox="0 0 220 120">
+        <path class="balance-curve-path" d="M 12 104 Q 110 -80 208 104" />
+        <circle class="balance-curve-marker" id="${id}-marker" cx="110" cy="12" r="6" />
+        <text class="balance-curve-label" x="12" y="116">${item.left}</text>
+        <text class="balance-curve-label balance-curve-label-center" x="110" y="18">${item.center}</text>
+        <text class="balance-curve-label balance-curve-label-end" x="208" y="116">${item.right}</text>
+      </svg>
+    </div>
+  `;
 }
 
 function renderWebsites() {
@@ -445,7 +464,7 @@ function restoreState() {
 
   document.querySelectorAll(".rating-range").forEach((input) => {
     const savedValue = getSaved(input.dataset.id);
-    input.value = savedValue || "5";
+    input.value = normalizeRatingValue(input, savedValue);
     updateRatingValue(input);
   });
 }
@@ -498,23 +517,52 @@ function updateProgress() {
 }
 
 function updateRatingValue(input) {
-  document.getElementById(`${input.id}-value`).textContent = getRatingScore(input);
+  document.getElementById(`${input.id}-value`).textContent = `${getRatingScore(input)}%`;
+  updateBalanceMarker(input);
 }
 
 function getRatingScore(input) {
   const value = Number(input.value);
   if (input.dataset.ratingType === "balance") {
-    return value <= 5 ? value : 10 - value;
+    return Math.max(0, Math.round(100 - (Math.abs(value - 50) / 50) ** 2 * 100));
   }
 
-  return value;
+  return Math.round(value);
+}
+
+function normalizeRatingValue(input, savedValue) {
+  if (savedValue === "") return "50";
+
+  const value = Number(savedValue);
+  if (!Number.isFinite(value)) return "50";
+  if (value > 10) return String(Math.max(0, Math.min(100, Math.round(value))));
+
+  if (input.dataset.ratingType === "balance") {
+    return String(Math.round(((Math.max(1, Math.min(9, value)) - 1) / 8) * 100));
+  }
+
+  return String(Math.round(Math.max(0, Math.min(10, value)) * 10));
+}
+
+function updateBalanceMarker(input) {
+  if (input.dataset.ratingType !== "balance") return;
+
+  const marker = document.getElementById(`${input.id}-marker`);
+  if (!marker) return;
+
+  const value = Number(input.value);
+  const x = 12 + (value / 100) * 196;
+  const t = value / 100;
+  const y = 104 - (4 * t * (1 - t) * 92);
+  marker.setAttribute("cx", x.toFixed(1));
+  marker.setAttribute("cy", y.toFixed(1));
 }
 
 function updateRatingAverage() {
   const ratings = [...document.querySelectorAll(".rating-range")].map((input) => getRatingScore(input));
   const total = ratings.reduce((sum, value) => sum + value, 0);
-  const average = ratings.length ? (total / ratings.length).toFixed(1) : "0";
-  document.getElementById("ratingAverage").textContent = `Gemiddelde: ${average}`;
+  const average = ratings.length ? Math.round(total / ratings.length) : 0;
+  document.getElementById("ratingAverage").textContent = `Gemiddelde: ${average}%`;
   updateRatingChart();
 }
 
@@ -534,7 +582,7 @@ function updateRatingChart() {
     item.innerHTML = `
       <div class="line-chart-title">${label}</div>
       <div class="line-chart-frame">
-        ${renderLineGraph(history, isBalance ? 9 : 10)}
+        ${renderLineGraph(history, 100)}
       </div>
     `;
     item.addEventListener("click", () => openChartZoom(label, item));
@@ -650,19 +698,37 @@ function closeLineSummary() {
 
 function getRatingHistory(input) {
   const history = getSavedJson(`${input.dataset.id}-history`, []);
-  if (history.length) return history;
+  if (history.length) {
+    return history.map((entry) => ({
+      ...entry,
+      value: normalizeHistoryScore(input, entry.value),
+    }));
+  }
 
   return [
     {
       time: Date.now(),
-      value: Number(input.value),
+      value: getRatingScore(input),
     },
   ];
 }
 
+function normalizeHistoryScore(input, value) {
+  const numericValue = Number(value);
+  if (!Number.isFinite(numericValue)) return 0;
+  if (numericValue > 10) return Math.max(0, Math.min(100, Math.round(numericValue)));
+
+  if (input.dataset.ratingType === "balance") {
+    const percentPosition = ((Math.max(1, Math.min(9, numericValue)) - 1) / 8) * 100;
+    return Math.max(0, Math.round(100 - (Math.abs(percentPosition - 50) / 50) ** 2 * 100));
+  }
+
+  return Math.round(Math.max(0, Math.min(10, numericValue)) * 10);
+}
+
 function saveRatingHistory(input, force = false) {
   const history = getRatingHistory(input);
-  const value = Number(input.value);
+  const value = getRatingScore(input);
   const last = history[history.length - 1];
 
   if (!force && last && last.value === value && isSameDay(last.time, Date.now())) return;
@@ -701,7 +767,7 @@ function renderLineGraph(history, maxValue) {
     const x = history.length === 1
       ? paddingLeft + (width - paddingLeft - paddingRight) / 2
       : paddingLeft + (index / (history.length - 1)) * (width - paddingLeft - paddingRight);
-    const y = height - paddingBottom - ((entry.value - 1) / (maxValue - 1)) * (height - paddingTop - paddingBottom);
+    const y = height - paddingBottom - (entry.value / maxValue) * (height - paddingTop - paddingBottom);
     return { x, y };
   });
   const pointString = points.map((point) => `${point.x},${point.y}`).join(" ");
@@ -710,16 +776,16 @@ function renderLineGraph(history, maxValue) {
     return `<text class="line-chart-x-label" x="${point.x}" y="${height - 4}">${label}</text>`;
   }).join("");
   const midValue = Math.ceil(maxValue / 2);
-  const midY = height - paddingBottom - ((midValue - 1) / (maxValue - 1)) * (height - paddingTop - paddingBottom);
+  const midY = height - paddingBottom - (midValue / maxValue) * (height - paddingTop - paddingBottom);
 
   return `
     <svg class="line-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Progressielijn">
       <line class="line-chart-grid" x1="${paddingLeft}" y1="${paddingTop}" x2="${width - paddingRight}" y2="${paddingTop}" />
       <line class="line-chart-grid" x1="${paddingLeft}" y1="${midY}" x2="${width - paddingRight}" y2="${midY}" />
       <line class="line-chart-grid" x1="${paddingLeft}" y1="${height - paddingBottom}" x2="${width - paddingRight}" y2="${height - paddingBottom}" />
-      <text class="line-chart-y-label" x="4" y="${paddingTop + 3}">${maxValue}</text>
-      <text class="line-chart-y-label" x="4" y="${midY + 3}">${midValue}</text>
-      <text class="line-chart-y-label" x="4" y="${height - paddingBottom + 3}">1</text>
+      <text class="line-chart-y-label" x="4" y="${paddingTop + 3}">${maxValue}%</text>
+      <text class="line-chart-y-label" x="4" y="${midY + 3}">${midValue}%</text>
+      <text class="line-chart-y-label" x="4" y="${height - paddingBottom + 3}">0%</text>
       <polyline class="line-chart-line" points="${pointString}" />
       ${points.map((point) => `<circle class="line-chart-point" cx="${point.x}" cy="${point.y}" r="3" />`).join("")}
       ${xLabels}
@@ -799,7 +865,7 @@ function buildPrintSummary() {
     ratingRows.insertAdjacentHTML("beforeend", `
       <div class="print-score">
         <span>${label}</span>
-        <strong>${getRatingScore(input)}</strong>
+        <strong>${getRatingScore(input)}%</strong>
       </div>
     `);
   });

@@ -533,6 +533,46 @@ body.auth-locked .auth-screen {
   flex: 1 1 24rem;
 }
 
+.balance-curve {
+  height: 7.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.balance-curve-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.balance-curve-path {
+  fill: none;
+  stroke: var(--brand);
+  stroke-linecap: round;
+  stroke-width: 4;
+}
+
+.balance-curve-marker {
+  fill: #ffffff;
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.balance-curve-label {
+  fill: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 800;
+  text-anchor: start;
+}
+
+.balance-curve-label-center {
+  fill: var(--brand-dark);
+  text-anchor: middle;
+}
+
+.balance-curve-label-end {
+  text-anchor: end;
+}
+
 .rating-scale-labels {
   display: flex;
   justify-content: space-between;
@@ -547,7 +587,7 @@ body.auth-locked .auth-screen {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
+  width: 4rem;
   min-height: 2.25rem;
   border-radius: 8px;
   color: #ffffff;
