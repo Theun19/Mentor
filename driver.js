@@ -1,7 +1,4 @@
 const storagePrefix = "mentor-checklist-nijmegen";
-const passwordKey = `${storagePrefix}:local-password-hash`;
-const usernameKey = `${storagePrefix}:local-username`;
-const authSessionKey = `${storagePrefix}:unlocked`;
 
 function key(name) {
   return `${storagePrefix}:${name}`;
@@ -13,56 +10,6 @@ function getSaved(name) {
 
 function setSaved(name, value) {
   localStorage.setItem(key(name), value);
-}
-
-async function hashPassword(password) {
-  const bytes = new TextEncoder().encode(password);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-function initDriverSecurity() {
-  const savedHash = localStorage.getItem(passwordKey);
-  const isUnlocked = sessionStorage.getItem(authSessionKey) === "true";
-  const loginForm = document.getElementById("driverLoginForm");
-  const noPasswordPanel = document.getElementById("driverNoPasswordPanel");
-
-  if (!savedHash) {
-    loginForm.classList.add("d-none");
-    noPasswordPanel.classList.remove("d-none");
-    document.body.classList.add("auth-locked");
-    return;
-  }
-
-  loginForm.classList.remove("d-none");
-  noPasswordPanel.classList.add("d-none");
-  document.body.classList.toggle("auth-locked", !isUnlocked);
-}
-
-async function unlockDriver(event) {
-  event.preventDefault();
-  const savedHash = localStorage.getItem(passwordKey);
-  const savedUsername = localStorage.getItem(usernameKey) || "admin";
-  const username = document.getElementById("driverPageUsername").value.trim().toLowerCase();
-  const password = document.getElementById("driverPagePassword").value;
-  const error = document.getElementById("driverLoginError");
-  error.textContent = "";
-
-  if (!savedHash || username !== savedUsername || await hashPassword(password) !== savedHash) {
-    error.textContent = "Gebruikersnaam of wachtwoord is onjuist.";
-    return;
-  }
-
-  sessionStorage.setItem(authSessionKey, "true");
-  document.getElementById("driverPageUsername").value = "";
-  document.getElementById("driverPagePassword").value = "";
-  document.body.classList.remove("auth-locked");
-}
-
-function lockDriver() {
-  sessionStorage.removeItem(authSessionKey);
-  initDriverSecurity();
-  document.getElementById("driverPageUsername").focus();
 }
 
 function restoreFields() {
@@ -175,9 +122,6 @@ function drawSignatureImage(canvas, source) {
   image.src = source;
 }
 
-document.getElementById("driverLoginForm").addEventListener("submit", unlockDriver);
-document.getElementById("driverLockBtn").addEventListener("click", lockDriver);
 restoreFields();
 setupSignaturePads();
 restoreSignatures();
-initDriverSecurity();

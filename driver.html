@@ -16,31 +16,7 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body class="auth-locked">
-    <section class="auth-screen" id="authScreen" aria-labelledby="authTitle">
-      <div class="auth-card">
-        <p class="text-uppercase small fw-semibold text-success mb-1">Beveiligde toegang</p>
-        <h1 class="h4 fw-bold mb-3" id="authTitle">Chauffeurgegevens openen</h1>
-        <form class="vstack gap-3" id="driverLoginForm">
-          <div>
-            <label class="form-label" for="driverPageUsername">Gebruikersnaam</label>
-            <input class="form-control" id="driverPageUsername" type="text" autocomplete="username" />
-          </div>
-          <div>
-            <label class="form-label" for="driverPagePassword">Wachtwoord</label>
-            <input class="form-control" id="driverPagePassword" type="password" autocomplete="current-password" />
-          </div>
-          <button class="btn btn-success" type="submit">Ontgrendelen</button>
-          <a class="btn btn-outline-secondary" href="security.html">Wachtwoord wijzigen</a>
-          <p class="text-danger small mb-0" id="driverLoginError" role="alert"></p>
-        </form>
-        <div class="vstack gap-3 d-none" id="driverNoPasswordPanel">
-          <p class="text-secondary mb-0">Er is nog geen wachtwoord ingesteld.</p>
-          <a class="btn btn-success" href="security.html">Wachtwoord instellen</a>
-        </div>
-      </div>
-    </section>
-
+  <body>
     <header class="app-header border-bottom">
       <div class="container-xl py-3">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
@@ -49,7 +25,6 @@
             <h1 class="h3 fw-bold mb-0">Gegevens chauffeur</h1>
           </div>
           <div class="d-flex flex-wrap gap-2">
-            <button class="btn btn-outline-secondary btn-sm" id="driverLockBtn" type="button">Vergrendel</button>
             <a class="btn btn-outline-secondary btn-sm" href="index.html">Terug</a>
           </div>
         </div>

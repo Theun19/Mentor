@@ -9,46 +9,88 @@ function setMessage(text, type) {
   message.className = `small mb-0 text-${type}`;
 }
 
+function setLoginError(text) {
+  document.getElementById("securityLoginError").textContent = text;
+}
+
 async function hashPassword(password) {
   const bytes = new TextEncoder().encode(password);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+function openSecurityPage() {
+  document.body.classList.remove("auth-locked");
+  updateHint();
+}
+
+function initSecurityLogin() {
+  const savedHash = localStorage.getItem(passwordKey);
+  const isUnlocked = sessionStorage.getItem(authSessionKey) === "true";
+
+  if (!savedHash || isUnlocked) {
+    openSecurityPage();
+    return;
+  }
+
+  document.body.classList.add("auth-locked");
+  document.getElementById("loginUsername").value = localStorage.getItem(usernameKey) || "admin";
+}
+
+async function unlockSecurity(event) {
+  event.preventDefault();
+  const savedHash = localStorage.getItem(passwordKey);
+  const savedUsername = localStorage.getItem(usernameKey) || "admin";
+  const username = document.getElementById("loginUsername").value.trim().toLowerCase();
+  const password = document.getElementById("loginPassword").value;
+  setLoginError("");
+
+  if (!savedHash || username !== savedUsername || await hashPassword(password) !== savedHash) {
+    setLoginError("Gebruikersnaam of wachtwoord is onjuist.");
+    return;
+  }
+
+  sessionStorage.setItem(authSessionKey, "true");
+  document.getElementById("securityLoginForm").reset();
+  openSecurityPage();
+}
+
 async function savePassword(event) {
   event.preventDefault();
   const savedHash = localStorage.getItem(passwordKey);
-  const currentPassword = document.getElementById("currentPassword").value;
   const username = document.getElementById("securityUsername").value.trim().toLowerCase();
   const newPassword = document.getElementById("newPassword").value;
   const repeatPassword = document.getElementById("repeatPassword").value;
+  const wantsPasswordChange = newPassword || repeatPassword;
 
   if (!username) {
     setMessage("Vul een gebruikersnaam in.", "danger");
     return;
   }
 
-  if (savedHash && await hashPassword(currentPassword) !== savedHash) {
-    setMessage("Het huidige wachtwoord klopt niet.", "danger");
+  if (!savedHash && !wantsPasswordChange) {
+    setMessage("Stel eerst een wachtwoord in.", "danger");
     return;
   }
 
-  if (newPassword.length < 8) {
+  if (wantsPasswordChange && newPassword.length < 8) {
     setMessage("Gebruik minimaal 8 tekens voor het nieuwe wachtwoord.", "danger");
     return;
   }
 
-  if (newPassword !== repeatPassword) {
+  if (wantsPasswordChange && newPassword !== repeatPassword) {
     setMessage("De nieuwe wachtwoorden zijn niet gelijk.", "danger");
     return;
   }
 
   localStorage.setItem(usernameKey, username);
-  localStorage.setItem(passwordKey, await hashPassword(newPassword));
+  if (wantsPasswordChange) {
+    localStorage.setItem(passwordKey, await hashPassword(newPassword));
+  }
   sessionStorage.setItem(authSessionKey, "true");
   document.getElementById("securityForm").reset();
   updateHint();
-  setMessage("Wachtwoord opgeslagen.", "success");
+  setMessage(wantsPasswordChange ? "Gebruikersnaam en wachtwoord opgeslagen." : "Gebruikersnaam opgeslagen.", "success");
 }
 
 function removePassword() {
@@ -63,11 +105,12 @@ function removePassword() {
 function updateHint() {
   const savedHash = localStorage.getItem(passwordKey);
   document.getElementById("securityUsername").value = localStorage.getItem(usernameKey) || "admin";
-  document.getElementById("currentPasswordHint").textContent = savedHash
-    ? "Vul je huidige wachtwoord in om het te wijzigen."
-    : "Laat leeg als er nog geen wachtwoord is ingesteld.";
+  document.getElementById("newPasswordHint").textContent = savedHash
+    ? "Laat leeg als je alleen de gebruikersnaam wilt wijzigen."
+    : "Er is nog geen wachtwoord ingesteld. Kies minimaal 8 tekens.";
 }
 
+document.getElementById("securityLoginForm").addEventListener("submit", unlockSecurity);
 document.getElementById("securityForm").addEventListener("submit", savePassword);
 document.getElementById("removePasswordBtn").addEventListener("click", removePassword);
-updateHint();
+initSecurityLogin();

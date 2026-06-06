@@ -16,7 +16,28 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="auth-locked">
+    <section class="auth-screen" id="securityAuthScreen" aria-labelledby="securityAuthTitle">
+      <div class="auth-card">
+        <p class="text-uppercase small fw-semibold text-success mb-1">Beveiligde toegang</p>
+        <h1 class="h4 fw-bold mb-3" id="securityAuthTitle">Beveiliging openen</h1>
+
+        <form class="vstack gap-3" id="securityLoginForm">
+          <div>
+            <label class="form-label" for="loginUsername">Gebruikersnaam</label>
+            <input class="form-control" id="loginUsername" type="text" autocomplete="username" />
+          </div>
+          <div>
+            <label class="form-label" for="loginPassword">Wachtwoord</label>
+            <input class="form-control" id="loginPassword" type="password" autocomplete="current-password" />
+          </div>
+          <button class="btn btn-success" type="submit">Inloggen</button>
+          <a class="btn btn-outline-danger" href="reset-password.html">Wachtwoord vergeten</a>
+          <p class="text-danger small mb-0" id="securityLoginError" role="alert"></p>
+        </form>
+      </div>
+    </section>
+
     <header class="app-header border-bottom">
       <div class="container-xl py-3">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
@@ -33,7 +54,7 @@
       <section class="section-panel security-panel p-4 p-md-5">
         <h2 class="h4 fw-bold mb-3">Gebruikersnaam en wachtwoord wijzigen</h2>
         <p class="text-secondary">
-          Deze gegevens worden lokaal op dit apparaat opgeslagen en worden gebruikt voor het inlogscherm van de mentormap.
+          Deze gegevens worden lokaal op dit apparaat opgeslagen en worden gebruikt voor het inlogscherm van deze beveiligingspagina.
         </p>
 
         <form class="vstack gap-3" id="securityForm">
@@ -42,13 +63,9 @@
             <input class="form-control" id="securityUsername" type="text" autocomplete="username" />
           </div>
           <div>
-            <label class="form-label" for="currentPassword">Huidig wachtwoord</label>
-            <input class="form-control" id="currentPassword" type="password" autocomplete="current-password" />
-            <div class="form-text" id="currentPasswordHint">Laat leeg als er nog geen wachtwoord is ingesteld.</div>
-          </div>
-          <div>
             <label class="form-label" for="newPassword">Nieuw wachtwoord</label>
             <input class="form-control" id="newPassword" type="password" autocomplete="new-password" />
+            <div class="form-text" id="newPasswordHint">Laat leeg als je alleen de gebruikersnaam wilt wijzigen.</div>
           </div>
           <div>
             <label class="form-label" for="repeatPassword">Herhaal nieuw wachtwoord</label>

@@ -159,50 +159,6 @@ function setSavedJson(name, value) {
   localStorage.setItem(key(name), JSON.stringify(value));
 }
 
-function initAppSecurity() {
-  const savedHash = localStorage.getItem(passwordKey);
-  const isUnlocked = sessionStorage.getItem(authSessionKey) === "true";
-  const loginForm = document.getElementById("appLoginForm");
-  const noPasswordPanel = document.getElementById("noPasswordPanel");
-
-  if (!savedHash) {
-    loginForm.classList.add("d-none");
-    noPasswordPanel.classList.remove("d-none");
-    document.body.classList.add("auth-locked");
-    return;
-  }
-
-  loginForm.classList.remove("d-none");
-  noPasswordPanel.classList.add("d-none");
-  document.body.classList.toggle("auth-locked", !isUnlocked);
-}
-
-async function unlockApp(event) {
-  event.preventDefault();
-  const savedHash = localStorage.getItem(passwordKey);
-  const savedUsername = localStorage.getItem(usernameKey) || "admin";
-  const username = document.getElementById("appUsername").value.trim().toLowerCase();
-  const password = document.getElementById("appPassword").value;
-  const error = document.getElementById("appLoginError");
-  error.textContent = "";
-
-  if (!savedHash || username !== savedUsername || await hashPassword(password) !== savedHash) {
-    error.textContent = "Gebruikersnaam of wachtwoord is onjuist.";
-    return;
-  }
-
-  sessionStorage.setItem(authSessionKey, "true");
-  document.getElementById("appUsername").value = "";
-  document.getElementById("appPassword").value = "";
-  document.body.classList.remove("auth-locked");
-}
-
-function lockApp() {
-  sessionStorage.removeItem(authSessionKey);
-  initAppSecurity();
-  document.getElementById("appUsername").focus();
-}
-
 async function hashPassword(password) {
   const bytes = new TextEncoder().encode(password);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
@@ -716,9 +672,6 @@ function setPrintSignature(id, source) {
 }
 
 function bindEvents() {
-  document.getElementById("appLoginForm").addEventListener("submit", unlockApp);
-  document.getElementById("lockBtn").addEventListener("click", lockApp);
-
   document.querySelectorAll(".app-menu [data-section]").forEach((item) => {
     item.addEventListener("click", () => {
       showSection(item.dataset.section);
@@ -813,7 +766,7 @@ function bindEvents() {
   document.getElementById("resetBtn").addEventListener("click", () => {
     if (!window.confirm("Alle afgevinkte onderdelen en notities wissen?")) return;
     Object.keys(localStorage)
-      .filter((name) => name.startsWith(`${storagePrefix}:`) && name !== passwordKey)
+      .filter((name) => name.startsWith(`${storagePrefix}:`) && name !== passwordKey && name !== usernameKey)
       .forEach((name) => localStorage.removeItem(name));
     restoreState();
     updateProgress();
@@ -827,6 +780,5 @@ renderRatings();
 renderWebsites();
 restoreState();
 bindEvents();
-initAppSecurity();
 updateProgress();
 updateRatingAverage();
