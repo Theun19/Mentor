@@ -773,6 +773,30 @@ body.auth-locked .auth-screen {
     gap: 0.55rem;
   }
 
+  #tab-rating .section-panel {
+    padding: 0.5rem !important;
+  }
+
+  #tab-rating .section-panel > .d-flex {
+    gap: 0.4rem !important;
+    margin-bottom: 0.45rem !important;
+  }
+
+  #tab-rating h2 {
+    margin-bottom: 0.1rem !important;
+    font-size: 1rem;
+    line-height: 1.15;
+  }
+
+  #tab-rating p {
+    font-size: 0.76rem;
+    line-height: 1.2;
+  }
+
+  #ratingContainer {
+    gap: 0.45rem !important;
+  }
+
   .line-chart-item {
     gap: 0.25rem;
   }
@@ -830,7 +854,11 @@ body.auth-locked .auth-screen {
   }
 
   .rating-row {
-    padding: 0.45rem 0.55rem;
+    padding: 0.35rem 0.45rem;
+  }
+
+  .rating-row > .d-flex {
+    gap: 0.25rem !important;
   }
 
   .rating-label {
@@ -849,12 +877,12 @@ body.auth-locked .auth-screen {
 
   .rating-value {
     width: 3.35rem;
-    min-height: 1.8rem;
+    min-height: 1.55rem;
     font-size: 0.82rem;
   }
 
   .balance-curve {
-    height: 4.8rem;
+    height: 3.65rem;
     margin-bottom: 0;
   }
 
@@ -872,7 +900,7 @@ body.auth-locked .auth-screen {
 
   .rating-scale-labels {
     gap: 0.35rem;
-    margin-top: -0.2rem;
+    margin-top: -0.3rem;
     font-size: 0.66rem;
     line-height: 1.1;
   }
