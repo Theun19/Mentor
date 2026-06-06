@@ -571,8 +571,9 @@ function updateRatingChart() {
   chart.innerHTML = "";
 
   document.querySelectorAll(".rating-range").forEach((input) => {
-    const label = input.closest(".rating-row").querySelector(".rating-label").textContent;
+    const baseLabel = input.closest(".rating-row").querySelector(".rating-label").textContent;
     const isBalance = input.dataset.ratingType === "balance";
+    const label = isBalance ? getBalanceChartTitle(input) : baseLabel;
     const history = getRatingHistory(input);
     const item = document.createElement("div");
     item.className = "line-chart-item";
@@ -594,6 +595,14 @@ function updateRatingChart() {
     });
     chart.appendChild(item);
   });
+}
+
+function getBalanceChartTitle(input) {
+  const position = Number(input.value);
+  const score = getRatingScore(input);
+
+  if (score >= 70) return "Zelfverzekerd";
+  return position < 50 ? "Angstvallig" : "Roekeloos";
 }
 
 function openChartZoom(title, sourceItem) {
