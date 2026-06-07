@@ -119,20 +119,20 @@ const contacts = [
   ["Ass. rayonmanager", "Maurice Toonen", "06-81176991"],
   ["Ass. rayonmanager", "Gerrit Jan Weel", "06-41725701"],
   ["Ass. rayonmanager", "Cynthia Ebbers", "06-18905619"],
-  ["Planning Bemmel", "", "088-6255965"],
+  ["Ass. rayonmanager", "Noortje Verriet", "06-41131561"],
+  ["Planning Bemmel", "", "088-6255965", "06-14311034"],
   ["Stationschef", "Marco Stellaard", "06-43403987"],
-  ["WhatsApp stationschef", "Marco Stellaard", "06-14311034"],
+  ["RRR app", "Nick Spijker", "", "06-18093468"],
   ["ROV Utrecht", "Ziekmelden buiten kantoortijden", "030-2849494"],
 ];
 
 const websites = [
   ["Mijn HRM", "mijnhrm.connexxion.nl", "https://mijnhrm.connexxion.nl"],
   ["AFAS Pocket", "Officiele AFAS apppagina", "https://www.afas.nl/software/pocket"],
-  ["AFAS Pocket Android", "Google Play", "https://play.google.com/store/apps/details?id=nl.afas.pocket2&hl=nl"],
-  ["AFAS Pocket iPhone", "App Store", "https://apps.apple.com/nl/app/afas-pocket/id1028433924"],
   ["Webcomm", "diensten.connexxion.nl", "https://diensten.connexxion.nl"],
   ["Mijn Connexxion", "mijn.connexxion.nl/login", "https://mijn.connexxion.nl/login"],
   ["@Transdev app", "Officiele apppagina", "https://www.transdev.nl/nl/reisinformatie/%40transdev-app"],
+  ["Transdev chauffeurs app", "Google Play", "https://play.google.com/store/apps/details?id=com.transdev.teamtransdev&hl=nl"],
   ["Veiligheid / medische keuring", "mijnmeditel.nl", "https://mijnmeditel.nl"],
   ["Kledingportal", "Outfit klantportaal", "https://outfit.nl/web-portal-login/"],
   ["CBR", "cbr.nl", "https://www.cbr.nl"],
@@ -140,6 +140,7 @@ const websites = [
   ["Breng", "breng.nl", "https://www.breng.nl/nl/"],
   ["Breng app", "Officiele apppagina", "https://www.breng.nl/nl/reisinformatie/breng-app"],
   ["Breng iPhone", "App Store", "https://apps.apple.com/nl/app/breng/id387729989"],
+  ["RRReis app", "Officiele apppagina", "https://www.rrreis.nl/app/"],
   ["iLost Connexxion", "Gevonden voorwerpen", "https://www.connexxion.nl/nl/klantenservice/gevonden-voorwerpen"],
   ["iLost", "ilost.co/nl", "https://ilost.co/nl"],
   ["OVinfo Android", "Google Play", "https://play.google.com/store/apps/details?id=nl.skywave.ovinfo&hl=nl"],
@@ -375,13 +376,14 @@ function renderLineTable() {
 function renderContacts() {
   const body = document.getElementById("contactsTableBody");
   body.innerHTML = contacts
-    .map(([role, name, phone]) => {
+    .map(([role, name, phone, whatsapp]) => {
       const needsCheck = phone === "controleren";
       return `
         <tr>
           <td>${role}</td>
           <td>${name || "-"}</td>
           <td>${needsCheck ? '<span class="uncertain">controleren</span>' : phone}</td>
+          <td>${whatsapp || "-"}</td>
         </tr>
       `;
     })
@@ -573,17 +575,361 @@ function updateRatingAverage() {
   const average = ratings.length ? Math.round(total / ratings.length) : 0;
   document.getElementById("ratingAverage").textContent = `Gemiddelde: ${average}%`;
   updateRatingChart();
+  renderRatingDayLog();
+  renderRatingProgressTable();
+}
+
+function getRatingRowsForProgress() {
+  return [...document.querySelectorAll(".rating-range")].map((input) => {
+    const item = ratingItems.find((rating) => rating.id === input.dataset.id);
+    return {
+      id: input.dataset.id,
+      label: item?.type === "balance" ? "Angstvallig / Zelfverzekerd / Roekeloos" : item?.label || input.dataset.id,
+      input,
+      history: getStoredRatingHistory(input),
+    };
+  });
+}
+
+function renderRatingDayLog() {
+  const log = document.getElementById("ratingDayLog");
+  if (!log) return;
+
+  const ratings = getRatingRowsForProgress();
+  const dayKeys = getRatingTableDayKeys(ratings, false).filter(Boolean);
+  if (!dayKeys.length) {
+    log.innerHTML = `<p class="text-secondary mb-0">Nog geen rijlesdag opgeslagen.</p>`;
+    return;
+  }
+
+  log.innerHTML = dayKeys.map((dayKey) => {
+    const scores = ratings.map((rating) => {
+      const entry = rating.history.find((historyEntry) => getDayKey(historyEntry.time) === dayKey);
+      return `
+        <div class="rating-day-score">
+          <span>${rating.label}</span>
+          <strong>${entry ? `${entry.value}%` : "-"}</strong>
+        </div>
+      `;
+    }).join("");
+
+    return `
+      <article class="rating-day-card">
+        <div class="rating-day-date">${formatDayLabel(dayKey)}</div>
+        <div class="rating-day-scores">${scores}</div>
+      </article>
+    `;
+  }).join("");
+}
+
+function renderRatingProgressTable() {
+  const table = document.getElementById("ratingProgressTable");
+  if (!table) return;
+
+  const ratings = getRatingRowsForProgress();
+  const dayKeys = getRatingTableDayKeys(ratings);
+
+  table.innerHTML = `
+    <tbody>
+      <tr>
+        <th scope="row">Dag</th>
+        ${dayKeys.map((dayKey, index) => `
+          <td class="rating-table-date-cell">
+            <div class="rating-table-date-tools">
+              <button
+                class="rating-column-move"
+                type="button"
+                data-move-direction="-1"
+                data-day-key="${escapeHtml(dayKey)}"
+                data-column-index="${index}"
+                ${dayKey && index > 0 ? "" : "disabled"}
+                aria-label="Kolom naar links">‹</button>
+              <button
+                class="rating-column-move"
+                type="button"
+                data-move-direction="1"
+                data-day-key="${escapeHtml(dayKey)}"
+                data-column-index="${index}"
+                ${dayKey && index < dayKeys.filter(Boolean).length - 1 ? "" : "disabled"}
+                aria-label="Kolom naar rechts">›</button>
+            </div>
+            <input
+              class="rating-table-input rating-table-date-input"
+              type="text"
+              inputmode="numeric"
+              placeholder="dd-mm-jjjj"
+              value="${dayKey ? escapeHtml(formatDateInputValue(dayKey)) : ""}"
+              data-day-key="${escapeHtml(dayKey)}"
+              data-column-index="${index}"
+              aria-label="Datum kolom ${index + 1}">
+          </td>
+        `).join("")}
+      </tr>
+      ${ratings.map((rating) => `
+        <tr>
+          <th scope="row">${rating.label}</th>
+          ${dayKeys.map((dayKey, index) => {
+            const entry = dayKey ? rating.history.find((historyEntry) => getDayKey(historyEntry.time) === dayKey) : null;
+            return `
+              <td>
+                <input
+                  class="rating-table-input rating-table-score-input"
+                  type="number"
+                  inputmode="numeric"
+                  min="0"
+                  max="100"
+                  step="1"
+                  placeholder="-"
+                  value="${entry ? escapeHtml(entry.value) : ""}"
+                  data-day-key="${escapeHtml(dayKey)}"
+                  data-rating-id="${escapeHtml(rating.id)}"
+                  data-column-index="${index}"
+                  ${dayKey ? "" : "disabled"}
+                  aria-label="${escapeHtml(rating.label)} score kolom ${index + 1}">
+              </td>
+            `;
+          }).join("")}
+        </tr>
+      `).join("")}
+      <tr>
+        <th scope="row">Gemiddelde</th>
+        ${dayKeys.map((dayKey) => {
+          if (!dayKey) return `<td></td>`;
+          const values = ratings
+            .map((rating) => rating.history.find((entry) => getDayKey(entry.time) === dayKey)?.value)
+            .filter((value) => Number.isFinite(Number(value)));
+          if (!values.length) return `<td></td>`;
+          return `<td>${Math.round(values.reduce((sum, value) => sum + Number(value), 0) / values.length)}%</td>`;
+        }).join("")}
+      </tr>
+    </tbody>
+  `;
+}
+
+function getRatingTableDayKeys(ratings, includePadding = true) {
+  const keys = [...getSavedRatingDays()];
+  ratings.forEach((rating) => {
+    rating.history.forEach((entry) => {
+      const dayKey = getDayKey(entry.time);
+      if (!keys.includes(dayKey)) keys.push(dayKey);
+    });
+  });
+
+  const orderedKeys = keys.slice(-30);
+  if (!includePadding) return orderedKeys;
+
+  return orderedKeys.concat(Array.from({ length: Math.max(0, 30 - orderedKeys.length) }, () => ""));
+}
+
+function getSavedRatingDays() {
+  return getSavedJson("rating-days", [])
+    .map((dayKey) => (typeof dayKey === "string" ? dayKey : ""))
+    .filter((dayKey) => /^\d{4}-\d{2}-\d{2}$/.test(dayKey));
+}
+
+function saveRatingDays(dayKeys) {
+  const cleanKeys = [...new Set(dayKeys.filter((dayKey) => /^\d{4}-\d{2}-\d{2}$/.test(dayKey)))]
+    .slice(-30);
+  setSavedJson("rating-days", cleanKeys);
+}
+
+function addSavedRatingDay(dayKey) {
+  saveRatingDays([...getSavedRatingDays(), dayKey]);
+}
+
+function timestampFromDayKey(dayKey) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey)) return null;
+  const [year, month, day] = dayKey.split("-").map(Number);
+  const timestamp = new Date(year, month - 1, day, 12).getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function parseRatingDateValue(value) {
+  const text = String(value || "").trim();
+  if (!text) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+    return timestampFromDayKey(text);
+  }
+
+  const match = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+  if (!match) return null;
+
+  const [, day, month, year] = match;
+  const timestamp = new Date(Number(year), Number(month) - 1, Number(day), 12).getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+function getRatingHistoryById(ratingId) {
+  const input = document.querySelector(`.rating-range[data-id="${CSS.escape(ratingId)}"]`);
+  return input ? getStoredRatingHistory(input) : [];
+}
+
+function setRatingHistoryById(ratingId, history) {
+  const input = document.querySelector(`.rating-range[data-id="${CSS.escape(ratingId)}"]`);
+  if (!input) return;
+
+  const sortedHistory = history
+    .filter((entry) => Number.isFinite(Number(entry.time)) && Number.isFinite(Number(entry.value)))
+    .sort((first, second) => first.time - second.time)
+    .slice(-30);
+  setSavedJson(`${input.dataset.id}-history`, sortedHistory);
+}
+
+function moveRatingDay(oldDayKey, newDayKey) {
+  const currentDays = getSavedRatingDays();
+  const existingIndex = currentDays.indexOf(oldDayKey);
+  const days = currentDays.filter((dayKey) => dayKey !== oldDayKey && dayKey !== newDayKey);
+  if (existingIndex >= 0) {
+    days.splice(Math.min(existingIndex, days.length), 0, newDayKey);
+  } else {
+    days.push(newDayKey);
+  }
+  saveRatingDays(days);
+
+  if (!oldDayKey || oldDayKey === newDayKey) return;
+
+  const newTimestamp = timestampFromDayKey(newDayKey);
+  if (!newTimestamp) return;
+
+  getRatingRowsForProgress().forEach((rating) => {
+    const movingEntry = rating.history.find((entry) => getDayKey(entry.time) === oldDayKey);
+    if (!movingEntry) return;
+
+    const history = rating.history
+      .filter((entry) => getDayKey(entry.time) !== oldDayKey && getDayKey(entry.time) !== newDayKey);
+    history.push({
+      ...movingEntry,
+      time: newTimestamp,
+    });
+    setRatingHistoryById(rating.id, history);
+  });
+}
+
+function saveRatingTableScore(ratingId, dayKey, rawValue) {
+  const timestamp = timestampFromDayKey(dayKey);
+  if (!timestamp) return false;
+
+  const text = String(rawValue || "").trim();
+  const history = getRatingHistoryById(ratingId).filter((entry) => getDayKey(entry.time) !== dayKey);
+
+  if (text) {
+    const numericValue = Number(text);
+    if (!Number.isFinite(numericValue)) return false;
+    const value = Math.max(0, Math.min(100, Math.round(numericValue)));
+    history.push({
+      time: timestamp,
+      value,
+      scoreVersion: 2,
+    });
+  }
+
+  addSavedRatingDay(dayKey);
+  setRatingHistoryById(ratingId, history);
+  return true;
+}
+
+function moveRatingTableColumn(dayKey, direction) {
+  if (!dayKey) return;
+
+  const days = getRatingTableDayKeys(getRatingRowsForProgress(), false);
+  const index = days.indexOf(dayKey);
+  const nextIndex = index + direction;
+  if (index < 0 || nextIndex < 0 || nextIndex >= days.length) return;
+
+  [days[index], days[nextIndex]] = [days[nextIndex], days[index]];
+  saveRatingDays(days);
+  showRatingSaveStatus(timestampFromDayKey(dayKey), "Kolom verplaatst.");
+  updateRatingAverage();
+}
+
+function handleRatingProgressTableClick(event) {
+  const button = event.target.closest(".rating-column-move");
+  if (!button) return;
+
+  moveRatingTableColumn(button.dataset.dayKey || "", Number(button.dataset.moveDirection));
+}
+
+function handleRatingProgressTableChange(event) {
+  const input = event.target;
+  if (!(input instanceof HTMLInputElement)) return;
+
+  if (input.classList.contains("rating-table-date-input")) {
+    const timestamp = parseRatingDateValue(input.value);
+    if (!timestamp) {
+      showRatingSaveStatus(null, "Vul de datum in als dd-mm-jjjj.");
+      renderRatingProgressTable();
+      return;
+    }
+
+    const newDayKey = getDayKey(timestamp);
+    moveRatingDay(input.dataset.dayKey || "", newDayKey);
+    showRatingSaveStatus(timestamp, `Datum bijgewerkt: ${formatDayLabel(timestamp)}`);
+    updateRatingAverage();
+    return;
+  }
+
+  if (input.classList.contains("rating-table-score-input")) {
+    if (!input.dataset.dayKey) {
+      showRatingSaveStatus(null, "Vul eerst de datum boven deze kolom in.");
+      return;
+    }
+
+    if (!saveRatingTableScore(input.dataset.ratingId, input.dataset.dayKey, input.value)) {
+      showRatingSaveStatus(null, "Vul een score in van 0 tot 100.");
+      renderRatingProgressTable();
+      return;
+    }
+
+    showRatingSaveStatus(timestampFromDayKey(input.dataset.dayKey), "Score in de tabel opgeslagen.");
+    updateRatingAverage();
+  }
+}
+
+function handleRatingProgressTableInput(event) {
+  const input = event.target;
+  if (!(input instanceof HTMLInputElement)) return;
+  if (input.classList.contains("rating-table-date-input")) {
+    if (!/^(\d{4}-\d{2}-\d{2}|\d{1,2}[/-]\d{1,2}[/-]\d{4})$/.test(input.value.trim())) return;
+
+    handleRatingProgressTableChange(event);
+    return;
+  }
+
+  if (!input.classList.contains("rating-table-score-input")) return;
+
+  window.clearTimeout(Number(input.dataset.saveTimer));
+  input.dataset.saveTimer = String(window.setTimeout(() => {
+    if (!document.contains(input)) return;
+    handleRatingProgressTableChange({ target: input });
+  }, 450));
+}
+
+function handleRatingProgressTableKeydown(event) {
+  if (event.key !== "Enter") return;
+  if (!(event.target instanceof HTMLInputElement)) return;
+  if (!event.target.classList.contains("rating-table-input")) return;
+
+  event.preventDefault();
+  event.target.blur();
+}
+
+function getDayKey(timestamp) {
+  return new Date(timestamp).toISOString().slice(0, 10);
 }
 
 function updateRatingChart() {
   const chart = document.getElementById("ratingChart");
+  if (!chart) return;
+
   chart.innerHTML = "";
 
   document.querySelectorAll(".rating-range").forEach((input) => {
     const baseLabel = input.closest(".rating-row").querySelector(".rating-label").textContent;
     const isBalance = input.dataset.ratingType === "balance";
-    const label = isBalance ? getBalanceChartTitle(input) : baseLabel;
-    const history = getRatingHistory(input);
+    const history = getStoredRatingHistory(input);
+    const label = isBalance ? getBalanceChartTitle(input, history) : baseLabel;
+    const graphHistory = history.length ? history : getRatingHistory(input);
     const item = document.createElement("div");
     item.className = "line-chart-item";
     item.tabIndex = 0;
@@ -592,8 +938,10 @@ function updateRatingChart() {
     item.innerHTML = `
       <div class="line-chart-title">${label}</div>
       <div class="line-chart-frame">
-        ${renderLineGraph(history, 100)}
+        ${renderLineGraph(graphHistory, 100)}
       </div>
+      ${renderRatingTrend(history)}
+      ${renderRatingPointList(history)}
     `;
     item.addEventListener("click", () => openChartZoom(label, item));
     item.addEventListener("keydown", (event) => {
@@ -606,12 +954,46 @@ function updateRatingChart() {
   });
 }
 
-function getBalanceChartTitle(input) {
-  const position = Number(input.value);
-  const score = getRatingScore(input);
+function renderRatingTrend(history) {
+  const realHistory = history.filter((entry) => entry && Number.isFinite(Number(entry.value)));
+  if (realHistory.length < 2) {
+    return `<div class="line-chart-trend muted">Meetpunten: ${realHistory.length}. Sla een tweede datum op voor progressie.</div>`;
+  }
+
+  const previous = realHistory[realHistory.length - 2];
+  const current = realHistory[realHistory.length - 1];
+  const difference = current.value - previous.value;
+  const tone = difference > 0 ? "up" : difference < 0 ? "down" : "same";
+  const sign = difference > 0 ? "+" : "";
+
+  return `
+    <div class="line-chart-trend ${tone}">
+      <span>${formatDayLabel(previous.time)}: ${previous.value}%</span>
+      <strong>${formatDayLabel(current.time)}: ${current.value}%</strong>
+      <em>${sign}${difference}%</em>
+    </div>
+  `;
+}
+
+function renderRatingPointList(history) {
+  const realHistory = history.filter((entry) => entry && Number.isFinite(Number(entry.value)));
+  if (!realHistory.length) return "";
+
+  return `
+    <div class="line-chart-points-list" aria-label="Opgeslagen meetpunten">
+      ${realHistory.map((entry) => `
+        <span>${formatDayLabel(entry.time)} <strong>${entry.value}%</strong></span>
+      `).join("")}
+    </div>
+  `;
+}
+
+function getBalanceChartTitle(input, history = []) {
+  const latestEntry = history[history.length - 1];
+  const score = latestEntry ? Number(latestEntry.value) : getRatingScore(input);
 
   if (score >= 70) return "Zelfverzekerd";
-  return position < 50 ? "Angstvallig" : "Roekeloos";
+  return "Angstvallig tot roekeloos";
 }
 
 function openChartZoom(title, sourceItem) {
@@ -715,12 +1097,9 @@ function closeLineSummary() {
 }
 
 function getRatingHistory(input) {
-  const history = getSavedJson(`${input.dataset.id}-history`, []);
+  const history = getStoredRatingHistory(input);
   if (history.length) {
-    return history.map((entry) => ({
-      ...entry,
-      value: normalizeHistoryScore(input, entry.value),
-    }));
+    return history;
   }
 
   return [
@@ -731,9 +1110,20 @@ function getRatingHistory(input) {
   ];
 }
 
-function normalizeHistoryScore(input, value) {
-  const numericValue = Number(value);
+function getStoredRatingHistory(input) {
+  return getSavedJson(`${input.dataset.id}-history`, []).map((entry) => ({
+    ...entry,
+    value: normalizeHistoryScore(input, entry),
+  }));
+}
+
+function normalizeHistoryScore(input, entry) {
+  const numericValue = Number(typeof entry === "object" ? entry.value : entry);
   if (!Number.isFinite(numericValue)) return 0;
+  if (typeof entry === "object" && entry.scoreVersion === 2) {
+    return Math.max(0, Math.min(100, Math.round(numericValue)));
+  }
+
   if (numericValue > 10) return Math.max(0, Math.min(100, Math.round(numericValue)));
 
   if (input.dataset.ratingType === "balance") {
@@ -744,26 +1134,78 @@ function normalizeHistoryScore(input, value) {
   return Math.round(Math.max(0, Math.min(10, numericValue)) * 10);
 }
 
-function saveRatingHistory(input, force = false) {
-  const history = getRatingHistory(input);
+function saveRatingHistory(input, force = false, timestamp = Date.now()) {
+  const history = getStoredRatingHistory(input);
   const value = getRatingScore(input);
   const last = history[history.length - 1];
 
-  if (!force && last && last.value === value && isSameDay(last.time, Date.now())) return;
+  if (!force && last && last.value === value && isSameDay(last.time, timestamp)) return;
 
-  history.push({
-    time: Date.now(),
+  const withoutSelectedDay = history.filter((entry) => !isSameDay(entry.time, timestamp));
+  withoutSelectedDay.push({
+    time: timestamp,
     value,
+    scoreVersion: 2,
   });
 
-  setSavedJson(`${input.dataset.id}-history`, history.slice(-30));
+  const sortedHistory = withoutSelectedDay
+    .sort((first, second) => first.time - second.time)
+    .slice(-30);
+  setSavedJson(`${input.dataset.id}-history`, sortedHistory);
 }
 
 function saveAllRatingHistories() {
+  const timestamp = getSelectedRatingTimestamp();
+  if (!timestamp) {
+    showRatingSaveStatus(null, "Vul een geldige datum in.");
+    return;
+  }
+
+  addSavedRatingDay(getDayKey(timestamp));
   document.querySelectorAll(".rating-range").forEach((input) => {
-    saveRatingHistory(input, true);
+    saveRatingHistory(input, true, timestamp);
   });
+  showRatingSaveStatus(timestamp, `Rijlesdag opgeslagen: ${formatDayLabel(timestamp)}`);
   updateRatingAverage();
+  renderRatingDayLog();
+  renderRatingProgressTable();
+}
+
+function showRatingSaveStatus(timestamp, text) {
+  const status = document.getElementById("ratingSaveStatus");
+  if (!status) return;
+
+  status.textContent = text || `Opgeslagen: ${formatDayLabel(timestamp)}`;
+  window.setTimeout(() => {
+    if (status.textContent === (text || `Opgeslagen: ${formatDayLabel(timestamp)}`)) {
+      status.textContent = "";
+    }
+  }, 3500);
+}
+
+function getSelectedRatingTimestamp() {
+  const input = document.getElementById("ratingDateInput");
+  return parseRatingDateValue(input?.value);
+}
+
+function setDefaultRatingDate() {
+  const input = document.getElementById("ratingDateInput");
+  if (!input) return;
+
+  input.value = formatDateInputValue(Date.now());
+}
+
+function formatDateInputValue(timestamp) {
+  if (typeof timestamp === "string" && /^\d{4}-\d{2}-\d{2}$/.test(timestamp)) {
+    return timestamp.split("-").reverse().join("-");
+  }
+
+  const date = new Date(timestamp);
+  return [
+    String(date.getDate()).padStart(2, "0"),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    date.getFullYear(),
+  ].join("-");
 }
 
 function isSameDay(firstTimestamp, secondTimestamp) {
@@ -788,10 +1230,22 @@ function renderLineGraph(history, maxValue) {
     const y = height - paddingBottom - (entry.value / maxValue) * (height - paddingTop - paddingBottom);
     return { x, y };
   });
-  const pointString = points.map((point) => `${point.x},${point.y}`).join(" ");
+  const linePath = points.map((point, index) => (
+    `${index === 0 ? "M" : "L"} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`
+  )).join(" ");
+  const lineMarkup = points.length > 1
+    ? `<path class="line-chart-line" d="${linePath}" />`
+    : `<line class="line-chart-single-line" x1="${paddingLeft}" y1="${points[0].y}" x2="${width - paddingRight}" y2="${points[0].y}" />`;
+  const helperText = points.length > 1
+    ? ""
+    : `<text class="line-chart-help" x="${paddingLeft + 6}" y="${paddingTop + 14}">sla nog een meetpunt op</text>`;
   const xLabels = points.map((point, index) => {
     const label = formatDayLabel(history[index].time);
     return `<text class="line-chart-x-label" x="${point.x}" y="${height - 4}">${label}</text>`;
+  }).join("");
+  const valueLabels = points.map((point, index) => {
+    const y = Math.max(paddingTop + 8, point.y - 7);
+    return `<text class="line-chart-value-label" x="${point.x}" y="${y}">${history[index].value}%</text>`;
   }).join("");
   const midValue = Math.ceil(maxValue / 2);
   const midY = height - paddingBottom - (midValue / maxValue) * (height - paddingTop - paddingBottom);
@@ -804,9 +1258,11 @@ function renderLineGraph(history, maxValue) {
       <text class="line-chart-y-label" x="4" y="${paddingTop + 3}">${maxValue}%</text>
       <text class="line-chart-y-label" x="4" y="${midY + 3}">${midValue}%</text>
       <text class="line-chart-y-label" x="4" y="${height - paddingBottom + 3}">0%</text>
-      <polyline class="line-chart-line" points="${pointString}" />
-      ${points.map((point) => `<circle class="line-chart-point" cx="${point.x}" cy="${point.y}" r="3" />`).join("")}
+      ${lineMarkup}
+      ${points.map((point) => `<circle class="line-chart-point" cx="${point.x}" cy="${point.y}" r="4.5" />`).join("")}
+      ${valueLabels}
       ${xLabels}
+      ${helperText}
     </svg>
   `;
 }
@@ -905,6 +1361,210 @@ function setPrintSignature(id, source) {
   }
 }
 
+function buildInfoShareText() {
+  const phoneRows = contacts.map(([role, name, phone, whatsapp]) => {
+    const lines = [
+      role,
+      name ? `Naam: ${name}` : "",
+      phone ? `Telefoon: ${phone} (${makePhoneLink(phone)})` : "",
+      whatsapp ? `WhatsApp: ${whatsapp}\nOpen WhatsApp: ${makeWhatsappLink(whatsapp)}` : "",
+    ].filter(Boolean);
+    return lines.join("\n");
+  });
+
+  const websiteRows = websites.map(([label, text, url]) => {
+    return `${label}\n${text}${url ? `\n${url}` : ""}`;
+  });
+
+  return [
+    "Mentormap Nijmegen - info",
+    "",
+    "BELANGRIJKE TELEFOONNUMMERS",
+    "",
+    phoneRows.join("\n\n"),
+    "",
+    "BELANGRIJKE EN HANDIGE WEBSITES",
+    "",
+    websiteRows.join("\n\n"),
+    "",
+    "Tip: tik op een tel:-link om te bellen, op een wa.me-link om WhatsApp te openen, of op een website-link om de pagina te openen.",
+  ].join("\n");
+}
+
+function buildInfoWhatsappText() {
+  const phoneRows = contacts.map(([role, name, phone, whatsapp]) => {
+    const lines = [
+      role,
+      name ? `Naam: ${name}` : "",
+      phone ? `Telefoon: ${phone} / +${normalizePhoneNumber(phone)}` : "",
+      whatsapp ? `WhatsApp: ${whatsapp} / ${makeWhatsappLink(whatsapp)}` : "",
+    ].filter(Boolean);
+    return lines.join("\n");
+  });
+
+  const websiteRows = websites.map(([label, text, url]) => (
+    `${label}\n${url || text}`
+  ));
+
+  return [
+    "Mentormap Nijmegen - info",
+    "",
+    "TELEFOONNUMMERS",
+    "",
+    phoneRows.join("\n\n"),
+    "",
+    "WEBSITES EN APPS",
+    "",
+    websiteRows.join("\n\n"),
+  ].join("\n");
+}
+
+function buildInfoShareHtml() {
+  const contactRows = contacts.map(([role, name, phone, whatsapp]) => `
+    <tr>
+      <td>${escapeHtml(role)}</td>
+      <td>${escapeHtml(name || "-")}</td>
+      <td>${phone ? `<a href="${makePhoneLink(phone)}">${escapeHtml(phone)}</a>` : "-"}</td>
+      <td>${whatsapp ? `<a href="${makeWhatsappLink(whatsapp)}">${escapeHtml(whatsapp)}</a>` : "-"}</td>
+    </tr>
+  `).join("");
+
+  const websiteRows = websites.map(([label, text, url]) => `
+    <tr>
+      <td>${escapeHtml(label)}</td>
+      <td>${escapeHtml(text)}</td>
+      <td>${url ? `<a href="${url}">${escapeHtml(url)}</a>` : "-"}</td>
+    </tr>
+  `).join("");
+
+  return `<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <title>Mentormap Nijmegen - info</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #18241c; margin: 24px; }
+    h1 { color: #385f15; margin-bottom: 8px; }
+    h2 { margin-top: 28px; color: #385f15; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #dce5dc; padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #54851f; color: #ffffff; }
+    a { color: #0b5ed7; }
+  </style>
+</head>
+<body>
+  <h1>Mentormap Nijmegen - info</h1>
+  <p>Belangrijke telefoonnummers en handige websites.</p>
+
+  <h2>Belangrijke telefoonnummers</h2>
+  <table>
+    <thead>
+      <tr><th>Functie</th><th>Naam</th><th>Telefoon</th><th>WhatsApp</th></tr>
+    </thead>
+    <tbody>${contactRows}</tbody>
+  </table>
+
+  <h2>Belangrijke en handige websites</h2>
+  <table>
+    <thead>
+      <tr><th>Naam</th><th>Omschrijving</th><th>Link</th></tr>
+    </thead>
+    <tbody>${websiteRows}</tbody>
+  </table>
+</body>
+</html>`;
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  }[character]));
+}
+
+function downloadInfoAttachment(file) {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(file);
+  link.download = file.name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+async function shareInfoByEmail() {
+  const file = createInfoAttachment();
+
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({
+        title: "Mentormap Nijmegen - info",
+        text: "Bijgevoegd staat de info uit de mentormap in een tabel.",
+        files: [file],
+      });
+      return;
+    } catch (error) {
+      if (error.name === "AbortError") return;
+    }
+  }
+
+  downloadInfoAttachment(file);
+  const subject = encodeURIComponent("Mentormap Nijmegen - belangrijke info");
+  const body = encodeURIComponent(
+    "Hallo,\n\nIk heb het bestand mentormap-nijmegen-info.html gedownload. Voeg dit bestand toe als bijlage; daarin staan de telefoonnummers en websites netjes in tabellen.\n\nGroet,"
+  );
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+}
+
+function createInfoAttachment() {
+  return new File([buildInfoShareHtml()], "mentormap-nijmegen-info.html", {
+    type: "text/html",
+  });
+}
+
+function normalizePhoneNumber(number) {
+  const digits = number.replace(/\D/g, "");
+  if (digits.startsWith("31")) return digits;
+  if (digits.startsWith("0")) return `31${digits.slice(1)}`;
+  return digits;
+}
+
+function makePhoneLink(number) {
+  return `tel:+${normalizePhoneNumber(number)}`;
+}
+
+function makeWhatsappLink(number) {
+  return `https://wa.me/${normalizePhoneNumber(number)}`;
+}
+
+async function shareInfoByWhatsapp() {
+  const text = buildInfoWhatsappText();
+  openWhatsappText(text);
+}
+
+function openWhatsappText(text) {
+  const appUrl = `whatsapp://send?text=${encodeURIComponent(text)}`;
+  const webUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  let fallbackTimer;
+
+  const cancelFallback = () => window.clearTimeout(fallbackTimer);
+  window.addEventListener("pagehide", cancelFallback, { once: true });
+  window.addEventListener("blur", cancelFallback, { once: true });
+
+  fallbackTimer = window.setTimeout(() => {
+    window.open(webUrl, "_blank", "noopener,noreferrer");
+  }, 1200);
+
+  window.location.href = appUrl;
+}
+
+function isInfoSectionActive() {
+  return document.getElementById("tab-info")?.classList.contains("active");
+}
+
 function bindEvents() {
   document.getElementById("driverProfileSelect").addEventListener("change", (event) => {
     switchDriverProfile(event.target.value);
@@ -966,6 +1626,11 @@ function bindEvents() {
   document.getElementById("lineSummaryModal").addEventListener("click", (event) => {
     if (event.target.id === "lineSummaryModal") closeLineSummary();
   });
+  document.getElementById("ratingProgressTable")?.addEventListener("change", handleRatingProgressTableChange);
+  document.getElementById("ratingProgressTable")?.addEventListener("focusout", handleRatingProgressTableChange);
+  document.getElementById("ratingProgressTable")?.addEventListener("input", handleRatingProgressTableInput);
+  document.getElementById("ratingProgressTable")?.addEventListener("keydown", handleRatingProgressTableKeydown);
+  document.getElementById("ratingProgressTable")?.addEventListener("click", handleRatingProgressTableClick);
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeChartZoom();
@@ -996,21 +1661,15 @@ function bindEvents() {
   });
 
   document.getElementById("whatsappBtn").addEventListener("click", () => {
-    const text = `Mentormap nieuwe chauffeurs Nijmegen:\n${window.location.href}\n\nA4-overzicht delen? Open de mentormap en kies Print / Bewaar als PDF.`;
-    const appUrl = `whatsapp://send?text=${encodeURIComponent(text)}`;
-    const webUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    let fallbackTimer;
-
-    const cancelFallback = () => window.clearTimeout(fallbackTimer);
-    window.addEventListener("pagehide", cancelFallback, { once: true });
-    window.addEventListener("blur", cancelFallback, { once: true });
-
-    fallbackTimer = window.setTimeout(() => {
-      window.open(webUrl, "_blank", "noopener,noreferrer");
-    }, 1200);
-
-    window.location.href = appUrl;
+    const text = isInfoSectionActive()
+      ? buildInfoWhatsappText()
+      : `Mentormap nieuwe chauffeurs Nijmegen:\n${window.location.href}\n\nA4-overzicht delen? Open de mentormap en kies Print / Bewaar als PDF.`;
+    openWhatsappText(text);
   });
+
+  document.getElementById("infoEmailShareBtn").addEventListener("click", shareInfoByEmail);
+
+  document.getElementById("infoWhatsappBtn").addEventListener("click", shareInfoByWhatsapp);
 
   document.getElementById("resetBtn").addEventListener("click", () => {
     if (!window.confirm("Alle afgevinkte onderdelen en notities wissen?")) return;
@@ -1035,6 +1694,7 @@ renderRatings();
 renderWebsites();
 renderDriverProfiles();
 restoreState();
+setDefaultRatingDate();
 bindEvents();
 updateProgress();
 updateRatingAverage();

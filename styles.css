@@ -257,6 +257,14 @@ body.auth-locked .auth-screen {
   gap: 0.75rem;
 }
 
+.dashboard-rating-card {
+  width: 100%;
+}
+
+.dashboard-rating-card .rating-chart {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .line-chart-item {
   display: grid;
   gap: 0.45rem;
@@ -298,16 +306,84 @@ body.auth-locked .auth-screen {
 
 .line-chart-line {
   fill: none;
-  stroke: var(--brand);
+  stroke: #0b7a3b;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 3;
+  stroke-width: 5;
+  vector-effect: non-scaling-stroke;
+}
+
+.line-chart-single-line {
+  stroke: var(--brand);
+  stroke-dasharray: 5 4;
+  stroke-linecap: round;
+  stroke-width: 2.5;
+  opacity: 0.75;
 }
 
 .line-chart-point {
   fill: #ffffff;
-  stroke: var(--brand);
-  stroke-width: 2;
+  stroke: #0b7a3b;
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.line-chart-trend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem 0.45rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.line-chart-trend strong {
+  color: var(--ink);
+}
+
+.line-chart-trend em {
+  font-style: normal;
+  font-weight: 900;
+}
+
+.line-chart-trend.up em {
+  color: #0b7a3b;
+}
+
+.line-chart-trend.down em {
+  color: var(--accent);
+}
+
+.line-chart-trend.same em,
+.line-chart-trend.muted {
+  color: var(--muted);
+}
+
+.line-chart-points-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.line-chart-points-list span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.14rem 0.38rem;
+  border: 1px solid #cfe2c1;
+  border-radius: 999px;
+  color: var(--brand-dark);
+  background: #eef6e8;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.line-chart-points-list strong {
+  color: var(--ink);
 }
 
 .line-chart-y-label {
@@ -322,6 +398,19 @@ body.auth-locked .auth-screen {
   font-weight: 700;
   text-align: center;
   text-anchor: middle;
+}
+
+.line-chart-value-label {
+  fill: var(--brand-dark);
+  font-size: 0.58rem;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+.line-chart-help {
+  fill: var(--muted);
+  font-size: 0.58rem;
+  font-weight: 700;
 }
 
 .chart-zoom {
@@ -595,6 +684,182 @@ body.auth-locked .auth-screen {
   font-weight: 800;
 }
 
+.rating-date-input {
+  width: 9.25rem;
+}
+
+.rating-save-status {
+  color: var(--brand-dark);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.rating-day-log {
+  border-top: 1px solid var(--line);
+  padding-top: 0.85rem;
+}
+
+.rating-day-card {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: #fbfcfa;
+}
+
+.rating-day-date {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: #ffffff;
+  background: var(--brand);
+  font-weight: 900;
+}
+
+.rating-day-scores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.35rem;
+}
+
+.rating-day-score {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 0.78rem;
+}
+
+.rating-day-score strong {
+  color: var(--brand-dark);
+}
+
+.rating-progress-table-wrap {
+  border-top: 1px solid var(--line);
+  padding-top: 0.85rem;
+}
+
+.rating-progress-table {
+  min-width: 66rem;
+  table-layout: fixed;
+}
+
+.rating-progress-table th,
+.rating-progress-table td {
+  width: 4.7rem;
+  min-width: 4.7rem;
+  border-color: var(--line);
+  text-align: center;
+  vertical-align: middle;
+  font-size: 0.74rem;
+}
+
+.rating-progress-table th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 13rem;
+  min-width: 13rem;
+  color: var(--ink);
+  background: #eef6e8;
+  text-align: left;
+}
+
+.rating-progress-table td {
+  background: #ffffff;
+  font-weight: 800;
+}
+
+.rating-table-date-cell {
+  padding: 0.25rem 0.2rem !important;
+}
+
+.rating-table-date-tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.15rem;
+  margin-bottom: 0.15rem;
+}
+
+.rating-column-move {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  height: 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 5px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.85rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.rating-column-move:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+.rating-column-move:not(:disabled):hover,
+.rating-column-move:not(:disabled):focus {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.rating-table-input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  text-align: center;
+  outline: none;
+}
+
+.rating-table-input:focus {
+  border-color: var(--brand);
+  background: #ffffff;
+  box-shadow: 0 0 0 0.12rem rgba(99, 142, 50, 0.18);
+}
+
+.rating-table-date-input {
+  color: #ffffff;
+}
+
+.rating-table-date-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.rating-table-date-input:focus {
+  color: var(--ink);
+}
+
+.rating-table-score-input:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.rating-table-score-input::-webkit-outer-spin-button,
+.rating-table-score-input::-webkit-inner-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.rating-progress-table tr:first-child th,
+.rating-progress-table tr:first-child td {
+  color: #ffffff;
+  background: var(--brand);
+}
+
 .table-check thead th,
 .table-sm thead th {
   color: #ffffff;
@@ -773,6 +1038,10 @@ body.auth-locked .auth-screen {
     gap: 0.55rem;
   }
 
+  .dashboard-rating-card .rating-chart {
+    grid-template-columns: 1fr;
+  }
+
   #tab-rating .section-panel {
     padding: 0.5rem !important;
   }
@@ -879,6 +1148,56 @@ body.auth-locked .auth-screen {
     width: 3.35rem;
     min-height: 1.55rem;
     font-size: 0.82rem;
+  }
+
+  .rating-date-input {
+    width: 8.5rem;
+    flex: 1 1 8.5rem;
+  }
+
+  .rating-save-status {
+    flex-basis: 100%;
+    font-size: 0.72rem;
+  }
+
+  .rating-day-log {
+    margin-top: 0.65rem !important;
+    padding-top: 0.6rem;
+  }
+
+  .rating-day-card {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+    padding: 0.5rem;
+  }
+
+  .rating-day-date {
+    min-height: 2rem;
+  }
+
+  .rating-day-scores {
+    grid-template-columns: 1fr;
+  }
+
+  .rating-progress-table-wrap {
+    margin-top: 0.65rem !important;
+    padding-top: 0.6rem;
+  }
+
+  .rating-progress-table {
+    min-width: 58rem;
+  }
+
+  .rating-progress-table th {
+    width: 10rem;
+    min-width: 10rem;
+  }
+
+  .rating-progress-table th,
+  .rating-progress-table td {
+    width: 4rem;
+    min-width: 4rem;
+    font-size: 0.66rem;
   }
 
   .balance-curve {
