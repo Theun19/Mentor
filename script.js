@@ -5,6 +5,8 @@ const authSessionKey = `${storagePrefix}:unlocked`;
 const driverProfilesKey = `${storagePrefix}:driver-profiles`;
 const activeDriverKey = `${storagePrefix}:active-driver-id`;
 const driverDataPrefix = `${storagePrefix}:driver:`;
+const defaultUsername = "admin";
+const defaultPassword = "Mentor2026!";
 
 const ratingItems = [
   { label: "Rijstijl", id: "rating-rijstijl" },
@@ -306,6 +308,53 @@ async function hashPassword(password) {
   const bytes = new TextEncoder().encode(password);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function ensureDefaultLogin() {
+  if (localStorage.getItem(passwordKey)) return;
+
+  localStorage.setItem(usernameKey, defaultUsername);
+  localStorage.setItem(passwordKey, await hashPassword(defaultPassword));
+}
+
+function openMainSite() {
+  document.body.classList.remove("auth-locked");
+}
+
+function setMainLoginError(text) {
+  const error = document.getElementById("mainLoginError");
+  if (error) error.textContent = text;
+}
+
+async function initMainLogin() {
+  await ensureDefaultLogin();
+
+  if (sessionStorage.getItem(authSessionKey) === "true") {
+    openMainSite();
+    return;
+  }
+
+  const usernameInput = document.getElementById("mainLoginUsername");
+  if (usernameInput) usernameInput.value = localStorage.getItem(usernameKey) || defaultUsername;
+  document.body.classList.add("auth-locked");
+}
+
+async function unlockMainSite(event) {
+  event.preventDefault();
+  const savedUsername = localStorage.getItem(usernameKey) || defaultUsername;
+  const savedHash = localStorage.getItem(passwordKey);
+  const username = document.getElementById("mainLoginUsername").value.trim().toLowerCase();
+  const password = document.getElementById("mainLoginPassword").value;
+  setMainLoginError("");
+
+  if (username !== savedUsername || await hashPassword(password) !== savedHash) {
+    setMainLoginError("Gebruikersnaam of wachtwoord is onjuist.");
+    return;
+  }
+
+  sessionStorage.setItem(authSessionKey, "true");
+  document.getElementById("mainLoginForm").reset();
+  openMainSite();
 }
 
 function renderChecklists() {
@@ -1666,6 +1715,8 @@ function isInfoSectionActive() {
 }
 
 function bindEvents() {
+  document.getElementById("mainLoginForm")?.addEventListener("submit", unlockMainSite);
+
   document.getElementById("driverProfileSelect").addEventListener("change", (event) => {
     switchDriverProfile(event.target.value);
   });
@@ -1799,6 +1850,7 @@ setDefaultRatingDate();
 bindEvents();
 updateProgress();
 updateRatingAverage();
+initMainLogin();
 
 window.MentorCloud?.init({
   onRemoteChange: () => {

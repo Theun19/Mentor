@@ -2,6 +2,8 @@ const storagePrefix = "mentor-checklist-nijmegen";
 const passwordKey = `${storagePrefix}:local-password-hash`;
 const usernameKey = `${storagePrefix}:local-username`;
 const authSessionKey = `${storagePrefix}:unlocked`;
+const defaultUsername = "admin";
+const defaultPassword = "Mentor2026!";
 
 function setMessage(text, type) {
   const message = document.getElementById("securityMessage");
@@ -19,28 +21,36 @@ async function hashPassword(password) {
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+async function ensureDefaultLogin() {
+  if (localStorage.getItem(passwordKey)) return;
+
+  localStorage.setItem(usernameKey, defaultUsername);
+  localStorage.setItem(passwordKey, await hashPassword(defaultPassword));
+}
+
 function openSecurityPage() {
   document.body.classList.remove("auth-locked");
   updateHint();
 }
 
-function initSecurityLogin() {
-  const savedHash = localStorage.getItem(passwordKey);
+async function initSecurityLogin() {
+  await ensureDefaultLogin();
+
   const isUnlocked = sessionStorage.getItem(authSessionKey) === "true";
 
-  if (!savedHash || isUnlocked) {
+  if (isUnlocked) {
     openSecurityPage();
     return;
   }
 
   document.body.classList.add("auth-locked");
-  document.getElementById("loginUsername").value = localStorage.getItem(usernameKey) || "admin";
+  document.getElementById("loginUsername").value = localStorage.getItem(usernameKey) || defaultUsername;
 }
 
 async function unlockSecurity(event) {
   event.preventDefault();
   const savedHash = localStorage.getItem(passwordKey);
-  const savedUsername = localStorage.getItem(usernameKey) || "admin";
+  const savedUsername = localStorage.getItem(usernameKey) || defaultUsername;
   const username = document.getElementById("loginUsername").value.trim().toLowerCase();
   const password = document.getElementById("loginPassword").value;
   setLoginError("");
@@ -104,7 +114,7 @@ function removePassword() {
 
 function updateHint() {
   const savedHash = localStorage.getItem(passwordKey);
-  document.getElementById("securityUsername").value = localStorage.getItem(usernameKey) || "admin";
+  document.getElementById("securityUsername").value = localStorage.getItem(usernameKey) || defaultUsername;
   document.getElementById("newPasswordHint").textContent = savedHash
     ? "Laat leeg als je alleen de gebruikersnaam wilt wijzigen."
     : "Er is nog geen wachtwoord ingesteld. Kies minimaal 8 tekens.";

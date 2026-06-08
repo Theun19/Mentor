@@ -16,7 +16,26 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="auth-locked">
+    <section class="auth-screen" id="driverAuthScreen" aria-labelledby="driverAuthTitle">
+      <div class="auth-card">
+        <p class="text-uppercase small fw-semibold text-success mb-1">Beveiligde toegang</p>
+        <h1 class="h4 fw-bold mb-3" id="driverAuthTitle">Gegevens chauffeur openen</h1>
+        <form class="vstack gap-3" id="driverLoginForm">
+          <div>
+            <label class="form-label" for="driverLoginUsername">Gebruikersnaam</label>
+            <input class="form-control" id="driverLoginUsername" type="text" autocomplete="username" />
+          </div>
+          <div>
+            <label class="form-label" for="driverLoginPassword">Wachtwoord</label>
+            <input class="form-control" id="driverLoginPassword" type="password" autocomplete="current-password" />
+          </div>
+          <button class="btn btn-success" type="submit">Inloggen</button>
+          <p class="text-danger small mb-0" id="driverLoginError" role="alert"></p>
+        </form>
+      </div>
+    </section>
+
     <header class="app-header border-bottom">
       <div class="container-xl py-3">
         <div class="app-topbar">

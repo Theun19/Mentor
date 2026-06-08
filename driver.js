@@ -5,6 +5,61 @@ const authSessionKey = `${storagePrefix}:unlocked`;
 const driverProfilesKey = `${storagePrefix}:driver-profiles`;
 const activeDriverKey = `${storagePrefix}:active-driver-id`;
 const driverDataPrefix = `${storagePrefix}:driver:`;
+const defaultUsername = "admin";
+const defaultPassword = "Mentor2026!";
+
+async function hashPassword(password) {
+  const bytes = new TextEncoder().encode(password);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function ensureDefaultLogin() {
+  if (localStorage.getItem(passwordKey)) return;
+
+  localStorage.setItem(usernameKey, defaultUsername);
+  localStorage.setItem(passwordKey, await hashPassword(defaultPassword));
+}
+
+function openDriverPage() {
+  document.body.classList.remove("auth-locked");
+}
+
+function setDriverLoginError(text) {
+  const error = document.getElementById("driverLoginError");
+  if (error) error.textContent = text;
+}
+
+async function initDriverLogin() {
+  await ensureDefaultLogin();
+
+  if (sessionStorage.getItem(authSessionKey) === "true") {
+    openDriverPage();
+    return;
+  }
+
+  const usernameInput = document.getElementById("driverLoginUsername");
+  if (usernameInput) usernameInput.value = localStorage.getItem(usernameKey) || defaultUsername;
+  document.body.classList.add("auth-locked");
+}
+
+async function unlockDriverPage(event) {
+  event.preventDefault();
+  const savedUsername = localStorage.getItem(usernameKey) || defaultUsername;
+  const savedHash = localStorage.getItem(passwordKey);
+  const username = document.getElementById("driverLoginUsername").value.trim().toLowerCase();
+  const password = document.getElementById("driverLoginPassword").value;
+  setDriverLoginError("");
+
+  if (username !== savedUsername || await hashPassword(password) !== savedHash) {
+    setDriverLoginError("Gebruikersnaam of wachtwoord is onjuist.");
+    return;
+  }
+
+  sessionStorage.setItem(authSessionKey, "true");
+  document.getElementById("driverLoginForm").reset();
+  openDriverPage();
+}
 
 function baseKey(name) {
   return `${storagePrefix}:${name}`;
@@ -264,6 +319,8 @@ function drawSignatureImage(canvas, source) {
 }
 
 function bindProfileEvents() {
+  document.getElementById("driverLoginForm")?.addEventListener("submit", unlockDriverPage);
+
   document.getElementById("driverProfileSelect").addEventListener("change", (event) => {
     switchDriverProfile(event.target.value);
   });
@@ -286,6 +343,7 @@ bindProfileEvents();
 restoreFields();
 setupSignaturePads();
 restoreSignatures();
+initDriverLogin();
 
 window.MentorCloud?.init({
   onRemoteChange: () => {
