@@ -180,13 +180,6 @@
               </div>
             </div>
             <div class="vstack gap-3" id="ratingContainer"></div>
-            <div class="rating-day-log mt-3">
-              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                <h3 class="h6 fw-bold mb-0">Rijlesdagen-logboek</h3>
-                <span class="text-secondary small">Dagen worden automatisch op datum gesorteerd</span>
-              </div>
-              <div class="vstack gap-2" id="ratingDayLog"></div>
-            </div>
             <div class="rating-progress-table-wrap mt-3">
               <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
                 <h3 class="h6 fw-bold mb-0">Progressietabel laatste 30 dagen</h3>
@@ -195,6 +188,18 @@
               <div class="table-responsive">
                 <table class="table table-sm rating-progress-table mb-0" id="ratingProgressTable"></table>
               </div>
+            </div>
+            <div class="mentor-ai-text mt-3">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <h3 class="h6 fw-bold mb-0">AI tekst over chauffeur</h3>
+                <button class="btn btn-outline-success btn-sm" id="generateMentorTextBtn" type="button">Genereer AI tekst</button>
+              </div>
+              <textarea
+                class="form-control save-field"
+                id="mentorGeneratedText"
+                data-save-id="mentorGeneratedText"
+                rows="7"
+                placeholder="Klik op Genereer AI tekst om automatisch een samenvatting over deze chauffeur te maken."></textarea>
             </div>
           </div>
         </section>

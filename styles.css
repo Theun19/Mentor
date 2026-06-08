@@ -860,6 +860,17 @@ body.auth-locked .auth-screen {
   background: var(--brand);
 }
 
+.mentor-ai-text {
+  border-top: 1px solid var(--line);
+  padding-top: 0.85rem;
+}
+
+.mentor-ai-text textarea {
+  min-height: 9rem;
+  resize: vertical;
+  line-height: 1.45;
+}
+
 .table-check thead th,
 .table-sm thead th {
   color: #ffffff;

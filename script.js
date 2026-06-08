@@ -940,8 +940,6 @@ function updateRatingChart() {
       <div class="line-chart-frame">
         ${renderLineGraph(graphHistory, 100)}
       </div>
-      ${renderRatingTrend(history)}
-      ${renderRatingPointList(history)}
     `;
     item.addEventListener("click", () => openChartZoom(label, item));
     item.addEventListener("keydown", (event) => {
@@ -980,9 +978,9 @@ function renderRatingPointList(history) {
   if (!realHistory.length) return "";
 
   return `
-    <div class="line-chart-points-list" aria-label="Opgeslagen meetpunten">
+    <div class="line-chart-points-list" aria-label="Datums instructie">
       ${realHistory.map((entry) => `
-        <span>${formatDayLabel(entry.time)} <strong>${entry.value}%</strong></span>
+        <span>${formatDayLabel(entry.time)}</span>
       `).join("")}
     </div>
   `;
@@ -1014,6 +1012,113 @@ function closeChartZoom() {
   zoom.classList.remove("show");
   zoom.setAttribute("aria-hidden", "true");
   document.body.classList.remove("zoom-open");
+}
+
+function generateMentorText() {
+  const target = document.getElementById("mentorGeneratedText");
+  if (!target) return;
+
+  const text = buildMentorGeneratedText();
+  target.value = text;
+  setSaved("mentorGeneratedText", text);
+  showRatingSaveStatus(Date.now(), "AI tekst gegenereerd.");
+}
+
+function buildMentorGeneratedText() {
+  const driverName = getSaved("driverName") || getActiveDriverProfile()?.name || "de chauffeur";
+  const mentorName = getSaved("mentorName");
+  const personnelNumber = getSaved("personnelNumber");
+  const startDate = getSaved("startDate");
+  const endDate = getSaved("endDate");
+  const checklistSummary = getChecklistMentorSummary();
+  const lineSummary = getLineMentorSummary();
+  const ratingSummary = getRatingMentorSummary();
+  const openNotes = getOpenChecklistNotes();
+
+  return [
+    `Mentorverslag chauffeur: ${driverName}`,
+    mentorName ? `Mentor: ${mentorName}` : "",
+    personnelNumber ? `Personeelsnummer: ${personnelNumber}` : "",
+    startDate || endDate ? `Periode: ${startDate || "onbekend"} t/m ${endDate || "onbekend"}` : "",
+    "",
+    `Algemene voortgang: ${checklistSummary.done}/${checklistSummary.total} onderdelen zijn afgerond (${checklistSummary.percentage}%). ${checklistSummary.open} onderdelen staan nog open.`,
+    `Lijnverkenning: ${lineSummary.done}/${lineSummary.total} lijnen zijn afgerond. Nog open: ${lineSummary.openLinesText}.`,
+    "",
+    "Beoordeling rijgedrag:",
+    ratingSummary.length
+      ? ratingSummary.map((item) => `- ${item.label}: ${item.value}%${item.date ? ` op ${item.date}` : ""}`).join("\n")
+      : "- Nog geen beoordelingsmeetpunten opgeslagen.",
+    "",
+    openNotes.length
+      ? `Aandachtspunten uit notities:\n${openNotes.map((note) => `- ${note}`).join("\n")}`
+      : "Aandachtspunten uit notities: er zijn geen open notities ingevuld.",
+    "",
+    buildMentorAdvice(checklistSummary, lineSummary, ratingSummary),
+  ].filter((line) => line !== "").join("\n");
+}
+
+function getChecklistMentorSummary() {
+  const checks = [...document.querySelectorAll(".task-check")];
+  const done = checks.filter((input) => input.checked).length;
+  const total = checks.length;
+  const open = total - done;
+  const percentage = total ? Math.round((done / total) * 100) : 0;
+
+  return { done, total, open, percentage };
+}
+
+function getLineMentorSummary() {
+  const summary = getLineSummary();
+  const doneLines = summary.filter((item) => item.done);
+  const openLines = summary.filter((item) => !item.done).map((item) => item.line);
+
+  return {
+    done: doneLines.length,
+    total: summary.length,
+    openLines,
+    openLinesText: openLines.length ? openLines.slice(0, 8).join(", ") + (openLines.length > 8 ? "..." : "") : "geen",
+  };
+}
+
+function getRatingMentorSummary() {
+  return getRatingRowsForProgress().map((rating) => {
+    const latest = rating.history[rating.history.length - 1];
+    if (!latest) return null;
+
+    return {
+      label: rating.id === "rating-angstvallig-tot-roekeloos"
+        ? getBalanceChartTitle(rating.input, rating.history)
+        : rating.label,
+      value: latest.value,
+      date: formatDayLabel(latest.time),
+    };
+  }).filter(Boolean);
+}
+
+function getOpenChecklistNotes() {
+  return checklists.flatMap((list, listIndex) => (
+    list.items.map((item, itemIndex) => {
+      const id = `list-${listIndex}-item-${itemIndex}`;
+      const note = getSaved(`${id}-note`).trim();
+      const done = getSaved(id) === "true";
+      return note && !done ? `${item}: ${note}` : "";
+    })
+  )).filter(Boolean).slice(0, 10);
+}
+
+function buildMentorAdvice(checklistSummary, lineSummary, ratingSummary) {
+  const lowRatings = ratingSummary.filter((item) => item.value < 70);
+  const linesText = lineSummary.openLines.length
+    ? "Richt de volgende rijlessen op de nog openstaande lijnen en controleer per lijn of heen, terug, MAT en klaar volledig zijn afgevinkt."
+    : "Alle lijnen zijn afgerond; blijf de zelfstandigheid en vaste rijroutine borgen.";
+  const ratingText = lowRatings.length
+    ? `Extra aandacht is gewenst voor: ${lowRatings.map((item) => item.label).join(", ")}.`
+    : "De laatste beoordelingen laten een stabiel beeld boven de 70% zien.";
+  const checklistText = checklistSummary.open
+    ? "Werk de openstaande checklistonderdelen gericht af en voeg waar nodig korte notities toe."
+    : "De checklists zijn volledig afgerond.";
+
+  return `Advies vervolgstap: ${checklistText} ${linesText} ${ratingText}`;
 }
 
 function lineTaskId(line, type) {
@@ -1243,10 +1348,6 @@ function renderLineGraph(history, maxValue) {
     const label = formatDayLabel(history[index].time);
     return `<text class="line-chart-x-label" x="${point.x}" y="${height - 4}">${label}</text>`;
   }).join("");
-  const valueLabels = points.map((point, index) => {
-    const y = Math.max(paddingTop + 8, point.y - 7);
-    return `<text class="line-chart-value-label" x="${point.x}" y="${y}">${history[index].value}%</text>`;
-  }).join("");
   const midValue = Math.ceil(maxValue / 2);
   const midY = height - paddingBottom - (midValue / maxValue) * (height - paddingTop - paddingBottom);
 
@@ -1260,7 +1361,6 @@ function renderLineGraph(history, maxValue) {
       <text class="line-chart-y-label" x="4" y="${height - paddingBottom + 3}">0%</text>
       ${lineMarkup}
       ${points.map((point) => `<circle class="line-chart-point" cx="${point.x}" cy="${point.y}" r="4.5" />`).join("")}
-      ${valueLabels}
       ${xLabels}
       ${helperText}
     </svg>
@@ -1631,6 +1731,7 @@ function bindEvents() {
   document.getElementById("ratingProgressTable")?.addEventListener("input", handleRatingProgressTableInput);
   document.getElementById("ratingProgressTable")?.addEventListener("keydown", handleRatingProgressTableKeydown);
   document.getElementById("ratingProgressTable")?.addEventListener("click", handleRatingProgressTableClick);
+  document.getElementById("generateMentorTextBtn")?.addEventListener("click", generateMentorText);
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeChartZoom();
