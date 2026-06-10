@@ -135,8 +135,7 @@ function updateHint() {
     : "Er is nog geen wachtwoord ingesteld. Kies minimaal 8 tekens.";
 }
 
-document.getElementById("securityLoginForm").addEventListener("submit", unlockSecurity);
 document.getElementById("securityForm").addEventListener("submit", savePassword);
 document.getElementById("removePasswordBtn").addEventListener("click", removePassword);
 bindPasswordToggles();
-initSecurityLogin();
+openSecurityPage();

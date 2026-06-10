@@ -2272,7 +2272,6 @@ bindEvents();
 updateProgress();
 updateRatingAverage();
 buildPrintSummary("dashboard");
-initMainLogin();
 
 window.MentorCloud?.init({
   onRemoteChange: () => {

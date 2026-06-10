@@ -359,7 +359,6 @@ bindProfileEvents();
 restoreFields();
 setupSignaturePads();
 restoreSignatures();
-initDriverLogin();
 
 window.MentorCloud?.init({
   onRemoteChange: () => {
