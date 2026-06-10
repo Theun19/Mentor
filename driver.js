@@ -38,7 +38,7 @@ function bindPasswordToggles() {
 
       const isHidden = input.type === "password";
       input.type = isHidden ? "text" : "password";
-      button.textContent = isHidden ? "🙈" : "👁";
+      button.textContent = isHidden ? "Verberg" : "Toon";
       button.setAttribute("aria-label", isHidden ? "Wachtwoord verbergen" : "Wachtwoord tonen");
       input.focus();
     });
@@ -94,11 +94,6 @@ function getSaved(name) {
 
 function setSaved(name, value) {
   localStorage.setItem(key(name), value);
-  queueCloudSave();
-}
-
-function queueCloudSave() {
-  window.MentorCloud?.queueSave();
 }
 
 function getDriverProfiles() {
@@ -112,7 +107,6 @@ function getDriverProfiles() {
 
 function setDriverProfiles(profiles) {
   localStorage.setItem(driverProfilesKey, JSON.stringify(profiles));
-  queueCloudSave();
 }
 
 function cleanDriverName(name) {
@@ -307,7 +301,6 @@ function clearSignature(canvas, save = true) {
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, rect.width, rect.height);
   localStorage.removeItem(key(canvas.id));
-  if (save) queueCloudSave();
 }
 
 function restoreSignatures() {
@@ -356,14 +349,7 @@ function bindProfileEvents() {
 ensureDriverProfiles();
 renderDriverProfiles();
 bindProfileEvents();
+initDriverLogin();
 restoreFields();
 setupSignaturePads();
 restoreSignatures();
-
-window.MentorCloud?.init({
-  onRemoteChange: () => {
-    renderDriverProfiles();
-    restoreFields();
-    restoreSignatures();
-  },
-});

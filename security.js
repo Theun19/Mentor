@@ -5,31 +5,6 @@ const authSessionKey = `${storagePrefix}:unlocked`;
 const defaultUsername = "admin";
 const defaultPassword = "Mentor2026!";
 
-function setMessage(text, type) {
-  const message = document.getElementById("securityMessage");
-  message.textContent = text;
-  message.className = `small mb-0 text-${type}`;
-}
-
-function setLoginError(text) {
-  document.getElementById("securityLoginError").textContent = text;
-}
-
-function bindPasswordToggles() {
-  document.querySelectorAll("[data-password-toggle]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const input = document.getElementById(button.dataset.passwordToggle);
-      if (!input) return;
-
-      const isHidden = input.type === "password";
-      input.type = isHidden ? "text" : "password";
-      button.textContent = isHidden ? "🙈" : "👁";
-      button.setAttribute("aria-label", isHidden ? "Wachtwoord verbergen" : "Wachtwoord tonen");
-      input.focus();
-    });
-  });
-}
-
 async function hashPassword(password) {
   const bytes = new TextEncoder().encode(password);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
@@ -43,99 +18,75 @@ async function ensureDefaultLogin() {
   localStorage.setItem(passwordKey, await hashPassword(defaultPassword));
 }
 
-function openSecurityPage() {
-  document.body.classList.remove("auth-locked");
-  updateHint();
+function bindPasswordToggles() {
+  document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const input = document.getElementById(button.dataset.passwordToggle);
+      if (!input) return;
+
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      button.textContent = isHidden ? "Verberg" : "Toon";
+      button.setAttribute("aria-label", isHidden ? "Wachtwoord verbergen" : "Wachtwoord tonen");
+      input.focus();
+    });
+  });
 }
 
-async function initSecurityLogin() {
-  await ensureDefaultLogin();
-
-  const isUnlocked = sessionStorage.getItem(authSessionKey) === "true";
-
-  if (isUnlocked) {
-    openSecurityPage();
-    return;
-  }
-
-  document.body.classList.add("auth-locked");
-  document.getElementById("loginUsername").value = localStorage.getItem(usernameKey) || defaultUsername;
+function setMessage(text, type = "danger") {
+  const message = document.getElementById("securityMessage");
+  message.textContent = text;
+  message.className = `small mt-3 mb-0 text-${type}`;
 }
 
-async function unlockSecurity(event) {
+async function handleSecuritySubmit(event) {
   event.preventDefault();
-  const savedHash = localStorage.getItem(passwordKey);
   const savedUsername = localStorage.getItem(usernameKey) || defaultUsername;
-  const username = document.getElementById("loginUsername").value.trim().toLowerCase();
-  const password = document.getElementById("loginPassword").value;
-  setLoginError("");
-
-  if (!savedHash || username !== savedUsername || await hashPassword(password) !== savedHash) {
-    setLoginError("Gebruikersnaam of wachtwoord is onjuist.");
-    return;
-  }
-
-  sessionStorage.setItem(authSessionKey, "true");
-  document.getElementById("securityLoginForm").reset();
-  openSecurityPage();
-}
-
-async function savePassword(event) {
-  event.preventDefault();
   const savedHash = localStorage.getItem(passwordKey);
-  const username = document.getElementById("securityUsername").value.trim().toLowerCase();
+  const currentUsername = document.getElementById("currentUsername").value.trim().toLowerCase();
+  const currentPassword = document.getElementById("currentPassword").value;
+  const newUsername = document.getElementById("newUsername").value.trim().toLowerCase();
   const newPassword = document.getElementById("newPassword").value;
-  const repeatPassword = document.getElementById("repeatPassword").value;
-  const wantsPasswordChange = newPassword || repeatPassword;
+  const confirmPassword = document.getElementById("confirmPassword").value;
 
-  if (!username) {
-    setMessage("Vul een gebruikersnaam in.", "danger");
+  setMessage("");
+
+  if (currentUsername !== savedUsername || await hashPassword(currentPassword) !== savedHash) {
+    setMessage("De huidige gebruikersnaam of het huidige wachtwoord is onjuist.");
     return;
   }
 
-  if (!savedHash && !wantsPasswordChange) {
-    setMessage("Stel eerst een wachtwoord in.", "danger");
+  if (!newUsername) {
+    setMessage("Vul een nieuwe gebruikersnaam in.");
     return;
   }
 
-  if (wantsPasswordChange && newPassword.length < 8) {
-    setMessage("Gebruik minimaal 8 tekens voor het nieuwe wachtwoord.", "danger");
+  if (newPassword.length < 4) {
+    setMessage("Kies een wachtwoord van minimaal 4 tekens.");
     return;
   }
 
-  if (wantsPasswordChange && newPassword !== repeatPassword) {
-    setMessage("De nieuwe wachtwoorden zijn niet gelijk.", "danger");
+  if (newPassword !== confirmPassword) {
+    setMessage("De nieuwe wachtwoorden zijn niet gelijk.");
     return;
   }
 
-  localStorage.setItem(usernameKey, username);
-  if (wantsPasswordChange) {
-    localStorage.setItem(passwordKey, await hashPassword(newPassword));
-  }
+  localStorage.setItem(usernameKey, newUsername);
+  localStorage.setItem(passwordKey, await hashPassword(newPassword));
   sessionStorage.setItem(authSessionKey, "true");
   document.getElementById("securityForm").reset();
-  updateHint();
-  setMessage(wantsPasswordChange ? "Gebruikersnaam en wachtwoord opgeslagen." : "Gebruikersnaam opgeslagen.", "success");
+  document.getElementById("currentUsername").value = newUsername;
+  document.getElementById("newUsername").value = newUsername;
+  setMessage("Gebruikersnaam en wachtwoord zijn opgeslagen.", "success");
 }
 
-function removePassword() {
-  localStorage.removeItem(passwordKey);
-  localStorage.removeItem(usernameKey);
-  sessionStorage.removeItem(authSessionKey);
-  document.getElementById("securityForm").reset();
-  updateHint();
-  setMessage("Wachtwoord verwijderd.", "success");
+async function initSecurityPage() {
+  await ensureDefaultLogin();
+  const savedUsername = localStorage.getItem(usernameKey) || defaultUsername;
+  document.getElementById("currentUsername").value = savedUsername;
+  document.getElementById("newUsername").value = savedUsername;
+  bindPasswordToggles();
+  document.getElementById("securityForm").addEventListener("submit", handleSecuritySubmit);
 }
 
-function updateHint() {
-  const savedHash = localStorage.getItem(passwordKey);
-  document.getElementById("securityUsername").value = localStorage.getItem(usernameKey) || defaultUsername;
-  document.getElementById("newPasswordHint").textContent = savedHash
-    ? "Laat leeg als je alleen de gebruikersnaam wilt wijzigen."
-    : "Er is nog geen wachtwoord ingesteld. Kies minimaal 8 tekens.";
-}
-
-document.getElementById("securityForm").addEventListener("submit", savePassword);
-document.getElementById("removePasswordBtn").addEventListener("click", removePassword);
-bindPasswordToggles();
-openSecurityPage();
+initSecurityPage();

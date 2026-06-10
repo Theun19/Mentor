@@ -16,7 +16,27 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
+  <body class="auth-locked">
+    <section class="auth-screen" aria-labelledby="driverLoginTitle">
+      <form class="auth-card" id="driverLoginForm">
+        <p class="text-uppercase small fw-semibold text-success mb-1">Beveiligde toegang</p>
+        <h2 class="h4 fw-bold mb-3" id="driverLoginTitle">Inloggen</h2>
+        <div class="mb-3">
+          <label class="form-label" for="driverLoginUsername">Gebruikersnaam</label>
+          <input class="form-control" id="driverLoginUsername" type="text" autocomplete="username" required />
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="driverLoginPassword">Wachtwoord</label>
+          <div class="input-group">
+            <input class="form-control" id="driverLoginPassword" type="password" autocomplete="current-password" required />
+            <button class="btn btn-outline-secondary" type="button" data-password-toggle="driverLoginPassword" aria-label="Wachtwoord tonen">Toon</button>
+          </div>
+        </div>
+        <p class="small text-danger min-hint mb-3" id="driverLoginError" aria-live="polite"></p>
+        <button class="btn btn-success w-100" type="submit">Inloggen</button>
+      </form>
+    </section>
+
     <header class="app-header border-bottom">
       <div class="container-xl py-3">
         <div class="app-topbar">
@@ -31,7 +51,6 @@
               <select class="form-select form-select-sm" id="driverProfileSelect"></select>
               <button class="btn btn-outline-success btn-sm" id="newDriverProfileBtn" type="button">Nieuw</button>
             </div>
-            <span class="cloud-status text-secondary" data-cloud-status>Cloud starten...</span>
           </div>
 
           <div class="app-actions" aria-label="Acties">
@@ -86,7 +105,6 @@
       </form>
     </main>
 
-    <script src="firebase-sync.js"></script>
     <script src="driver.js"></script>
   </body>
 </html>

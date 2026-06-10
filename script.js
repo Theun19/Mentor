@@ -137,6 +137,7 @@ const websites = [
   ["Mijn Connexxion", "mijn.connexxion.nl/login", "https://mijn.connexxion.nl/login"],
   ["@Transdev app", "Officiele apppagina", "https://www.transdev.nl/nl/reisinformatie/%40transdev-app"],
   ["Transdev chauffeurs app", "Google Play", "https://play.google.com/store/apps/details?id=com.transdev.teamtransdev&hl=nl"],
+  ["Transdev chauffeurs app iPhone", "App Store", "https://apps.apple.com/nl/app/team-transdev-chauffeur-app/id6618151207"],
   ["Veiligheid / medische keuring", "mijnmeditel.nl", "https://mijnmeditel.nl"],
   ["Kledingportal", "Outfit klantportaal", "https://outfit.nl/web-portal-login/"],
   ["CBR", "cbr.nl", "https://www.cbr.nl"],
@@ -170,7 +171,6 @@ function getSaved(name) {
 
 function setSaved(name, value) {
   localStorage.setItem(key(name), value);
-  queueCloudSave();
 }
 
 function getSavedJson(name, fallback) {
@@ -183,11 +183,6 @@ function getSavedJson(name, fallback) {
 
 function setSavedJson(name, value) {
   localStorage.setItem(key(name), JSON.stringify(value));
-  queueCloudSave();
-}
-
-function queueCloudSave() {
-  window.MentorCloud?.queueSave();
 }
 
 function getDriverProfiles() {
@@ -201,7 +196,6 @@ function getDriverProfiles() {
 
 function setDriverProfiles(profiles) {
   localStorage.setItem(driverProfilesKey, JSON.stringify(profiles));
-  queueCloudSave();
 }
 
 function cleanDriverName(name) {
@@ -336,7 +330,7 @@ function bindPasswordToggles() {
 
       const isHidden = input.type === "password";
       input.type = isHidden ? "text" : "password";
-      button.textContent = isHidden ? "🙈" : "👁";
+      button.textContent = isHidden ? "Verberg" : "Toon";
       button.setAttribute("aria-label", isHidden ? "Wachtwoord verbergen" : "Wachtwoord tonen");
       input.focus();
     });
@@ -2252,7 +2246,6 @@ function bindEvents() {
       .filter((name) => name.startsWith(profilePrefix))
       .forEach((name) => localStorage.removeItem(name));
     setSaved("driverName", profileName);
-    queueCloudSave();
     restoreState();
     updateProgress();
     updateRatingAverage();
@@ -2269,15 +2262,7 @@ renderDriverProfiles();
 restoreState();
 setDefaultRatingDate();
 bindEvents();
+initMainLogin();
 updateProgress();
 updateRatingAverage();
 buildPrintSummary("dashboard");
-
-window.MentorCloud?.init({
-  onRemoteChange: () => {
-    renderDriverProfiles();
-    restoreState();
-    updateProgress();
-    updateRatingAverage();
-  },
-});

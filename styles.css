@@ -74,6 +74,10 @@ body.auth-locked .auth-screen {
   gap: 1rem;
 }
 
+.app-topbar-simple {
+  grid-template-columns: minmax(12rem, 1fr) auto;
+}
+
 .app-title {
   min-width: 0;
 }
@@ -127,13 +131,6 @@ body.auth-locked .auth-screen {
   min-width: 0;
 }
 
-.cloud-status {
-  display: block;
-  margin-top: 0.2rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
 .dropdown-item.active,
 .dropdown-item:active {
   background: var(--brand);
@@ -152,6 +149,10 @@ body.auth-locked .auth-screen {
 .security-panel {
   max-width: 42rem;
   margin-inline: auto;
+}
+
+.min-hint {
+  min-height: 1.25rem;
 }
 
 .driver-panel {

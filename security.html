@@ -19,48 +19,64 @@
   <body>
     <header class="app-header border-bottom">
       <div class="container-xl py-3">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-          <div>
+        <div class="app-topbar app-topbar-simple">
+          <div class="app-title">
             <p class="text-uppercase small fw-semibold text-success mb-1">Mentormap</p>
             <h1 class="h3 fw-bold mb-0">Beveiliging</h1>
           </div>
-          <a class="btn btn-outline-secondary btn-sm" href="index.html">Terug</a>
+
+          <div class="app-actions" aria-label="Acties">
+            <a class="btn btn-outline-secondary btn-sm" href="index.html">Terug</a>
+          </div>
         </div>
       </div>
     </header>
 
     <main class="container-xl py-4 py-lg-5">
-      <section class="section-panel security-panel p-4 p-md-5">
+      <section class="security-panel details-panel p-4 p-md-5">
         <h2 class="h4 fw-bold mb-3">Gebruikersnaam en wachtwoord wijzigen</h2>
-        <p class="text-secondary">
-          Deze gegevens worden lokaal op dit apparaat opgeslagen en worden gebruikt voor het inlogscherm van deze beveiligingspagina.
-        </p>
+        <form id="securityForm">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label" for="currentUsername">Huidige gebruikersnaam</label>
+              <input class="form-control" id="currentUsername" type="text" autocomplete="username" required />
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="currentPassword">Huidig wachtwoord</label>
+              <div class="input-group">
+                <input class="form-control" id="currentPassword" type="password" autocomplete="current-password" required />
+                <button class="btn btn-outline-secondary" type="button" data-password-toggle="currentPassword" aria-label="Wachtwoord tonen">Toon</button>
+              </div>
+            </div>
+            <div class="col-12">
+              <hr />
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="newUsername">Nieuwe gebruikersnaam</label>
+              <input class="form-control" id="newUsername" type="text" autocomplete="username" required />
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label" for="newPassword">Nieuw wachtwoord</label>
+              <div class="input-group">
+                <input class="form-control" id="newPassword" type="password" autocomplete="new-password" minlength="4" required />
+                <button class="btn btn-outline-secondary" type="button" data-password-toggle="newPassword" aria-label="Wachtwoord tonen">Toon</button>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label" for="confirmPassword">Herhaal nieuw wachtwoord</label>
+              <div class="input-group">
+                <input class="form-control" id="confirmPassword" type="password" autocomplete="new-password" minlength="4" required />
+                <button class="btn btn-outline-secondary" type="button" data-password-toggle="confirmPassword" aria-label="Wachtwoord tonen">Toon</button>
+              </div>
+            </div>
+          </div>
 
-        <form class="vstack gap-3" id="securityForm">
-          <div>
-            <label class="form-label" for="securityUsername">Gebruikersnaam</label>
-            <input class="form-control" id="securityUsername" type="text" autocomplete="username" />
+          <p class="small mt-3 mb-0" id="securityMessage" aria-live="polite"></p>
+
+          <div class="d-flex flex-wrap gap-2 mt-4">
+            <button class="btn btn-success" type="submit">Opslaan</button>
+            <a class="btn btn-outline-secondary" href="index.html">Annuleren</a>
           </div>
-          <div>
-            <label class="form-label" for="newPassword">Nieuw wachtwoord</label>
-            <div class="input-group">
-              <input class="form-control" id="newPassword" type="password" autocomplete="new-password" />
-              <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle="newPassword" aria-label="Wachtwoord tonen">👁</button>
-            </div>
-            <div class="form-text" id="newPasswordHint">Laat leeg als je alleen de gebruikersnaam wilt wijzigen.</div>
-          </div>
-          <div>
-            <label class="form-label" for="repeatPassword">Herhaal nieuw wachtwoord</label>
-            <div class="input-group">
-              <input class="form-control" id="repeatPassword" type="password" autocomplete="new-password" />
-              <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle="repeatPassword" aria-label="Wachtwoord tonen">👁</button>
-            </div>
-          </div>
-          <div class="d-flex flex-wrap gap-2">
-            <button class="btn btn-success" type="submit">Wachtwoord opslaan</button>
-            <button class="btn btn-outline-secondary" id="removePasswordBtn" type="button">Wachtwoord verwijderen</button>
-          </div>
-          <p class="small mb-0" id="securityMessage" role="alert"></p>
         </form>
       </section>
     </main>
