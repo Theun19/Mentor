@@ -2,13 +2,13 @@ const storagePrefix = "mentor-checklist-nijmegen";
 const passwordKey = `${storagePrefix}:local-password-hash`;
 const usernameKey = `${storagePrefix}:local-username`;
 const authSessionKey = `${storagePrefix}:unlocked`;
+const loginVersionKey = `${storagePrefix}:login-version`;
 const driverProfilesKey = `${storagePrefix}:driver-profiles`;
 const activeDriverKey = `${storagePrefix}:active-driver-id`;
 const driverDataPrefix = `${storagePrefix}:driver:`;
 const defaultUsername = "mentor";
 const defaultPassword = "Transdev2026!";
-const previousDefaultUsername = "admin";
-const previousDefaultPassword = "Mentor2026!";
+const loginVersion = "2";
 let currentPrintTarget = "dashboard";
 
 const ratingItems = [
@@ -304,25 +304,21 @@ function switchDriverProfile(profileId) {
 
 async function hashPassword(password) {
   const bytes = new TextEncoder().encode(password);
+  if (!crypto?.subtle) {
+    return `plain-fallback:${password}`;
+  }
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 async function ensureDefaultLogin() {
-  const savedHash = localStorage.getItem(passwordKey);
-  const savedUsername = localStorage.getItem(usernameKey);
-
-  if (savedHash) {
-    const oldDefaultHash = await hashPassword(previousDefaultPassword);
-    if (savedUsername === previousDefaultUsername && savedHash === oldDefaultHash) {
-      localStorage.setItem(usernameKey, defaultUsername);
-      localStorage.setItem(passwordKey, await hashPassword(defaultPassword));
-    }
+  if (localStorage.getItem(loginVersionKey) === loginVersion && localStorage.getItem(passwordKey)) {
     return;
   }
 
   localStorage.setItem(usernameKey, defaultUsername);
   localStorage.setItem(passwordKey, await hashPassword(defaultPassword));
+  localStorage.setItem(loginVersionKey, loginVersion);
 }
 
 function openMainSite() {
