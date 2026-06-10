@@ -262,7 +262,7 @@ body.auth-locked .auth-screen {
 }
 
 .dashboard-rating-card .rating-chart {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .line-chart-item {
@@ -757,6 +757,9 @@ body.auth-locked .auth-screen {
   text-align: center;
   vertical-align: middle;
   font-size: 0.74rem;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .rating-progress-table th {
@@ -768,6 +771,11 @@ body.auth-locked .auth-screen {
   color: var(--ink);
   background: #eef6e8;
   text-align: left;
+  white-space: normal;
+}
+
+.rating-progress-table th[scope="row"] {
+  line-height: 1.15;
 }
 
 .rating-progress-table td {
@@ -779,35 +787,37 @@ body.auth-locked .auth-screen {
   padding: 0.25rem 0.2rem !important;
 }
 
-.rating-table-date-tools {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.15rem;
-  margin-bottom: 0.15rem;
-}
-
-.rating-column-move {
+.rating-column-drag,
+.rating-column-drag-placeholder {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   min-width: 0;
-  height: 1.15rem;
+  height: 1.25rem;
+  margin-bottom: 0.15rem;
+}
+
+.rating-column-drag {
+  touch-action: none;
   border: 1px solid rgba(255, 255, 255, 0.45);
   border-radius: 5px;
   color: #ffffff;
   background: rgba(255, 255, 255, 0.12);
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 900;
   line-height: 1;
+  cursor: grab;
+  user-select: none;
 }
 
-.rating-column-move:disabled {
-  opacity: 0.28;
-  cursor: not-allowed;
+.rating-column-drag:active,
+.rating-progress-table.is-dragging-column .rating-column-drag {
+  cursor: grabbing;
 }
 
-.rating-column-move:not(:disabled):hover,
-.rating-column-move:not(:disabled):focus {
+.rating-column-drag:hover,
+.rating-column-drag:focus {
   border-color: #ffffff;
   background: rgba(255, 255, 255, 0.24);
 }
@@ -815,6 +825,7 @@ body.auth-locked .auth-screen {
 .rating-table-input {
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
@@ -823,6 +834,9 @@ body.auth-locked .auth-screen {
   font-weight: 800;
   text-align: center;
   outline: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rating-table-input:focus {
@@ -1268,6 +1282,16 @@ body.auth-locked .auth-screen {
     font-family: Arial, "Helvetica Neue", sans-serif;
   }
 
+  .print-page {
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .print-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
   .print-summary-header {
     display: flex;
     align-items: flex-start;
@@ -1275,7 +1299,7 @@ body.auth-locked .auth-screen {
     gap: 1rem;
     border-bottom: 2px solid #54851f;
     padding-bottom: 0.35rem;
-    margin-bottom: 0.55rem;
+    margin-bottom: 0.4rem;
   }
 
   .print-summary-header p {
@@ -1288,7 +1312,7 @@ body.auth-locked .auth-screen {
 
   .print-summary-header h1 {
     margin: 0;
-    font-size: 16pt;
+    font-size: 14pt;
     font-weight: 800;
   }
 
@@ -1300,19 +1324,19 @@ body.auth-locked .auth-screen {
   .print-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.45rem;
-    margin-bottom: 0.45rem;
+    gap: 0.35rem;
+    margin-bottom: 0.35rem;
   }
 
   .print-panel {
     border: 1px solid #dce5dc;
     border-radius: 6px;
-    padding: 0.45rem;
+    padding: 0.35rem;
     break-inside: avoid;
   }
 
   .print-panel h2 {
-    margin: 0 0 0.35rem;
+    margin: 0 0 0.25rem;
     color: #385f15;
     font-size: 10pt;
     font-weight: 800;
@@ -1320,7 +1344,7 @@ body.auth-locked .auth-screen {
 
   .print-details {
     display: grid;
-    gap: 0.22rem;
+    gap: 0.14rem;
     margin: 0;
   }
 
@@ -1354,7 +1378,7 @@ body.auth-locked .auth-screen {
 
   .print-progress strong {
     color: #385f15;
-    font-size: 24pt;
+    font-size: 20pt;
     line-height: 1;
   }
 
@@ -1410,7 +1434,7 @@ body.auth-locked .auth-screen {
 
   .print-row {
     grid-template-columns: 6.5rem 1fr 2.7rem;
-    margin-bottom: 0.22rem;
+    margin-bottom: 0.14rem;
     font-size: 8pt;
   }
 
@@ -1418,13 +1442,214 @@ body.auth-locked .auth-screen {
     display: grid;
     grid-template-columns: 1fr 2rem;
     gap: 0.35rem;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.12rem;
     font-size: 8pt;
   }
 
   .print-score strong {
     color: #385f15;
     text-align: right;
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7.5pt;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid #dce5dc;
+    padding: 0.22rem 0.28rem;
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+  }
+
+  .print-table th {
+    color: #ffffff;
+    background: #54851f;
+    font-weight: 800;
+  }
+
+  .print-lines-table th:not(:first-child),
+  .print-lines-table td:not(:first-child) {
+    text-align: center;
+    width: 3.5rem;
+  }
+
+  .print-line-overview {
+    align-items: start;
+  }
+
+  .print-line-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.14rem 0.35rem;
+    font-size: 7.4pt;
+  }
+
+  .print-line-list span {
+    overflow-wrap: anywhere;
+  }
+
+  .print-ai-text {
+    white-space: normal;
+    font-size: 7.8pt;
+    line-height: 1.28;
+  }
+
+  .print-graphs-panel {
+    margin-bottom: 0.35rem;
+  }
+
+  .print-graph-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.25rem;
+  }
+
+  .print-graph {
+    min-width: 0;
+  }
+
+  .print-graph h3 {
+    margin: 0 0 0.08rem;
+    color: #385f15;
+    font-size: 6.8pt;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .print-graph .line-chart-svg {
+    display: block;
+    width: 100%;
+    height: 1.02in;
+    border: 1px solid #dce5dc;
+    border-radius: 4px;
+    background: #ffffff;
+  }
+
+  .print-graph .line-chart-line {
+    stroke-width: 3;
+  }
+
+  .print-graph .line-chart-point {
+    r: 3;
+  }
+
+  .print-graph .line-chart-help,
+  .print-graph .line-chart-x-label,
+  .print-graph .line-chart-y-label {
+    font-size: 0.5rem;
+  }
+
+  .print-ai-panel {
+    break-inside: avoid;
+  }
+
+  .print-web-dashboard .dashboard-panel {
+    padding: 0.55rem !important;
+    border: 1px solid #dce5dc;
+    box-shadow: none;
+  }
+
+  .print-web-dashboard .dashboard-panel > .d-flex {
+    margin-bottom: 0.45rem !important;
+  }
+
+  .print-web-dashboard .dashboard-panel h2 {
+    font-size: 13pt;
+  }
+
+  .print-web-dashboard .dashboard-panel p {
+    font-size: 7.4pt;
+  }
+
+  .print-web-dashboard .row {
+    --bs-gutter-x: 0.45rem;
+    --bs-gutter-y: 0.45rem;
+  }
+
+  .print-web-dashboard .chart-card,
+  .print-web-dashboard .metric-box {
+    border: 1px solid #dce5dc;
+    box-shadow: none;
+  }
+
+  .print-web-dashboard .donut-chart {
+    width: 1.55in;
+    height: 1.55in;
+    margin: 0 auto;
+  }
+
+  .print-web-dashboard .donut-center strong {
+    font-size: 16pt;
+  }
+
+  .print-web-dashboard .metric-value {
+    font-size: 15pt;
+  }
+
+  .print-web-dashboard .metric-label,
+  .print-web-dashboard .chart-title {
+    font-size: 7pt;
+  }
+
+  .print-web-dashboard .checklist-chart-row {
+    grid-template-columns: 5.6rem 1fr 2rem;
+    gap: 0.3rem;
+    font-size: 7pt;
+  }
+
+  .print-web-dashboard .checklist-progress {
+    height: 0.28rem;
+    margin-top: 0.45rem !important;
+  }
+
+  .print-web-dashboard .dashboard-rating-card {
+    margin-top: 0.45rem !important;
+  }
+
+  .print-web-dashboard .dashboard-rating-card .rating-chart {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.28rem;
+  }
+
+  .print-web-dashboard .line-chart-item {
+    gap: 0.12rem;
+    cursor: default;
+  }
+
+  .print-web-dashboard .line-chart-title {
+    font-size: 6.7pt;
+  }
+
+  .print-web-dashboard .line-chart-frame {
+    height: 0.88in;
+    border-radius: 4px;
+  }
+
+  .print-signature-stack {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .print-signature-stack span {
+    display: block;
+    margin-bottom: 0.12rem;
+    color: #647066;
+    font-size: 8pt;
+    font-weight: 700;
+  }
+
+  .print-signature-empty {
+    display: grid;
+    place-items: center;
+    height: 3.4rem;
+    border: 1px dashed #bfd2bd;
+    border-radius: 5px;
+    color: #647066;
   }
 
   .print-signatures {

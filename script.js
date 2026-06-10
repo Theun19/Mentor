@@ -7,12 +7,14 @@ const activeDriverKey = `${storagePrefix}:active-driver-id`;
 const driverDataPrefix = `${storagePrefix}:driver:`;
 const defaultUsername = "admin";
 const defaultPassword = "Mentor2026!";
+let currentPrintTarget = "dashboard";
 
 const ratingItems = [
   { label: "Rijstijl", id: "rating-rijstijl" },
   { label: "Verkeersinzicht", id: "rating-verkeersinzicht" },
   { label: "Plaats op de weg", id: "rating-plaats-op-de-weg" },
   { label: "Klantvriendelijkheid", id: "rating-klantvriendelijkheid" },
+  { label: "Stressmeter", id: "rating-stressmeter" },
   {
     label: "Angstvallig tot roekeloos",
     id: "rating-angstvallig-tot-roekeloos",
@@ -422,6 +424,20 @@ function renderLineTable() {
   });
 }
 
+function renderLineOverviewColumns() {
+  const container = document.getElementById("lineOverviewColumns");
+  if (!container) return;
+
+  const summary = getLineSummary();
+  const todoLines = summary.filter((item) => !item.done);
+  const doneLines = summary.filter((item) => item.done);
+
+  container.innerHTML = `
+    ${renderLineSummaryColumn("Lijnen nog te doen", todoLines, "warning")}
+    ${renderLineSummaryColumn("Lijnen afgevinkt", doneLines, "success")}
+  `;
+}
+
 function renderContacts() {
   const body = document.getElementById("contactsTableBody");
   body.innerHTML = contacts
@@ -574,6 +590,7 @@ function updateProgress() {
   });
 
   document.getElementById("openChecklists").textContent = openChecklists;
+  renderLineOverviewColumns();
 }
 
 function updateRatingValue(input) {
@@ -683,31 +700,24 @@ function renderRatingProgressTable() {
       <tr>
         <th scope="row">Dag</th>
         ${dayKeys.map((dayKey, index) => `
-          <td class="rating-table-date-cell">
-            <div class="rating-table-date-tools">
+          <td class="rating-table-date-cell" data-day-key="${escapeHtml(dayKey)}" data-column-index="${index}">
+            ${
+              dayKey
+                ? `
               <button
-                class="rating-column-move"
+                class="rating-column-drag"
                 type="button"
-                data-move-direction="-1"
                 data-day-key="${escapeHtml(dayKey)}"
                 data-column-index="${index}"
-                ${dayKey && index > 0 ? "" : "disabled"}
-                aria-label="Kolom naar links">‹</button>
-              <button
-                class="rating-column-move"
-                type="button"
-                data-move-direction="1"
-                data-day-key="${escapeHtml(dayKey)}"
-                data-column-index="${index}"
-                ${dayKey && index < dayKeys.filter(Boolean).length - 1 ? "" : "disabled"}
-                aria-label="Kolom naar rechts">›</button>
-            </div>
+                aria-label="Kolom verslepen"
+                title="Versleep kolom">☰</button>
+                `
+                : `<span class="rating-column-drag-placeholder" aria-hidden="true"></span>`
+            }
             <input
               class="rating-table-input rating-table-date-input"
-              type="text"
-              inputmode="numeric"
-              placeholder="dd-mm-jjjj"
-              value="${dayKey ? escapeHtml(formatDateInputValue(dayKey)) : ""}"
+              type="date"
+              value="${escapeHtml(dayKey)}"
               data-day-key="${escapeHtml(dayKey)}"
               data-column-index="${index}"
               aria-label="Datum kolom ${index + 1}">
@@ -878,25 +888,41 @@ function saveRatingTableScore(ratingId, dayKey, rawValue) {
   return true;
 }
 
-function moveRatingTableColumn(dayKey, direction) {
-  if (!dayKey) return;
+function moveRatingTableColumnTo(dayKey, targetDayKey) {
+  if (!dayKey || !targetDayKey || dayKey === targetDayKey) return;
 
   const days = getRatingTableDayKeys(getRatingRowsForProgress(), false);
   const index = days.indexOf(dayKey);
-  const nextIndex = index + direction;
-  if (index < 0 || nextIndex < 0 || nextIndex >= days.length) return;
+  const targetIndex = days.indexOf(targetDayKey);
+  if (index < 0 || targetIndex < 0) return;
 
-  [days[index], days[nextIndex]] = [days[nextIndex], days[index]];
+  days.splice(index, 1);
+  days.splice(targetIndex, 0, dayKey);
   saveRatingDays(days);
   showRatingSaveStatus(timestampFromDayKey(dayKey), "Kolom verplaatst.");
   updateRatingAverage();
 }
 
-function handleRatingProgressTableClick(event) {
-  const button = event.target.closest(".rating-column-move");
-  if (!button) return;
+let draggedRatingDayKey = "";
 
-  moveRatingTableColumn(button.dataset.dayKey || "", Number(button.dataset.moveDirection));
+function handleRatingProgressTablePointerDown(event) {
+  const handle = event.target.closest(".rating-column-drag");
+  if (!handle || !handle.dataset.dayKey) return;
+
+  draggedRatingDayKey = handle.dataset.dayKey;
+  handle.setPointerCapture?.(event.pointerId);
+  document.getElementById("ratingProgressTable")?.classList.add("is-dragging-column");
+  event.preventDefault();
+}
+
+function handleRatingProgressTablePointerUp(event) {
+  if (!draggedRatingDayKey) return;
+
+  const targetCell = document.elementFromPoint(event.clientX, event.clientY)?.closest(".rating-table-date-cell");
+  const targetDayKey = targetCell?.dataset.dayKey || "";
+  document.getElementById("ratingProgressTable")?.classList.remove("is-dragging-column");
+  moveRatingTableColumnTo(draggedRatingDayKey, targetDayKey);
+  draggedRatingDayKey = "";
 }
 
 function handleRatingProgressTableChange(event) {
@@ -904,9 +930,11 @@ function handleRatingProgressTableChange(event) {
   if (!(input instanceof HTMLInputElement)) return;
 
   if (input.classList.contains("rating-table-date-input")) {
+    if (!input.value.trim() && !input.dataset.dayKey) return;
+
     const timestamp = parseRatingDateValue(input.value);
     if (!timestamp) {
-      showRatingSaveStatus(null, "Vul de datum in als dd-mm-jjjj.");
+      showRatingSaveStatus(null, "Kies een geldige datum.");
       renderRatingProgressTable();
       return;
     }
@@ -939,7 +967,7 @@ function handleRatingProgressTableInput(event) {
   const input = event.target;
   if (!(input instanceof HTMLInputElement)) return;
   if (input.classList.contains("rating-table-date-input")) {
-    if (!/^(\d{4}-\d{2}-\d{2}|\d{1,2}[/-]\d{1,2}[/-]\d{4})$/.test(input.value.trim())) return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(input.value.trim())) return;
 
     handleRatingProgressTableChange(event);
     return;
@@ -1070,7 +1098,7 @@ function generateMentorText() {
   const text = buildMentorGeneratedText();
   target.value = text;
   setSaved("mentorGeneratedText", text);
-  showRatingSaveStatus(Date.now(), "AI tekst gegenereerd.");
+  showRatingSaveStatus(Date.now(), "Tekst gegenereerd.");
 }
 
 function buildMentorGeneratedText() {
@@ -1441,62 +1469,448 @@ function showSection(targetSelector) {
 }
 
 function setPrintText(id, value) {
-  document.getElementById(id).textContent = value || "-";
+  const element = document.getElementById(id);
+  if (element) element.textContent = value || "-";
 }
 
-function buildPrintSummary() {
+function buildPrintSummary(target = "dashboard") {
+  currentPrintTarget = target;
+  const summary = document.getElementById("printSummary");
+  if (!summary) return;
+
+  const builders = {
+    complete: buildPrintCompleteHtml,
+    driver: buildPrintDriverHtml,
+    dashboard: buildPrintDashboardHtml,
+    ai: buildPrintAiHtml,
+    info: buildPrintInfoHtml,
+    lines: buildPrintLinesHtml,
+  };
+
+  summary.innerHTML = (builders[target] || builders.dashboard)();
+}
+
+function printMentorSection(target) {
+  buildPrintSummary(target);
+  window.print();
+}
+
+function buildPrintCompleteHtml() {
+  return `
+    <section class="print-page">${buildPrintDriverHtml()}</section>
+    <section class="print-page">${buildPrintDashboardHtml()}</section>
+    <section class="print-page">${buildPrintAiHtml()}</section>
+  `;
+}
+
+function buildPrintHeader(title) {
+  return `
+    <div class="print-summary-header">
+      <div>
+        <p>Mentormap nieuwe chauffeurs</p>
+        <h1>${escapeHtml(title)}</h1>
+      </div>
+      <strong>${new Date().toLocaleDateString("nl-NL")}</strong>
+    </div>
+  `;
+}
+
+function buildPrintDriverHtml() {
+  const driverSignature = getSaved("driverSignature");
+  const mentorSignature = getSaved("mentorSignature");
+
+  return `
+    ${buildPrintHeader("Chauffeur information")}
+    <div class="print-grid">
+      <div class="print-panel">
+        <h2>Chauffeur</h2>
+        ${buildPrintDriverDetails()}
+      </div>
+      <div class="print-panel">
+        <h2>Handtekeningen</h2>
+        <div class="print-signature-stack">
+          <div>
+            <span>Chauffeur</span>
+            ${driverSignature ? `<img src="${escapeHtml(driverSignature)}" alt="Handtekening chauffeur" />` : `<div class="print-signature-empty">-</div>`}
+          </div>
+          <div>
+            <span>Mentor</span>
+            ${mentorSignature ? `<img src="${escapeHtml(mentorSignature)}" alt="Handtekening mentor" />` : `<div class="print-signature-empty">-</div>`}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function buildPrintDriverDetails() {
+  return `
+    <dl class="print-details">
+      <div><dt>Naam</dt><dd>${escapeHtml(getSaved("driverName") || getActiveDriverProfile()?.name || "-")}</dd></div>
+      <div><dt>Personeelsnummer</dt><dd>${escapeHtml(getSaved("personnelNumber") || "-")}</dd></div>
+      <div><dt>Startdatum</dt><dd>${escapeHtml(getSaved("startDate") || "-")}</dd></div>
+      <div><dt>Einddatum</dt><dd>${escapeHtml(getSaved("endDate") || "-")}</dd></div>
+      <div><dt>Mentor</dt><dd>${escapeHtml(getSaved("mentorName") || "-")}</dd></div>
+    </dl>
+  `;
+}
+
+function buildPrintDashboardHtml() {
+  updateProgress();
+  updateRatingAverage();
+  const dashboard = document.querySelector(".dashboard-panel")?.cloneNode(true);
+  if (!dashboard) {
+    return `${buildPrintHeader("Dashboard")}<p>Dashboard niet gevonden.</p>`;
+  }
+
+  dashboard.querySelectorAll("button").forEach((button) => {
+    const replacement = document.createElement("div");
+    replacement.className = button.className;
+    replacement.innerHTML = button.innerHTML;
+    button.replaceWith(replacement);
+  });
+
+  return `
+    ${buildPrintHeader("Dashboard")}
+    <div class="print-web-dashboard">${dashboard.outerHTML}</div>
+  `;
+}
+
+function buildPrintAiHtml() {
+  const text = getSaved("mentorGeneratedText") || document.getElementById("mentorGeneratedText")?.value || buildMentorGeneratedText();
+
+  return `
+    ${buildPrintHeader("Tekst over chauffeur")}
+    <div class="print-panel">
+      <h2>Gegenereerde mentortekst</h2>
+      <div class="print-ai-text">${escapeHtml(text).replace(/\n/g, "<br>")}</div>
+    </div>
+  `;
+}
+
+function getCompactPrintAiText() {
+  const text = getSaved("mentorGeneratedText") || document.getElementById("mentorGeneratedText")?.value || buildMentorGeneratedText();
+  const compact = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join(" ");
+
+  return compact.length > 620 ? `${compact.slice(0, 617)}...` : compact;
+}
+
+function buildPrintInfoHtml() {
+  const contactRows = contacts.map(([role, name, phone, whatsapp]) => `
+    <tr>
+      <td>${escapeHtml(role)}</td>
+      <td>${escapeHtml(name || "-")}</td>
+      <td>${escapeHtml(phone || "-")}</td>
+      <td>${escapeHtml(whatsapp || "-")}</td>
+    </tr>
+  `).join("");
+  const websiteRows = websites.map(([label, text, url]) => `
+    <tr>
+      <td>${escapeHtml(label)}</td>
+      <td>${escapeHtml(text)}</td>
+      <td>${escapeHtml(url || "-")}</td>
+    </tr>
+  `).join("");
+
+  return `
+    ${buildPrintHeader("Information")}
+    <div class="print-panel">
+      <h2>Belangrijke telefoonnummers</h2>
+      <table class="print-table">
+        <thead><tr><th>Functie</th><th>Naam</th><th>Telefoon</th><th>WhatsApp</th></tr></thead>
+        <tbody>${contactRows}</tbody>
+      </table>
+    </div>
+    <div class="print-panel">
+      <h2>Belangrijke en handige websites</h2>
+      <table class="print-table">
+        <thead><tr><th>Naam</th><th>Omschrijving</th><th>Link</th></tr></thead>
+        <tbody>${websiteRows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function buildPrintLinesHtml() {
+  const summary = getLineSummary();
+  const todoLines = summary.filter((item) => !item.done);
+  const doneLines = summary.filter((item) => item.done);
+
+  return `
+    ${buildPrintHeader("Chauffeursgegevens en lijnverkenning")}
+    <div class="print-panel">
+      <h2>Chauffeur</h2>
+      ${buildPrintDriverDetails()}
+    </div>
+    <div class="print-grid print-line-overview">
+      ${renderPrintLineOverviewColumn("Lijnen nog te doen", todoLines)}
+      ${renderPrintLineOverviewColumn("Lijnen afgevinkt", doneLines)}
+    </div>
+  `;
+}
+
+function renderPrintLineOverviewColumn(title, items) {
+  return `
+    <div class="print-panel">
+      <h2>${escapeHtml(title)} (${items.length})</h2>
+      ${
+        items.length
+          ? `<div class="print-line-list">${items.map((item) => `<span>${escapeHtml(item.line)}</span>`).join("")}</div>`
+          : `<p class="text-secondary mb-0">Geen lijnen.</p>`
+      }
+    </div>
+  `;
+}
+
+function getDashboardPdfFileName() {
+  const driverName = (getSaved("driverName") || getActiveDriverProfile()?.name || "chauffeur")
+    .replace(/[^a-z0-9]+/gi, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+  return `mentormap-dashboard-${driverName || "chauffeur"}.pdf`;
+}
+
+async function createDashboardPdfFile() {
+  buildPrintSummary();
+  if (window.html2canvas && window.jspdf?.jsPDF) {
+    return createDashboardScreenshotPdfFile();
+  }
+
+  return new File([createDashboardPdfBlob()], getDashboardPdfFileName(), {
+    type: "application/pdf",
+  });
+}
+
+async function createDashboardScreenshotPdfFile() {
+  const dashboard = document.querySelector(".dashboard-panel");
+  if (!dashboard) {
+    throw new Error("Dashboard not found.");
+  }
+
+  const canvas = await window.html2canvas(dashboard, {
+    scale: 2,
+    backgroundColor: "#ffffff",
+    useCORS: true,
+    scrollX: 0,
+    scrollY: -window.scrollY,
+  });
+  const pdf = new window.jspdf.jsPDF({
+    orientation: "portrait",
+    unit: "pt",
+    format: "a4",
+  });
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 24;
+  const titleHeight = 34;
+  const imageWidth = pageWidth - margin * 2;
+  const imageHeight = Math.min(
+    pageHeight - margin * 2 - titleHeight,
+    (canvas.height / canvas.width) * imageWidth
+  );
+
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(14);
+  pdf.text("Mentormap dashboard", margin, margin + 12);
+  pdf.setFont("helvetica", "normal");
+  pdf.setFontSize(9);
+  pdf.text(new Date().toLocaleDateString("nl-NL"), pageWidth - margin, margin + 12, { align: "right" });
+  pdf.addImage(
+    canvas.toDataURL("image/jpeg", 0.95),
+    "JPEG",
+    margin,
+    margin + titleHeight,
+    imageWidth,
+    imageHeight
+  );
+
+  return new File([pdf.output("blob")], getDashboardPdfFileName(), {
+    type: "application/pdf",
+  });
+}
+
+function createDashboardPdfBlob() {
+  const lines = buildDashboardPdfLines();
+  const content = buildPdfContent(lines);
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
+  ];
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length);
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+
+  const xrefOffset = pdf.length;
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+  return new Blob([pdf], { type: "application/pdf" });
+}
+
+function buildDashboardPdfLines() {
   const checks = [...document.querySelectorAll(".task-check")];
   const done = checks.filter((input) => input.checked).length;
   const percentage = checks.length ? Math.round((done / checks.length) * 100) : 0;
   const lineSummary = getLineSummary();
   const openLines = lineSummary.filter((item) => !item.done).length;
-  const openTasks = checks.length - done;
-  let openChecklists = 0;
-
-  setPrintText("printDate", new Date().toLocaleDateString("nl-NL"));
-  setPrintText("printDriverName", getSaved("driverName") || getActiveDriverProfile()?.name);
-  setPrintText("printPersonnelNumber", getSaved("personnelNumber"));
-  setPrintText("printStartDate", getSaved("startDate"));
-  setPrintText("printEndDate", getSaved("endDate"));
-  setPrintText("printMentorName", getSaved("mentorName"));
-  setPrintText("printProgressPercent", `${percentage}%`);
-  setPrintText("printOpenTasks", openTasks);
-  setPrintText("printDoneTasks", done);
-  setPrintText("printOpenLines", openLines);
-
-  const checklistRows = document.getElementById("printChecklistRows");
-  checklistRows.innerHTML = "";
-  checklists.forEach((list, listIndex) => {
+  const checklistRows = checklists.map((list, listIndex) => {
     const listChecks = [...document.querySelectorAll(`[data-id^="list-${listIndex}-item-"]`)];
     const listDone = listChecks.filter((input) => input.checked).length;
-    const listPercentage = list.items.length ? Math.round((listDone / list.items.length) * 100) : 0;
-    if (listDone < list.items.length) openChecklists += 1;
-    checklistRows.insertAdjacentHTML("beforeend", `
-      <div class="print-row">
-        <span>${list.title}</span>
-        <div class="print-bar"><i style="width: ${listPercentage}%"></i></div>
-        <strong>${listDone}/${list.items.length}</strong>
-      </div>
-    `);
+    return `${list.title}: ${listDone}/${list.items.length}`;
   });
-  setPrintText("printOpenChecklists", openChecklists);
-
-  const ratingRows = document.getElementById("printRatingRows");
-  ratingRows.innerHTML = "";
-  document.querySelectorAll(".rating-range").forEach((input) => {
+  const ratingRows = [...document.querySelectorAll(".rating-range")].map((input) => {
     const label = input.closest(".rating-row").querySelector(".rating-label").textContent;
-    ratingRows.insertAdjacentHTML("beforeend", `
-      <div class="print-score">
-        <span>${label}</span>
-        <strong>${getRatingScore(input)}%</strong>
-      </div>
-    `);
+    return `${label}: ${getRatingScore(input)}%`;
   });
 
-  document.getElementById("saveRatingsBtn").addEventListener("click", saveAllRatingHistories);
+  return [
+    "Mentormap nieuwe chauffeurs Nijmegen",
+    "Dashboard en gegevens chauffeur",
+    `Datum: ${new Date().toLocaleDateString("nl-NL")}`,
+    "",
+    "Chauffeur",
+    `Naam: ${getSaved("driverName") || getActiveDriverProfile()?.name || "-"}`,
+    `Personeelsnummer: ${getSaved("personnelNumber") || "-"}`,
+    `Startdatum: ${getSaved("startDate") || "-"}`,
+    `Einddatum: ${getSaved("endDate") || "-"}`,
+    `Mentor: ${getSaved("mentorName") || "-"}`,
+    "",
+    "Voortgang",
+    `Totaal afgerond: ${percentage}%`,
+    `Taken open: ${checks.length - done}`,
+    `Taken klaar: ${done}`,
+    `Lijnen open: ${openLines}`,
+    "",
+    "Aftekenlijsten",
+    ...checklistRows,
+    "",
+    "Beoordeling",
+    ...ratingRows,
+  ];
+}
 
-  setPrintSignature("printDriverSignature", getSaved("driverSignature"));
-  setPrintSignature("printMentorSignature", getSaved("mentorSignature"));
+function buildPdfContent(lines) {
+  const wrappedLines = lines.flatMap((line) => wrapPdfLine(line, 78));
+  const commands = ["BT", "/F1 11 Tf", "50 792 Td", "14 TL"];
+  wrappedLines.slice(0, 52).forEach((line, index) => {
+    if (index > 0) commands.push("T*");
+    commands.push(`(${escapePdfText(line)}) Tj`);
+  });
+  commands.push("ET");
+  return commands.join("\n");
+}
+
+function wrapPdfLine(line, maxLength) {
+  if (!line) return [""];
+  const words = String(line).split(/\s+/);
+  const lines = [];
+  let current = "";
+
+  words.forEach((word) => {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length > maxLength && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = next;
+    }
+  });
+
+  if (current) lines.push(current);
+  return lines;
+}
+
+function escapePdfText(text) {
+  return String(text)
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\x20-\x7E]/g, "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\(/g, "\\(")
+    .replace(/\)/g, "\\)");
+}
+
+function downloadFile(file) {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(file);
+  link.download = file.name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
+function canShareFile(file) {
+  return Boolean(navigator.canShare?.({ files: [file] }) && navigator.share);
+}
+
+async function shareDashboardPdf(target) {
+  let file;
+  try {
+    file = await createDashboardPdfFile();
+  } catch (error) {
+    window.alert("De PDF kon niet worden gemaakt. Controleer of je internetverbinding actief is en probeer het opnieuw.");
+    return;
+  }
+
+  const driverName = getSaved("driverName") || getActiveDriverProfile()?.name || "de chauffeur";
+  const text = `Dashboard mentormap voor ${driverName}. De PDF staat als bijlage.`;
+
+  if (canShareFile(file)) {
+    try {
+      await navigator.share({
+        title: "Mentormap dashboard",
+        text,
+        files: [file],
+      });
+      return;
+    } catch (error) {
+      if (error.name === "AbortError") return;
+    }
+  }
+
+  downloadFile(file);
+  if (target === "email") {
+    const subject = encodeURIComponent("Mentormap dashboard PDF");
+    const body = encodeURIComponent(
+      `Hallo,\n\nIk heb de PDF ${file.name} gedownload. Voeg deze PDF toe als bijlage.\n\n${text}\n\nGroet,`
+    );
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    return;
+  }
+
+  openWhatsappText(`${text}\n\nDe PDF ${file.name} is gedownload. Voeg deze toe via de paperclip / Document in WhatsApp.`);
+}
+
+async function shareDashboardPdfByWhatsapp() {
+  const driverName = getSaved("driverName") || getActiveDriverProfile()?.name || "de chauffeur";
+  const fileName = getDashboardPdfFileName();
+  const text = `Dashboard mentormap voor ${driverName}.\n\nDe PDF ${fileName} wordt gedownload. Voeg deze toe via de paperclip / Document in WhatsApp.`;
+
+  openWhatsappText(text);
+
+  try {
+    const file = await createDashboardPdfFile();
+    downloadFile(file);
+  } catch (error) {
+    window.setTimeout(() => {
+      window.alert("WhatsApp is geopend, maar de PDF kon niet worden gemaakt. Probeer het opnieuw.");
+    }, 500);
+  }
 }
 
 function setPrintSignature(id, source) {
@@ -1781,7 +2195,8 @@ function bindEvents() {
   document.getElementById("ratingProgressTable")?.addEventListener("focusout", handleRatingProgressTableChange);
   document.getElementById("ratingProgressTable")?.addEventListener("input", handleRatingProgressTableInput);
   document.getElementById("ratingProgressTable")?.addEventListener("keydown", handleRatingProgressTableKeydown);
-  document.getElementById("ratingProgressTable")?.addEventListener("click", handleRatingProgressTableClick);
+  document.getElementById("ratingProgressTable")?.addEventListener("pointerdown", handleRatingProgressTablePointerDown);
+  document.getElementById("ratingProgressTable")?.addEventListener("pointerup", handleRatingProgressTablePointerUp);
   document.getElementById("generateMentorTextBtn")?.addEventListener("click", generateMentorText);
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
@@ -1797,27 +2212,17 @@ function bindEvents() {
     });
   });
 
-  document.getElementById("printBtn").addEventListener("click", () => {
-    buildPrintSummary();
-    window.print();
+  document.querySelectorAll("[data-print-target]").forEach((button) => {
+    button.addEventListener("click", () => {
+      printMentorSection(button.dataset.printTarget || "dashboard");
+      const menu = button.closest(".dropdown-menu");
+      const toggle = menu?.previousElementSibling;
+      if (window.bootstrap && toggle) {
+        window.bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+      }
+    });
   });
-  window.addEventListener("beforeprint", buildPrintSummary);
-
-  document.getElementById("emailShareBtn").addEventListener("click", () => {
-    const subject = encodeURIComponent("Mentormap nieuwe chauffeurs Nijmegen");
-    const body = encodeURIComponent(
-      `Hallo,\n\nHierbij de mentormap nieuwe chauffeurs Nijmegen:\n${window.location.href}\n\nVoor een A4-overzicht met dashboard en chauffeurgegevens: open de mentormap en kies Print / Bewaar als PDF.\n\nGroet,`
-    );
-
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-  });
-
-  document.getElementById("whatsappBtn").addEventListener("click", () => {
-    const text = isInfoSectionActive()
-      ? buildInfoWhatsappText()
-      : `Mentormap nieuwe chauffeurs Nijmegen:\n${window.location.href}\n\nA4-overzicht delen? Open de mentormap en kies Print / Bewaar als PDF.`;
-    openWhatsappText(text);
-  });
+  window.addEventListener("beforeprint", () => buildPrintSummary(currentPrintTarget));
 
   document.getElementById("infoEmailShareBtn").addEventListener("click", shareInfoByEmail);
 
@@ -1850,6 +2255,7 @@ setDefaultRatingDate();
 bindEvents();
 updateProgress();
 updateRatingAverage();
+buildPrintSummary("dashboard");
 initMainLogin();
 
 window.MentorCloud?.init({
