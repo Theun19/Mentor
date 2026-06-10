@@ -22,17 +22,21 @@
         <p class="text-uppercase small fw-semibold text-success mb-1">Beveiligde toegang</p>
         <h1 class="h4 fw-bold mb-3">Gebruikersnaam of wachtwoord vergeten</h1>
         <p class="text-secondary">
-          Vraag een herstelcode aan via SMS naar <strong>+31627838003</strong>. Voer daarna de code in om deze website te openen.
+          Vraag een herstelcode aan via e-mail. Voer daarna de code in om deze website te openen.
         </p>
 
         <div class="alert alert-warning small" role="status">
-          SMS versturen werkt pas nadat er een SMS-dienst/server is gekoppeld. Deze lokale website kan zelf geen SMS verzenden.
+          E-mail versturen werkt pas nadat er een e-maildienst/server is gekoppeld. Deze lokale website kan zelf geen e-mail verzenden.
         </div>
 
         <div class="vstack gap-3">
-          <button class="btn btn-success" id="sendRecoveryCodeBtn" type="button">Stuur code via SMS</button>
           <div>
-            <label class="form-label" for="recoveryCodeInput">Code uit SMS</label>
+            <label class="form-label" for="recoveryEmailInput">E-mailadres</label>
+            <input class="form-control" id="recoveryEmailInput" type="email" value="tvangiffen@ziggo.nl" readonly />
+          </div>
+          <button class="btn btn-success" id="sendRecoveryCodeBtn" type="button">Stuur code via e-mail</button>
+          <div>
+            <label class="form-label" for="recoveryCodeInput">Code uit e-mail</label>
             <input class="form-control" id="recoveryCodeInput" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="6-cijferige code" />
           </div>
           <button class="btn btn-outline-success" id="verifyRecoveryCodeBtn" type="button">Code controleren en website openen</button>

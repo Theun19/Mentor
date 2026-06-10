@@ -1,6 +1,6 @@
 const storagePrefix = "mentor-checklist-nijmegen";
 const authSessionKey = `${storagePrefix}:unlocked`;
-const recoveryPhoneNumber = "+31627838003";
+const recoveryEmailAddress = "tvangiffen@ziggo.nl";
 const recoveryCodeKey = `${storagePrefix}:pending-recovery-code`;
 const recoveryExpiresKey = `${storagePrefix}:pending-recovery-expires`;
 
@@ -15,28 +15,34 @@ function makeRecoveryCode() {
 }
 
 async function sendRecoveryCode() {
+  const email = recoveryEmailAddress;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setRecoveryStatus("Vul een geldig e-mailadres in.", "danger");
+    return;
+  }
+
   const code = makeRecoveryCode();
   const expiresAt = Date.now() + 10 * 60 * 1000;
 
   try {
-    const response = await fetch("/api/send-recovery-sms", {
+    const response = await fetch("/api/send-recovery-email", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        phone: recoveryPhoneNumber,
+        email,
         code,
         message: `Mentormap herstelcode: ${code}`,
       }),
     });
 
-    if (!response.ok) throw new Error("SMS endpoint not available.");
+    if (!response.ok) throw new Error("Email endpoint not available.");
 
     sessionStorage.setItem(recoveryCodeKey, code);
     sessionStorage.setItem(recoveryExpiresKey, String(expiresAt));
-    setRecoveryStatus("Code is via SMS verzonden. Voer de code hieronder in.", "success");
+    setRecoveryStatus("Code is via e-mail verzonden. Voer de code hieronder in.", "success");
   } catch (error) {
     setRecoveryStatus(
-      "SMS versturen is nog niet gekoppeld. Koppel eerst een SMS-server zoals Twilio, MessageBird of Firebase Functions.",
+      "E-mail versturen is nog niet gekoppeld. Koppel eerst een e-mailserver zoals Firebase Functions met SendGrid, Mailgun of Brevo.",
       "danger"
     );
   }
