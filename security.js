@@ -15,6 +15,21 @@ function setLoginError(text) {
   document.getElementById("securityLoginError").textContent = text;
 }
 
+function bindPasswordToggles() {
+  document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const input = document.getElementById(button.dataset.passwordToggle);
+      if (!input) return;
+
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      button.textContent = isHidden ? "🙈" : "👁";
+      button.setAttribute("aria-label", isHidden ? "Wachtwoord verbergen" : "Wachtwoord tonen");
+      input.focus();
+    });
+  });
+}
+
 async function hashPassword(password) {
   const bytes = new TextEncoder().encode(password);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
@@ -123,4 +138,5 @@ function updateHint() {
 document.getElementById("securityLoginForm").addEventListener("submit", unlockSecurity);
 document.getElementById("securityForm").addEventListener("submit", savePassword);
 document.getElementById("removePasswordBtn").addEventListener("click", removePassword);
+bindPasswordToggles();
 initSecurityLogin();

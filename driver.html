@@ -28,7 +28,10 @@
           </div>
           <div>
             <label class="form-label" for="driverLoginPassword">Wachtwoord</label>
-            <input class="form-control" id="driverLoginPassword" type="password" autocomplete="current-password" />
+            <div class="input-group">
+              <input class="form-control" id="driverLoginPassword" type="password" autocomplete="current-password" />
+              <button class="btn btn-outline-secondary password-toggle" type="button" data-password-toggle="driverLoginPassword" aria-label="Wachtwoord tonen">👁</button>
+            </div>
           </div>
           <button class="btn btn-success" type="submit">Inloggen</button>
           <p class="text-danger small mb-0" id="driverLoginError" role="alert"></p>

@@ -328,6 +328,21 @@ function setMainLoginError(text) {
   if (error) error.textContent = text;
 }
 
+function bindPasswordToggles() {
+  document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const input = document.getElementById(button.dataset.passwordToggle);
+      if (!input) return;
+
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      button.textContent = isHidden ? "🙈" : "👁";
+      button.setAttribute("aria-label", isHidden ? "Wachtwoord verbergen" : "Wachtwoord tonen");
+      input.focus();
+    });
+  });
+}
+
 async function initMainLogin() {
   await ensureDefaultLogin();
 
@@ -2129,6 +2144,7 @@ function isInfoSectionActive() {
 }
 
 function bindEvents() {
+  bindPasswordToggles();
   document.getElementById("mainLoginForm")?.addEventListener("submit", unlockMainSite);
 
   document.getElementById("driverProfileSelect").addEventListener("change", (event) => {
