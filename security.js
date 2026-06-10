@@ -2,8 +2,10 @@ const storagePrefix = "mentor-checklist-nijmegen";
 const passwordKey = `${storagePrefix}:local-password-hash`;
 const usernameKey = `${storagePrefix}:local-username`;
 const authSessionKey = `${storagePrefix}:unlocked`;
-const defaultUsername = "admin";
-const defaultPassword = "Mentor2026!";
+const defaultUsername = "mentor";
+const defaultPassword = "Transdev2026!";
+const previousDefaultUsername = "admin";
+const previousDefaultPassword = "Mentor2026!";
 
 async function hashPassword(password) {
   const bytes = new TextEncoder().encode(password);
@@ -12,7 +14,17 @@ async function hashPassword(password) {
 }
 
 async function ensureDefaultLogin() {
-  if (localStorage.getItem(passwordKey)) return;
+  const savedHash = localStorage.getItem(passwordKey);
+  const savedUsername = localStorage.getItem(usernameKey);
+
+  if (savedHash) {
+    const oldDefaultHash = await hashPassword(previousDefaultPassword);
+    if (savedUsername === previousDefaultUsername && savedHash === oldDefaultHash) {
+      localStorage.setItem(usernameKey, defaultUsername);
+      localStorage.setItem(passwordKey, await hashPassword(defaultPassword));
+    }
+    return;
+  }
 
   localStorage.setItem(usernameKey, defaultUsername);
   localStorage.setItem(passwordKey, await hashPassword(defaultPassword));

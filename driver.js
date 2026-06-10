@@ -5,8 +5,10 @@ const authSessionKey = `${storagePrefix}:unlocked`;
 const driverProfilesKey = `${storagePrefix}:driver-profiles`;
 const activeDriverKey = `${storagePrefix}:active-driver-id`;
 const driverDataPrefix = `${storagePrefix}:driver:`;
-const defaultUsername = "admin";
-const defaultPassword = "Mentor2026!";
+const defaultUsername = "mentor";
+const defaultPassword = "Transdev2026!";
+const previousDefaultUsername = "admin";
+const previousDefaultPassword = "Mentor2026!";
 
 async function hashPassword(password) {
   const bytes = new TextEncoder().encode(password);
@@ -15,7 +17,17 @@ async function hashPassword(password) {
 }
 
 async function ensureDefaultLogin() {
-  if (localStorage.getItem(passwordKey)) return;
+  const savedHash = localStorage.getItem(passwordKey);
+  const savedUsername = localStorage.getItem(usernameKey);
+
+  if (savedHash) {
+    const oldDefaultHash = await hashPassword(previousDefaultPassword);
+    if (savedUsername === previousDefaultUsername && savedHash === oldDefaultHash) {
+      localStorage.setItem(usernameKey, defaultUsername);
+      localStorage.setItem(passwordKey, await hashPassword(defaultPassword));
+    }
+    return;
+  }
 
   localStorage.setItem(usernameKey, defaultUsername);
   localStorage.setItem(passwordKey, await hashPassword(defaultPassword));
