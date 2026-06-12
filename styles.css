@@ -180,15 +180,47 @@ body.auth-locked .auth-screen {
 }
 
 .dashboard-panel {
+  position: relative;
   overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 243, 0.98)),
+    #ffffff;
+}
+
+.dashboard-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0.35rem;
+  background: linear-gradient(90deg, var(--brand), #87a94b, #b82f2f);
+}
+
+.dashboard-panel > * {
+  position: relative;
+}
+
+.dashboard-hero {
+  padding: 0.35rem 0 0.55rem;
+}
+
+.dashboard-kicker {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0.25rem;
+  color: var(--brand-dark);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
 .chart-card {
   height: 100%;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(84, 133, 31, 0.2);
   border-radius: 8px;
   padding: 1rem;
-  background: #fbfcfa;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 10px 22px rgba(33, 47, 35, 0.06);
 }
 
 .chart-title {
@@ -207,6 +239,7 @@ body.auth-locked .auth-screen {
   margin-inline: auto;
   border-radius: 50%;
   background: conic-gradient(var(--brand) 0deg, var(--brand) 0deg, #e5ece2 0deg);
+  box-shadow: inset 0 0 0 1px rgba(84, 133, 31, 0.14), 0 14px 30px rgba(56, 95, 21, 0.12);
 }
 
 .donut-center {
@@ -215,8 +248,9 @@ body.auth-locked .auth-screen {
   width: 68%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: #ffffff;
+  background: linear-gradient(180deg, #ffffff, #f7faf5);
   text-align: center;
+  box-shadow: 0 6px 18px rgba(33, 47, 35, 0.1);
 }
 
 .donut-center strong {
@@ -242,14 +276,15 @@ body.auth-locked .auth-screen {
 .chart-bar-track {
   height: 0.72rem;
   border-radius: 999px;
-  background: #e5ece2;
+  background: #e8eee5;
+  box-shadow: inset 0 1px 2px rgba(33, 47, 35, 0.08);
   overflow: hidden;
 }
 
 .chart-bar-fill {
   height: 100%;
   border-radius: inherit;
-  background: var(--brand);
+  background: linear-gradient(90deg, var(--brand), #7aa13e);
 }
 
 .rating-chart {
@@ -288,9 +323,9 @@ body.auth-locked .auth-screen {
 
 .line-chart-frame {
   height: 6rem;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(84, 133, 31, 0.18);
   border-radius: 8px;
-  background: #ffffff;
+  background: linear-gradient(180deg, #ffffff, #f8fbf6);
   overflow: hidden;
 }
 
@@ -307,10 +342,10 @@ body.auth-locked .auth-screen {
 
 .line-chart-line {
   fill: none;
-  stroke: #0b7a3b;
+  stroke: var(--brand);
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 5;
+  stroke-width: 4;
   vector-effect: non-scaling-stroke;
 }
 
@@ -324,8 +359,8 @@ body.auth-locked .auth-screen {
 
 .line-chart-point {
   fill: #ffffff;
-  stroke: #0b7a3b;
-  stroke-width: 2.5;
+  stroke: var(--brand-dark);
+  stroke-width: 2.35;
   vector-effect: non-scaling-stroke;
 }
 
@@ -457,24 +492,37 @@ body.auth-locked .auth-screen {
 }
 
 .metric-box {
+  position: relative;
   display: block;
   width: 100%;
   min-height: 5rem;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(84, 133, 31, 0.18);
   border-radius: 8px;
   padding: 0.85rem;
-  background: #fbfcfa;
+  background: linear-gradient(180deg, #ffffff, #f6faf4);
+  box-shadow: 0 8px 18px rgba(33, 47, 35, 0.06);
   text-align: left;
+  overflow: hidden;
+}
+
+.metric-box::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.28rem;
+  background: var(--brand);
 }
 
 .metric-button {
   cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
 }
 
 .metric-button:hover,
 .metric-button:focus-visible {
   border-color: #b7d3a5;
   background: #f4f9ef;
+  transform: translateY(-1px);
   outline: none;
 }
 
@@ -485,15 +533,16 @@ body.auth-locked .auth-screen {
 
 .metric-value {
   color: var(--brand-dark);
-  font-size: 1.65rem;
+  font-size: 1.72rem;
   line-height: 1;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .metric-label {
   color: var(--muted);
   margin-top: 0.35rem;
   font-size: 0.86rem;
+  font-weight: 700;
 }
 
 .line-summary-card {
@@ -1024,6 +1073,7 @@ body.auth-locked .auth-screen {
 
   .chart-card {
     padding: 0.7rem;
+    box-shadow: 0 4px 12px rgba(33, 47, 35, 0.05);
   }
 
   .chart-title {
@@ -1041,7 +1091,8 @@ body.auth-locked .auth-screen {
 
   .metric-box {
     min-height: 3.65rem;
-    padding: 0.55rem;
+    padding: 0.55rem 0.55rem 0.55rem 0.75rem;
+    box-shadow: 0 4px 12px rgba(33, 47, 35, 0.05);
   }
 
   .metric-value {
@@ -1284,13 +1335,15 @@ body.auth-locked .auth-screen {
   }
 
   .print-page {
-    break-after: page;
-    page-break-after: always;
+    break-after: auto;
+    break-inside: avoid;
+    page-break-after: auto;
+    page-break-inside: avoid;
   }
 
-  .print-page:last-child {
-    break-after: auto;
-    page-break-after: auto;
+  .print-page + .print-page {
+    break-before: page;
+    page-break-before: always;
   }
 
   .print-summary-header {
@@ -1334,6 +1387,8 @@ body.auth-locked .auth-screen {
     border-radius: 6px;
     padding: 0.35rem;
     break-inside: avoid;
+    page-break-inside: avoid;
+    overflow-wrap: anywhere;
   }
 
   .print-panel h2 {
@@ -1354,7 +1409,7 @@ body.auth-locked .auth-screen {
     display: grid;
     grid-template-columns: 6.5rem 1fr;
     gap: 0.35rem;
-    align-items: center;
+    align-items: start;
   }
 
   .print-details dt,
@@ -1368,6 +1423,8 @@ body.auth-locked .auth-screen {
     margin: 0;
     font-size: 9pt;
     font-weight: 700;
+    min-height: 1em;
+    overflow-wrap: anywhere;
   }
 
   .print-progress {
@@ -1550,9 +1607,31 @@ body.auth-locked .auth-screen {
   }
 
   .print-web-dashboard .dashboard-panel {
+    position: relative;
     padding: 0.55rem !important;
     border: 1px solid #dce5dc;
+    background: #ffffff !important;
     box-shadow: none;
+    overflow: visible;
+  }
+
+  .print-web-dashboard .dashboard-panel::before {
+    height: 0.12rem;
+    background: #54851f;
+  }
+
+  .print-web-dashboard .dashboard-panel > * {
+    position: relative;
+  }
+
+  .print-web-dashboard .dashboard-hero {
+    padding: 0.12rem 0 0.35rem;
+    margin-bottom: 0.35rem !important;
+  }
+
+  .print-web-dashboard .dashboard-kicker {
+    margin-bottom: 0.05rem;
+    font-size: 6.4pt;
   }
 
   .print-web-dashboard .dashboard-panel > .d-flex {
@@ -1575,13 +1654,33 @@ body.auth-locked .auth-screen {
   .print-web-dashboard .chart-card,
   .print-web-dashboard .metric-box {
     border: 1px solid #dce5dc;
+    background: #ffffff !important;
     box-shadow: none;
   }
 
+  .print-web-dashboard .chart-card {
+    padding: 0.32rem;
+  }
+
+  .print-web-dashboard .metric-box {
+    min-height: 0.62in;
+    padding: 0.24rem 0.25rem 0.22rem 0.38rem;
+  }
+
+  .print-web-dashboard .metric-box::before {
+    width: 0.08rem;
+    background: #54851f;
+  }
+
   .print-web-dashboard .donut-chart {
-    width: 1.55in;
-    height: 1.55in;
+    width: 1.42in;
+    height: 1.42in;
     margin: 0 auto;
+    box-shadow: none;
+  }
+
+  .print-web-dashboard .donut-center {
+    box-shadow: none;
   }
 
   .print-web-dashboard .donut-center strong {
@@ -1627,8 +1726,9 @@ body.auth-locked .auth-screen {
   }
 
   .print-web-dashboard .line-chart-frame {
-    height: 0.88in;
+    height: 0.78in;
     border-radius: 4px;
+    background: #ffffff !important;
   }
 
   .print-signature-stack {
@@ -1647,7 +1747,7 @@ body.auth-locked .auth-screen {
   .print-signature-empty {
     display: grid;
     place-items: center;
-    height: 3.4rem;
+    height: 2.9rem;
     border: 1px dashed #bfd2bd;
     border-radius: 5px;
     color: #647066;
@@ -1660,7 +1760,7 @@ body.auth-locked .auth-screen {
   .print-signatures img {
     display: block;
     width: 100%;
-    height: 3.4rem;
+    height: 2.9rem;
     object-fit: contain;
     border: 1px dashed #bfd2bd;
     border-radius: 5px;

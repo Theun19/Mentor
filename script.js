@@ -16,7 +16,7 @@ const ratingItems = [
   { label: "Verkeersinzicht", id: "rating-verkeersinzicht" },
   { label: "Plaats op de weg", id: "rating-plaats-op-de-weg" },
   { label: "Klantvriendelijkheid", id: "rating-klantvriendelijkheid" },
-  { label: "Stressmeter", id: "rating-stressmeter" },
+  { label: "Ontspanningsmonitor", id: "rating-stressmeter" },
   {
     label: "Angstvallig tot roekeloos",
     id: "rating-angstvallig-tot-roekeloos",
@@ -581,7 +581,7 @@ function updateProgress() {
   document.getElementById("lineCount").textContent = openLines;
   document.getElementById("progressText").textContent = `${percentage}% afgerond`;
   document.getElementById("dashboardPercent").textContent = `${percentage}%`;
-  document.getElementById("progressDonut").style.background = `conic-gradient(var(--brand) 0deg ${percentage * 3.6}deg, #e5ece2 ${percentage * 3.6}deg 360deg)`;
+  document.getElementById("progressDonut").style.background = `conic-gradient(var(--brand) 0deg ${percentage * 3.6}deg, #e8eee5 ${percentage * 3.6}deg 360deg)`;
   document.getElementById("progressBar").style.width = `${percentage}%`;
 
   const checklistChart = document.getElementById("checklistChart");
@@ -1586,6 +1586,12 @@ function buildPrintDashboardHtml() {
     replacement.innerHTML = button.innerHTML;
     button.replaceWith(replacement);
   });
+  dashboard.querySelectorAll("[tabindex], [role], [aria-label]").forEach((element) => {
+    element.removeAttribute("tabindex");
+    element.removeAttribute("role");
+    element.removeAttribute("aria-label");
+  });
+  dashboard.querySelectorAll(".chart-zoom, .dropdown-menu").forEach((element) => element.remove());
 
   return `
     ${buildPrintHeader("Dashboard")}
