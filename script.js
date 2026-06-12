@@ -263,7 +263,7 @@ function ensureDriverProfiles() {
 
   const legacyName = localStorage.getItem(baseKey("driverName")) || "Nieuwe chauffeur";
   const profile = createDriverProfile(legacyName);
-  const reservedKeys = new Set([passwordKey, usernameKey, authSessionKey, driverProfilesKey, activeDriverKey]);
+  const reservedKeys = new Set([passwordKey, usernameKey, authSessionKey, loginVersionKey, driverProfilesKey, activeDriverKey]);
 
   Object.keys(localStorage)
     .filter((name) => name.startsWith(`${storagePrefix}:`) && !name.startsWith(driverDataPrefix) && !reservedKeys.has(name))
@@ -419,19 +419,23 @@ function renderChecklists() {
 
 function renderLineTable() {
   const body = document.getElementById("lineTableBody");
+  const query = document.getElementById("lineSearch")?.value.trim().toLowerCase() || "";
   body.innerHTML = "";
 
-  lines.forEach((line) => {
+  getSortedLineSummary().forEach((item) => {
     const row = document.createElement("tr");
-    row.dataset.line = line.toLowerCase();
+    row.dataset.line = item.line.toLowerCase();
+    row.className = item.done ? "line-complete" : item.states.some((state) => state.done) ? "line-started" : "";
+    row.classList.toggle("line-hidden", query && !row.dataset.line.includes(query));
     row.innerHTML = `
-      <td class="line-name">${line}</td>
-      ${["heen", "terug", "mat", "klaar"]
-        .map((type) => {
-          const id = lineTaskId(line, type);
+      <td class="line-name">${item.line}</td>
+      ${item.states
+        .map((state) => {
+          const id = lineTaskId(item.line, state.type);
           return `
             <td>
-              <input class="form-check-input task-check" type="checkbox" data-id="${id}" aria-label="${line} ${type}" />
+              <input class="line-check task-check" id="${id}" type="checkbox" data-id="${id}" aria-label="${item.line} ${state.type}" ${state.done ? "checked" : ""} />
+              <label class="line-toggle ${state.done ? "active" : ""}" for="${id}">${lineTaskLabel(state.type)}</label>
             </td>
           `;
         })
@@ -445,7 +449,7 @@ function renderLineOverviewColumns() {
   const container = document.getElementById("lineOverviewColumns");
   if (!container) return;
 
-  const summary = getLineSummary();
+  const summary = getSortedLineSummary();
   const todoLines = summary.filter((item) => !item.done);
   const doneLines = summary.filter((item) => item.done);
 
@@ -560,6 +564,8 @@ function restoreState() {
     input.value = normalizeRatingValue(input, savedValue);
     updateRatingValue(input);
   });
+
+  renderLineTable();
 }
 
 function updateRowState(input) {
@@ -1162,7 +1168,7 @@ function getChecklistMentorSummary() {
 }
 
 function getLineMentorSummary() {
-  const summary = getLineSummary();
+  const summary = getSortedLineSummary();
   const doneLines = summary.filter((item) => item.done);
   const openLines = summary.filter((item) => !item.done).map((item) => item.line);
 
@@ -1219,6 +1225,10 @@ function lineTaskId(line, type) {
   return `line-${line.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-${type}`;
 }
 
+function lineTaskLabel(type) {
+  return type === "mat" ? "MAT" : type.charAt(0).toUpperCase() + type.slice(1);
+}
+
 function getLineSummary() {
   return lines.map((line) => {
     const states = ["heen", "terug", "mat", "klaar"].map((type) => ({
@@ -1229,15 +1239,22 @@ function getLineSummary() {
     return {
       line,
       states,
-      done: states.find((state) => state.type === "klaar").done,
+      done: states.every((state) => state.done),
     };
+  });
+}
+
+function getSortedLineSummary() {
+  return getLineSummary().sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    return a.line.localeCompare(b.line, "nl", { numeric: true, sensitivity: "base" });
   });
 }
 
 function openLineSummary() {
   const modal = document.getElementById("lineSummaryModal");
   const content = document.getElementById("lineSummaryContent");
-  const summary = getLineSummary();
+  const summary = getSortedLineSummary();
   const doneLines = summary.filter((item) => item.done);
   const todoLines = summary.filter((item) => !item.done);
 
@@ -1277,7 +1294,7 @@ function renderLineSummaryColumn(title, items, tone) {
 
 function renderLineSummaryItem(item) {
   const stateLabels = item.states.map((state) => `
-    <span class="line-state ${state.done ? "done" : ""}">${state.type}</span>
+    <span class="line-state ${state.done ? "done" : ""}">${lineTaskLabel(state.type)}</span>
   `).join("");
 
   return `
@@ -1659,7 +1676,7 @@ function buildPrintInfoHtml() {
 }
 
 function buildPrintLinesHtml() {
-  const summary = getLineSummary();
+  const summary = getSortedLineSummary();
   const todoLines = summary.filter((item) => !item.done);
   const doneLines = summary.filter((item) => item.done);
 
@@ -2181,12 +2198,20 @@ function bindEvents() {
     });
   });
 
-  document.querySelectorAll(".task-check").forEach((input) => {
+  document.querySelectorAll(".task-check:not(.line-check)").forEach((input) => {
     input.addEventListener("change", () => {
       setSaved(input.dataset.id, input.checked);
       updateRowState(input);
       updateProgress();
     });
+  });
+
+  document.getElementById("lineTableBody").addEventListener("change", (event) => {
+    const input = event.target.closest(".line-check");
+    if (!input) return;
+    setSaved(input.dataset.id, input.checked);
+    renderLineTable();
+    updateProgress();
   });
 
   document.querySelectorAll(".save-field").forEach((input) => {

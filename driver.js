@@ -180,7 +180,7 @@ function ensureDriverProfiles() {
 
   const legacyName = localStorage.getItem(baseKey("driverName")) || "Nieuwe chauffeur";
   const profile = createDriverProfile(legacyName);
-  const reservedKeys = new Set([passwordKey, usernameKey, authSessionKey, driverProfilesKey, activeDriverKey]);
+  const reservedKeys = new Set([passwordKey, usernameKey, authSessionKey, loginVersionKey, driverProfilesKey, activeDriverKey]);
 
   Object.keys(localStorage)
     .filter((name) => name.startsWith(`${storagePrefix}:`) && !name.startsWith(driverDataPrefix) && !reservedKeys.has(name))

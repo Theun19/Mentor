@@ -948,13 +948,64 @@ body.auth-locked .auth-screen {
   border-color: var(--line);
 }
 
+.table-check tbody td:not(.line-name) {
+  text-align: center;
+}
+
 .table-check tbody tr.line-hidden {
   display: none;
+}
+
+.table-check tbody tr.line-complete > * {
+  background: #eef8e8;
+}
+
+.table-check tbody tr.line-started > * {
+  background: #fbfdf8;
 }
 
 .line-name {
   min-width: 12rem;
   font-weight: 700;
+}
+
+.line-check {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.line-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.25rem;
+  min-height: 2rem;
+  border: 1px solid #dce5dc;
+  border-radius: 999px;
+  padding: 0.28rem 0.65rem;
+  color: var(--muted);
+  background: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+.line-toggle:hover,
+.line-check:focus-visible + .line-toggle {
+  border-color: #b7d3a5;
+  color: var(--brand-dark);
+  transform: translateY(-1px);
+}
+
+.line-toggle.active {
+  border-color: #8fbd72;
+  color: var(--brand-dark);
+  background: #dff0d4;
 }
 
 .search-input {
