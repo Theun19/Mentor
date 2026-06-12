@@ -218,21 +218,8 @@
               </div>
               <input class="form-control search-input" id="lineSearch" type="search" placeholder="Zoek lijn" />
             </div>
-            <div class="row g-3 mb-3" id="lineOverviewColumns"></div>
-            <div class="table-responsive">
-              <table class="table align-middle table-check mb-0">
-                <thead>
-                  <tr>
-                    <th>Lijn</th>
-                    <th>Heen</th>
-                    <th>Terug</th>
-                    <th>MAT-rit</th>
-                    <th>Klaar</th>
-                  </tr>
-                </thead>
-                <tbody id="lineTableBody"></tbody>
-              </table>
-            </div>
+            <div class="line-status-strip mb-3" id="lineOverviewColumns"></div>
+            <div class="line-board" id="lineTableBody" aria-label="Lijnverkenning"></div>
           </div>
         </section>
 

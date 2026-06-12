@@ -420,29 +420,65 @@ function renderChecklists() {
 function renderLineTable() {
   const body = document.getElementById("lineTableBody");
   const query = document.getElementById("lineSearch")?.value.trim().toLowerCase() || "";
+  const summary = getSortedLineSummary();
+  const todoLines = summary.filter((item) => !item.done);
+  const doneLines = summary.filter((item) => item.done);
   body.innerHTML = "";
 
-  getSortedLineSummary().forEach((item) => {
-    const row = document.createElement("tr");
-    row.dataset.line = item.line.toLowerCase();
-    row.className = item.done ? "line-complete" : item.states.some((state) => state.done) ? "line-started" : "";
-    row.classList.toggle("line-hidden", query && !row.dataset.line.includes(query));
-    row.innerHTML = `
-      <td class="line-name">${item.line}</td>
+  body.appendChild(renderLineBoardSection("Nog te doen", todoLines, query, "todo"));
+  body.appendChild(renderLineBoardSection("Afgevinkt", doneLines, query, "done"));
+}
+
+function renderLineBoardSection(title, items, query, type) {
+  const section = document.createElement("section");
+  section.className = `line-board-section line-board-${type}`;
+  section.innerHTML = `
+    <div class="line-board-heading">
+      <h3>${title}</h3>
+      <span>${items.length}</span>
+    </div>
+    <div class="line-card-grid"></div>
+  `;
+
+  const grid = section.querySelector(".line-card-grid");
+  if (!items.length) {
+    grid.innerHTML = `<p class="line-empty">${type === "done" ? "Nog geen lijnen afgevinkt." : "Alle lijnen zijn afgevinkt."}</p>`;
+    return section;
+  }
+
+  items.forEach((item) => grid.appendChild(renderLineCard(item, query)));
+  return section;
+}
+
+function renderLineCard(item, query) {
+  const completedSteps = item.states.filter((state) => state.done).length;
+  const card = document.createElement("article");
+  card.dataset.line = item.line.toLowerCase();
+  card.className = `line-card ${item.done ? "line-complete" : completedSteps ? "line-started" : ""}`;
+  card.classList.toggle("line-hidden", query && !card.dataset.line.includes(query));
+  card.innerHTML = `
+    <div class="line-card-head">
+      <div>
+        <span class="line-card-label">Lijn</span>
+        <strong class="line-name">${item.line}</strong>
+      </div>
+      <span class="line-progress-pill">${completedSteps}/4</span>
+    </div>
+    <div class="line-step-grid">
       ${item.states
-        .map((state) => {
-          const id = lineTaskId(item.line, state.type);
-          return `
-            <td>
-              <input class="line-check task-check" id="${id}" type="checkbox" data-id="${id}" aria-label="${item.line} ${state.type}" ${state.done ? "checked" : ""} />
-              <label class="line-toggle ${state.done ? "active" : ""}" for="${id}">${lineTaskLabel(state.type)}</label>
-            </td>
-          `;
-        })
-        .join("")}
-    `;
-    body.appendChild(row);
-  });
+      .map((state) => {
+        const id = lineTaskId(item.line, state.type);
+        return `
+          <div>
+            <input class="line-check task-check" id="${id}" type="checkbox" data-id="${id}" aria-label="${item.line} ${state.type}" ${state.done ? "checked" : ""} />
+            <label class="line-toggle ${state.done ? "active" : ""}" for="${id}">${lineTaskLabel(state.type)}</label>
+          </div>
+        `;
+      })
+      .join("")}
+    </div>
+  `;
+  return card;
 }
 
 function renderLineOverviewColumns() {
@@ -454,8 +490,18 @@ function renderLineOverviewColumns() {
   const doneLines = summary.filter((item) => item.done);
 
   container.innerHTML = `
-    ${renderLineSummaryColumn("Lijnen nog te doen", todoLines, "warning")}
-    ${renderLineSummaryColumn("Lijnen afgevinkt", doneLines, "success")}
+    <div class="line-status-card">
+      <span>Nog te doen</span>
+      <strong>${todoLines.length}</strong>
+    </div>
+    <div class="line-status-card done">
+      <span>Afgevinkt</span>
+      <strong>${doneLines.length}</strong>
+    </div>
+    <div class="line-status-card">
+      <span>Totaal</span>
+      <strong>${summary.length}</strong>
+    </div>
   `;
 }
 
@@ -2256,7 +2302,7 @@ function bindEvents() {
 
   document.getElementById("lineSearch").addEventListener("input", (event) => {
     const query = event.target.value.trim().toLowerCase();
-    document.querySelectorAll("#lineTableBody tr").forEach((row) => {
+    document.querySelectorAll("#lineTableBody .line-card").forEach((row) => {
       row.classList.toggle("line-hidden", query && !row.dataset.line.includes(query));
     });
   });
