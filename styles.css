@@ -1551,12 +1551,16 @@ body.auth-locked .auth-screen {
 
   body {
     background: #ffffff;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
   .print-summary {
     display: block;
     color: #18241c;
     font-family: Arial, "Helvetica Neue", sans-serif;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 
   .print-page {
@@ -1807,24 +1811,41 @@ body.auth-locked .auth-screen {
   .print-graph .line-chart-svg {
     display: block;
     width: 100%;
-    height: 1.02in;
-    border: 1px solid #dce5dc;
+    height: 1.28in;
+    border: 1.5px solid #9db68c;
     border-radius: 4px;
     background: #ffffff;
   }
 
+  .print-graph .line-chart-grid {
+    stroke: #b8c9af;
+    stroke-width: 1.4;
+  }
+
   .print-graph .line-chart-line {
-    stroke-width: 3;
+    stroke: #1d5f23;
+    stroke-width: 5;
+  }
+
+  .print-graph .line-chart-single-line {
+    stroke: #1d5f23;
+    stroke-width: 4;
+    opacity: 1;
   }
 
   .print-graph .line-chart-point {
-    r: 3;
+    fill: #ffffff;
+    stroke: #183d18;
+    stroke-width: 3.2;
+    r: 4.2;
   }
 
   .print-graph .line-chart-help,
   .print-graph .line-chart-x-label,
   .print-graph .line-chart-y-label {
-    font-size: 0.5rem;
+    fill: #18241c;
+    font-size: 0.62rem;
+    font-weight: 900;
   }
 
   .print-ai-panel {
@@ -1833,7 +1854,7 @@ body.auth-locked .auth-screen {
 
   .print-web-dashboard .dashboard-panel {
     position: relative;
-    padding: 0.55rem !important;
+    padding: 0.42rem !important;
     border: 1px solid #dce5dc;
     background: #ffffff !important;
     box-shadow: none;
@@ -1850,8 +1871,8 @@ body.auth-locked .auth-screen {
   }
 
   .print-web-dashboard .dashboard-hero {
-    padding: 0.12rem 0 0.35rem;
-    margin-bottom: 0.35rem !important;
+    padding: 0.08rem 0 0.25rem;
+    margin-bottom: 0.25rem !important;
   }
 
   .print-web-dashboard .dashboard-kicker {
@@ -1872,8 +1893,8 @@ body.auth-locked .auth-screen {
   }
 
   .print-web-dashboard .row {
-    --bs-gutter-x: 0.45rem;
-    --bs-gutter-y: 0.45rem;
+    --bs-gutter-x: 0.32rem;
+    --bs-gutter-y: 0.32rem;
   }
 
   .print-web-dashboard .chart-card,
@@ -1884,7 +1905,7 @@ body.auth-locked .auth-screen {
   }
 
   .print-web-dashboard .chart-card {
-    padding: 0.32rem;
+    padding: 0.26rem;
   }
 
   .print-web-dashboard .metric-box {
@@ -1933,27 +1954,69 @@ body.auth-locked .auth-screen {
   }
 
   .print-web-dashboard .dashboard-rating-card {
-    margin-top: 0.45rem !important;
+    margin-top: 0.32rem !important;
   }
 
   .print-web-dashboard .dashboard-rating-card .rating-chart {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.28rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.38rem;
   }
 
   .print-web-dashboard .line-chart-item {
-    gap: 0.12rem;
+    gap: 0.18rem;
     cursor: default;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .print-web-dashboard .line-chart-title {
-    font-size: 6.7pt;
+    color: #18241c;
+    font-size: 7.8pt;
+    font-weight: 900;
   }
 
   .print-web-dashboard .line-chart-frame {
-    height: 0.78in;
+    height: 1.18in;
+    border: 1.5px solid #9db68c;
     border-radius: 4px;
     background: #ffffff !important;
+    overflow: visible;
+  }
+
+  .print-web-dashboard .line-chart-svg {
+    height: 100%;
+    background: #ffffff;
+  }
+
+  .print-web-dashboard .line-chart-grid {
+    stroke: #b8c9af;
+    stroke-width: 1.35;
+  }
+
+  .print-web-dashboard .line-chart-line {
+    stroke: #1d5f23;
+    stroke-width: 5;
+  }
+
+  .print-web-dashboard .line-chart-single-line {
+    stroke: #1d5f23;
+    stroke-width: 4;
+    opacity: 1;
+  }
+
+  .print-web-dashboard .line-chart-point {
+    fill: #ffffff;
+    stroke: #183d18;
+    stroke-width: 3.2;
+    r: 4.2;
+  }
+
+  .print-web-dashboard .line-chart-help,
+  .print-web-dashboard .line-chart-x-label,
+  .print-web-dashboard .line-chart-y-label {
+    fill: #18241c;
+    font-size: 0.62rem;
+    font-weight: 900;
   }
 
   .print-signature-stack {
