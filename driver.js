@@ -238,6 +238,11 @@ function setupSignaturePads() {
     resizeSignatureCanvas(canvas);
 
     canvas.addEventListener("pointerdown", (event) => {
+      if (!canvas.closest(".signature-box")?.classList.contains("signature-expanded")) {
+        expandSignatureBox(canvas);
+        return;
+      }
+
       drawing = true;
       canvas.setPointerCapture(event.pointerId);
       const point = getCanvasPoint(canvas, event);
@@ -268,7 +273,17 @@ function setupSignaturePads() {
   });
 
   document.querySelectorAll(".signature-clear").forEach((button) => {
-    button.addEventListener("click", () => clearSignature(document.getElementById(button.dataset.target)));
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      clearSignature(document.getElementById(button.dataset.target));
+    });
+  });
+
+  document.querySelectorAll(".signature-close").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      closeSignatureBox(button.closest(".signature-box"));
+    });
   });
 
   window.addEventListener("resize", () => {
@@ -278,6 +293,35 @@ function setupSignaturePads() {
       if (savedSignature) drawSignatureImage(canvas, savedSignature);
     });
   });
+}
+
+function expandSignatureBox(canvas) {
+  const box = canvas.closest(".signature-box");
+  if (!box) return;
+
+  const savedSignature = getSaved(canvas.id);
+  document.querySelectorAll(".signature-box.signature-expanded").forEach((openBox) => {
+    if (openBox !== box) closeSignatureBox(openBox);
+  });
+  box.classList.add("signature-expanded");
+  document.body.classList.add("signature-editing");
+  resizeSignatureCanvas(canvas);
+  if (savedSignature) drawSignatureImage(canvas, savedSignature);
+}
+
+function closeSignatureBox(box) {
+  if (!box) return;
+
+  const canvas = box.querySelector(".signature-canvas");
+  const savedSignature = canvas ? getSaved(canvas.id) : "";
+  box.classList.remove("signature-expanded");
+  if (!document.querySelector(".signature-box.signature-expanded")) {
+    document.body.classList.remove("signature-editing");
+  }
+  if (!canvas) return;
+
+  resizeSignatureCanvas(canvas);
+  if (savedSignature) drawSignatureImage(canvas, savedSignature);
 }
 
 function resizeSignatureCanvas(canvas) {

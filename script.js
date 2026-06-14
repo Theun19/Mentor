@@ -1672,6 +1672,7 @@ function buildPrintHeader(title) {
 function buildPrintDriverHtml() {
   const driverSignature = getSaved("driverSignature");
   const mentorSignature = getSaved("mentorSignature");
+  const managerSignature = getSaved("managerSignature");
 
   return `
     ${buildPrintHeader("Chauffeur information")}
@@ -1690,6 +1691,10 @@ function buildPrintDriverHtml() {
           <div>
             <span>Mentor</span>
             ${mentorSignature ? `<img src="${escapeHtml(mentorSignature)}" alt="Handtekening mentor" />` : `<div class="print-signature-empty">-</div>`}
+          </div>
+          <div>
+            <span>Leidinggevende</span>
+            ${managerSignature ? `<img src="${escapeHtml(managerSignature)}" alt="Handtekening leidinggevende" />` : `<div class="print-signature-empty">-</div>`}
           </div>
         </div>
       </div>
