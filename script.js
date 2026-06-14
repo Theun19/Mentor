@@ -1729,10 +1729,31 @@ function buildPrintDashboardHtml() {
     element.removeAttribute("aria-label");
   });
   dashboard.querySelectorAll(".chart-zoom, .dropdown-menu").forEach((element) => element.remove());
+  const donut = dashboard.querySelector("#progressDonut");
+  const percentText = dashboard.querySelector("#dashboardPercent")?.textContent || "0%";
+  const percentage = Math.max(0, Math.min(100, Number.parseInt(percentText, 10) || 0));
+  if (donut) {
+    donut.outerHTML = buildPrintDonutSvg(percentage);
+  }
 
   return `
     ${buildPrintHeader("Dashboard")}
     <div class="print-web-dashboard">${dashboard.outerHTML}</div>
+  `;
+}
+
+function buildPrintDonutSvg(percentage) {
+  const radius = 39;
+  const circumference = 2 * Math.PI * radius;
+  const dash = (percentage / 100) * circumference;
+
+  return `
+    <svg class="print-donut-svg" viewBox="0 0 100 100" role="img" aria-label="${percentage}% totaal">
+      <circle class="print-donut-track" cx="50" cy="50" r="${radius}" />
+      <circle class="print-donut-fill" cx="50" cy="50" r="${radius}" stroke-dasharray="${dash.toFixed(2)} ${circumference.toFixed(2)}" />
+      <text class="print-donut-value" x="50" y="48">${percentage}%</text>
+      <text class="print-donut-label" x="50" y="62">totaal</text>
+    </svg>
   `;
 }
 

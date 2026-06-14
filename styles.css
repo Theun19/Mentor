@@ -1956,6 +1956,42 @@ body.auth-locked .auth-screen {
     font-size: 13pt;
   }
 
+  .print-web-dashboard .print-donut-svg {
+    display: block;
+    width: 1.08in;
+    height: 1.08in;
+    margin: 0 auto;
+  }
+
+  .print-donut-track {
+    fill: none;
+    stroke: #e8eee5;
+    stroke-width: 12;
+  }
+
+  .print-donut-fill {
+    fill: none;
+    stroke: #54851f;
+    stroke-width: 12;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+  }
+
+  .print-donut-value {
+    fill: #385f15;
+    font-size: 17px;
+    font-weight: 900;
+    text-anchor: middle;
+  }
+
+  .print-donut-label {
+    fill: #647066;
+    font-size: 8px;
+    font-weight: 800;
+    text-anchor: middle;
+  }
+
   .print-web-dashboard .metric-value {
     font-size: 12pt;
   }
