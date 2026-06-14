@@ -1332,19 +1332,13 @@ function getOpenChecklistNotes() {
 
 function buildMentorAdvice(checklistSummary, lineSummary, ratingSummary) {
   const lowRatings = ratingSummary.filter((item) => item.value < 70);
-  const linesText = lineSummary.openLines.length
-    ? "Richt de volgende rijlessen op de nog openstaande lijnen en controleer per lijn of heen, terug, MAT en klaar volledig zijn afgevinkt."
-    : "Alle lijnen zijn afgerond; blijf de zelfstandigheid en vaste rijroutine borgen.";
   const ratingText = !ratingSummary.length
     ? ""
     : lowRatings.length
-    ? `Extra aandacht is gewenst voor: ${lowRatings.map((item) => item.label).join(", ")}.`
+    ? `De beoordelingen laten zien dat ${lowRatings.map((item) => item.label).join(", ")} nog onder het gewenste niveau zit.`
     : "De laatste beoordelingen laten een stabiel beeld boven de 70% zien.";
-  const checklistText = checklistSummary.open
-    ? "Werk de openstaande checklistonderdelen gericht af en voeg waar nodig korte notities toe."
-    : "De checklists zijn volledig afgerond.";
 
-  return `Conclusie: ${[checklistText, linesText, ratingText].filter(Boolean).join(" ")}`;
+  return ratingText ? `Conclusie: ${ratingText}` : "";
 }
 
 function lineTaskId(line, type) {
