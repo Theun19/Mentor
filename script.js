@@ -1186,34 +1186,30 @@ function buildMentorGeneratedText() {
     ? "Alle onderdelen zijn afgevinkt. De chauffeur is klaar om zelfstandig ingezet te worden."
     : "Volgende week volgt een nieuwe update van de voortgang.";
   const linesTable = buildOpenLinesTextTable(lineSummary.openLines);
+  const ratingLines = ratingSummary.slice(0, 4).map(formatRatingProgressText);
+  const notes = openNotes.slice(0, 3);
 
   return [
-    "MENTORVERSLAG CHAUFFEUR",
-    `Chauffeur: ${driverName}`,
-    mentorName ? `Mentor: ${mentorName}` : "",
-    personnelNumber ? `Personeelsnummer: ${personnelNumber}` : "",
-    startDate || endDate ? `Periode: ${startDate || "onbekend"} t/m ${endDate || "onbekend"}` : "",
+    `MENTORVERSLAG - ${driverName}`,
+    [mentorName ? `Mentor: ${mentorName}` : "", personnelNumber ? `Pers.nr.: ${personnelNumber}` : "", startDate || endDate ? `Periode: ${startDate || "-"} t/m ${endDate || "-"}` : ""].filter(Boolean).join(" | "),
     "",
-    "A1. Totale progressie",
-    `Totale progressie: ${totalProgress.done}/${totalProgress.total} punten afgerond (${totalProgress.percentage}%).`,
+    "VOORTGANG",
+    `${totalProgress.done}/${totalProgress.total} punten afgerond (${totalProgress.percentage}%). Lijnen: ${lineSummary.done}/${lineSummary.total} volledig afgerond.`,
     "",
-    "A2. Aftekenlijsten",
+    "AFTEKENLIJSTEN",
     checklistSummary.lists.map((list) => `- ${list.title}: ${list.done}/${list.total} punten afgetekend (${list.percentage}%).`).join("\n"),
     "",
-    "A3. Lijnverkenning",
-    `Lijnverkenning: ${lineSummary.done}/${lineSummary.total} lijnen volledig afgerond.`,
-    linesTable ? `Nog niet afgeronde lijnen:\n${linesTable}` : "",
+    linesTable ? `OPEN LIJNEN\n${linesTable}` : "",
     "",
-    ratingSummary.length ? `A4. Progressie beoordelingen\n${ratingSummary.map(formatRatingProgressText).join("\n")}` : "",
-    attentionText ? `A5. Aandacht voortgang\n${attentionText}` : "",
+    ratingLines.length ? `BEOORDELINGEN\n${ratingLines.join("\n")}` : "",
+    attentionText ? `AANDACHT\n${attentionText}` : "",
     "",
-    openNotes.length
-      ? `A6. Aandachtspunten uit notities\n${openNotes.map((note) => `- ${note}`).join("\n")}`
+    notes.length
+      ? `NOTITIES\n${notes.map((note) => `- ${note}`).join("\n")}`
       : "",
     "",
-    `A7. Advies vervolgstap\n${buildMentorAdvice(checklistSummary, lineSummary, ratingSummary)}`,
+    `ADVIES\n${buildMentorAdvice(checklistSummary, lineSummary, ratingSummary)}`,
     "",
-    "A8. Afsluiting",
     closingLine,
   ].filter((line) => line !== "").join("\n");
 }
@@ -1282,7 +1278,10 @@ function getTotalMentorProgress(checklistSummary, lineSummary) {
 function buildOpenLinesTextTable(openLines) {
   if (!openLines.length) return "";
 
-  return openLines.map((item) => `- ${item.line}`).join("\n");
+  const visibleLines = openLines.slice(0, 12).map((item) => `- ${item.line}`);
+  const extraCount = openLines.length - visibleLines.length;
+  if (extraCount > 0) visibleLines.push(`- +${extraCount} extra lijnen`);
+  return visibleLines.join("\n");
 }
 
 function formatRatingProgressText(item) {
@@ -1749,9 +1748,22 @@ function buildPrintAiHtml() {
     ${buildPrintHeader("Tekst over chauffeur")}
     <div class="print-panel">
       <h2>Gegenereerde mentortekst</h2>
-      <div class="print-ai-text">${escapeHtml(text).replace(/\n/g, "<br>")}</div>
+      <div class="print-ai-text">${formatMentorTextForPrint(text)}</div>
     </div>
   `;
+}
+
+function formatMentorTextForPrint(text) {
+  const headingPattern = /^(MENTORVERSLAG.*|VOORTGANG|AFTEKENLIJSTEN|OPEN LIJNEN|BEOORDELINGEN|AANDACHT|NOTITIES|ADVIES)$/;
+  return text
+    .split("\n")
+    .map((line) => {
+      const cleanLine = line.trim();
+      if (!cleanLine) return "<br>";
+      if (headingPattern.test(cleanLine)) return `<h3>${escapeHtml(cleanLine)}</h3>`;
+      return `<p>${escapeHtml(line)}</p>`;
+    })
+    .join("");
 }
 
 function getCompactPrintAiText() {
