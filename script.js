@@ -1188,27 +1188,32 @@ function buildMentorGeneratedText() {
   const linesTable = buildOpenLinesTextTable(lineSummary.openLines);
 
   return [
-    `Mentorverslag chauffeur: ${driverName}`,
+    "MENTORVERSLAG CHAUFFEUR",
+    `Chauffeur: ${driverName}`,
     mentorName ? `Mentor: ${mentorName}` : "",
     personnelNumber ? `Personeelsnummer: ${personnelNumber}` : "",
     startDate || endDate ? `Periode: ${startDate || "onbekend"} t/m ${endDate || "onbekend"}` : "",
     "",
+    "A1. Totale progressie",
     `Totale progressie: ${totalProgress.done}/${totalProgress.total} punten afgerond (${totalProgress.percentage}%).`,
     "",
-    "Aftekenlijsten:",
+    "A2. Aftekenlijsten",
     checklistSummary.lists.map((list) => `- ${list.title}: ${list.done}/${list.total} punten afgetekend (${list.percentage}%).`).join("\n"),
     "",
+    "A3. Lijnverkenning",
     `Lijnverkenning: ${lineSummary.done}/${lineSummary.total} lijnen volledig afgerond.`,
-    linesTable ? `Buslijnen die nog niet volledig zijn afgevinkt:\n${linesTable}` : "",
+    linesTable ? `Nog niet afgeronde lijnen:\n${linesTable}` : "",
     "",
-    ratingSummary.length ? `Progressie beoordelingen:\n${ratingSummary.map(formatRatingProgressText).join("\n")}` : "",
-    attentionText ? `Aandacht voortgang:\n${attentionText}` : "",
+    ratingSummary.length ? `A4. Progressie beoordelingen\n${ratingSummary.map(formatRatingProgressText).join("\n")}` : "",
+    attentionText ? `A5. Aandacht voortgang\n${attentionText}` : "",
     "",
     openNotes.length
-      ? `Aandachtspunten uit notities:\n${openNotes.map((note) => `- ${note}`).join("\n")}`
+      ? `A6. Aandachtspunten uit notities\n${openNotes.map((note) => `- ${note}`).join("\n")}`
       : "",
     "",
-    buildMentorAdvice(checklistSummary, lineSummary, ratingSummary),
+    `A7. Advies vervolgstap\n${buildMentorAdvice(checklistSummary, lineSummary, ratingSummary)}`,
+    "",
+    "A8. Afsluiting",
     closingLine,
   ].filter((line) => line !== "").join("\n");
 }
@@ -1277,19 +1282,7 @@ function getTotalMentorProgress(checklistSummary, lineSummary) {
 function buildOpenLinesTextTable(openLines) {
   if (!openLines.length) return "";
 
-  const rows = openLines.map((item) => {
-    const openSteps = item.states
-      .filter((state) => !state.done)
-      .map((state) => lineTaskLabel(state.type))
-      .join(", ");
-    return `${item.line.padEnd(14, " ")} | ${openSteps}`;
-  });
-
-  return [
-    "Lijn           | Nog te doen",
-    "---------------|--------------------------",
-    ...rows,
-  ].join("\n");
+  return openLines.map((item) => `- ${item.line}`).join("\n");
 }
 
 function formatRatingProgressText(item) {

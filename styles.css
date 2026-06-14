@@ -930,9 +930,10 @@ body.auth-locked .auth-screen {
 }
 
 .mentor-ai-text textarea {
-  min-height: 9rem;
+  min-height: 15rem;
   resize: vertical;
-  line-height: 1.45;
+  line-height: 1.5;
+  font-family: Arial, "Helvetica Neue", sans-serif;
 }
 
 .table-check thead th,
