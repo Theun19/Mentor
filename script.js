@@ -1209,7 +1209,7 @@ function buildMentorGeneratedText() {
       ? `NOTITIES\n${notes.map((note) => `- ${note}`).join("\n")}`
       : "",
     "",
-    `ADVIES\n${buildMentorAdvice(checklistSummary, lineSummary, ratingSummary)}`,
+    `CONCLUSIE\n${buildMentorAdvice(checklistSummary, lineSummary, ratingSummary)}`,
     "",
     closingLine,
   ].filter((line) => line !== "").join("\n");
@@ -1344,7 +1344,7 @@ function buildMentorAdvice(checklistSummary, lineSummary, ratingSummary) {
     ? "Werk de openstaande checklistonderdelen gericht af en voeg waar nodig korte notities toe."
     : "De checklists zijn volledig afgerond.";
 
-  return `Advies vervolgstap: ${[checklistText, linesText, ratingText].filter(Boolean).join(" ")}`;
+  return `Conclusie: ${[checklistText, linesText, ratingText].filter(Boolean).join(" ")}`;
 }
 
 function lineTaskId(line, type) {
@@ -1755,7 +1755,7 @@ function buildPrintAiHtml() {
 }
 
 function formatMentorTextForPrint(text) {
-  const headingPattern = /^(MENTORVERSLAG.*|VOORTGANG|AFTEKENLIJSTEN|OPEN LIJNEN|BEOORDELINGEN|AANDACHT|NOTITIES|ADVIES)$/;
+  const headingPattern = /^(MENTORVERSLAG.*|VOORTGANG|AFTEKENLIJSTEN|OPEN LIJNEN|BEOORDELINGEN|AANDACHT|NOTITIES|CONCLUSIE)$/;
   return text
     .split("\n")
     .map((line) => {
