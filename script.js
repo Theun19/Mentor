@@ -1180,6 +1180,12 @@ function buildMentorGeneratedText() {
   const lineSummary = getLineMentorSummary();
   const ratingSummary = getRatingMentorSummary();
   const openNotes = getOpenChecklistNotes();
+  const totalProgress = getTotalMentorProgress(checklistSummary, lineSummary);
+  const attentionText = buildProgressAttentionText(lineSummary, ratingSummary);
+  const closingLine = totalProgress.open === 0
+    ? "Alle onderdelen zijn afgevinkt. De chauffeur is klaar om zelfstandig ingezet te worden."
+    : "Volgende week volgt een nieuwe update van de voortgang.";
+  const linesTable = buildOpenLinesTextTable(lineSummary.openLines);
 
   return [
     `Mentorverslag chauffeur: ${driverName}`,
@@ -1187,42 +1193,55 @@ function buildMentorGeneratedText() {
     personnelNumber ? `Personeelsnummer: ${personnelNumber}` : "",
     startDate || endDate ? `Periode: ${startDate || "onbekend"} t/m ${endDate || "onbekend"}` : "",
     "",
-    `Algemene voortgang: ${checklistSummary.done}/${checklistSummary.total} onderdelen zijn afgerond (${checklistSummary.percentage}%). ${checklistSummary.open} onderdelen staan nog open.`,
-    `Lijnverkenning: ${lineSummary.done}/${lineSummary.total} lijnen zijn afgerond. Nog open: ${lineSummary.openLinesText}.`,
+    `Totale progressie: ${totalProgress.done}/${totalProgress.total} punten afgerond (${totalProgress.percentage}%).`,
     "",
-    "Beoordeling rijgedrag:",
-    ratingSummary.length
-      ? ratingSummary.map((item) => `- ${item.label}: ${item.value}%${item.date ? ` op ${item.date}` : ""}`).join("\n")
-      : "- Nog geen beoordelingsmeetpunten opgeslagen.",
+    "Aftekenlijsten:",
+    checklistSummary.lists.map((list) => `- ${list.title}: ${list.done}/${list.total} punten afgetekend (${list.percentage}%).`).join("\n"),
+    "",
+    `Lijnverkenning: ${lineSummary.done}/${lineSummary.total} lijnen volledig afgerond.`,
+    linesTable ? `Buslijnen die nog niet volledig zijn afgevinkt:\n${linesTable}` : "",
+    "",
+    ratingSummary.length ? `Progressie beoordelingen:\n${ratingSummary.map(formatRatingProgressText).join("\n")}` : "",
+    attentionText ? `Aandacht voortgang:\n${attentionText}` : "",
     "",
     openNotes.length
       ? `Aandachtspunten uit notities:\n${openNotes.map((note) => `- ${note}`).join("\n")}`
-      : "Aandachtspunten uit notities: er zijn geen open notities ingevuld.",
+      : "",
     "",
     buildMentorAdvice(checklistSummary, lineSummary, ratingSummary),
+    closingLine,
   ].filter((line) => line !== "").join("\n");
 }
 
 function getChecklistMentorSummary() {
-  const checks = [...document.querySelectorAll(".task-check")];
-  const done = checks.filter((input) => input.checked).length;
-  const total = checks.length;
+  const lists = checklists.map((list, listIndex) => {
+    const total = list.items.length;
+    const done = list.items.filter((_, itemIndex) => getSaved(`list-${listIndex}-item-${itemIndex}`) === "true").length;
+    const open = total - done;
+    const percentage = total ? Math.round((done / total) * 100) : 0;
+    return { title: list.title, done, total, open, percentage };
+  });
+  const done = lists.reduce((sum, list) => sum + list.done, 0);
+  const total = lists.reduce((sum, list) => sum + list.total, 0);
   const open = total - done;
   const percentage = total ? Math.round((done / total) * 100) : 0;
 
-  return { done, total, open, percentage };
+  return { done, total, open, percentage, lists };
 }
 
 function getLineMentorSummary() {
   const summary = getSortedLineSummary();
   const doneLines = summary.filter((item) => item.done);
-  const openLines = summary.filter((item) => !item.done).map((item) => item.line);
+  const openLines = summary.filter((item) => !item.done);
+  const doneSteps = summary.reduce((sum, item) => sum + item.states.filter((state) => state.done).length, 0);
+  const totalSteps = summary.reduce((sum, item) => sum + item.states.length, 0);
 
   return {
     done: doneLines.length,
     total: summary.length,
+    doneSteps,
+    totalSteps,
     openLines,
-    openLinesText: openLines.length ? openLines.slice(0, 8).join(", ") + (openLines.length > 8 ? "..." : "") : "geen",
   };
 }
 
@@ -1230,15 +1249,81 @@ function getRatingMentorSummary() {
   return getRatingRowsForProgress().map((rating) => {
     const latest = rating.history[rating.history.length - 1];
     if (!latest) return null;
+    const first = rating.history[0];
+    const difference = first ? latest.value - first.value : 0;
 
     return {
       label: rating.id === "rating-angstvallig-tot-roekeloos"
         ? getBalanceChartTitle(rating.input, rating.history)
         : rating.label,
       value: latest.value,
+      startValue: first ? first.value : latest.value,
+      difference,
       date: formatDayLabel(latest.time),
+      startDate: first ? formatDayLabel(first.time) : "",
     };
   }).filter(Boolean);
+}
+
+function getTotalMentorProgress(checklistSummary, lineSummary) {
+  const total = checklistSummary.total + lineSummary.totalSteps;
+  const done = checklistSummary.done + lineSummary.doneSteps;
+  const open = total - done;
+  const percentage = total ? Math.round((done / total) * 100) : 0;
+
+  return { done, total, open, percentage };
+}
+
+function buildOpenLinesTextTable(openLines) {
+  if (!openLines.length) return "";
+
+  const rows = openLines.map((item) => {
+    const openSteps = item.states
+      .filter((state) => !state.done)
+      .map((state) => lineTaskLabel(state.type))
+      .join(", ");
+    return `${item.line.padEnd(14, " ")} | ${openSteps}`;
+  });
+
+  return [
+    "Lijn           | Nog te doen",
+    "---------------|--------------------------",
+    ...rows,
+  ].join("\n");
+}
+
+function formatRatingProgressText(item) {
+  const absoluteDifference = Math.abs(item.difference);
+  const movement = item.difference > 0
+    ? `verbeterd met ${absoluteDifference}%`
+    : item.difference < 0
+      ? `gedaald met ${absoluteDifference}%`
+      : "gelijk gebleven";
+  const dateText = item.startDate && item.startDate !== item.date
+    ? ` (${item.startDate} naar ${item.date})`
+    : item.date
+      ? ` (${item.date})`
+      : "";
+
+  return `- ${item.label}: ${item.startValue}% naar ${item.value}%, ${movement}${dateText}.`;
+}
+
+function buildProgressAttentionText(lineSummary, ratingSummary) {
+  const messages = [];
+  const linePercentage = lineSummary.totalSteps ? Math.round((lineSummary.doneSteps / lineSummary.totalSteps) * 100) : 0;
+  const lowRatings = ratingSummary.filter((item) => item.value < 60);
+
+  if (lineSummary.openLines.length && linePercentage < 40) {
+    messages.push(`- De lijnverkenning laat nog beperkte voortgang zien: ${lineSummary.doneSteps}/${lineSummary.totalSteps} lijnonderdelen zijn afgevinkt (${linePercentage}%). Plan gericht tijd in om de openstaande lijnen verder af te ronden.`);
+  } else if (lineSummary.openLines.length > Math.ceil(lineSummary.total * 0.6)) {
+    messages.push(`- Er staan nog relatief veel lijnen open: ${lineSummary.openLines.length}/${lineSummary.total} lijnen zijn nog niet volledig afgevinkt.`);
+  }
+
+  if (lowRatings.length) {
+    messages.push(`- De volgende beoordelingen zitten onder de 60% en vragen extra aandacht: ${lowRatings.map((item) => `${item.label} (${item.value}%)`).join(", ")}.`);
+  }
+
+  return messages.join("\n");
 }
 
 function getOpenChecklistNotes() {
@@ -1257,14 +1342,16 @@ function buildMentorAdvice(checklistSummary, lineSummary, ratingSummary) {
   const linesText = lineSummary.openLines.length
     ? "Richt de volgende rijlessen op de nog openstaande lijnen en controleer per lijn of heen, terug, MAT en klaar volledig zijn afgevinkt."
     : "Alle lijnen zijn afgerond; blijf de zelfstandigheid en vaste rijroutine borgen.";
-  const ratingText = lowRatings.length
+  const ratingText = !ratingSummary.length
+    ? ""
+    : lowRatings.length
     ? `Extra aandacht is gewenst voor: ${lowRatings.map((item) => item.label).join(", ")}.`
     : "De laatste beoordelingen laten een stabiel beeld boven de 70% zien.";
   const checklistText = checklistSummary.open
     ? "Werk de openstaande checklistonderdelen gericht af en voeg waar nodig korte notities toe."
     : "De checklists zijn volledig afgerond.";
 
-  return `Advies vervolgstap: ${checklistText} ${linesText} ${ratingText}`;
+  return `Advies vervolgstap: ${[checklistText, linesText, ratingText].filter(Boolean).join(" ")}`;
 }
 
 function lineTaskId(line, type) {
