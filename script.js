@@ -1188,18 +1188,19 @@ function buildMentorGeneratedText() {
   const linesTable = buildOpenLinesTextTable(lineSummary.openLines);
   const ratingLines = ratingSummary.slice(0, 4).map(formatRatingProgressText);
   const notes = openNotes.slice(0, 3);
+  const metaLine = [mentorName ? `Mentor: ${mentorName}` : "", personnelNumber ? `Pers.nr.: ${personnelNumber}` : "", startDate || endDate ? `Periode: ${startDate || "-"} t/m ${endDate || "-"}` : ""].filter(Boolean).join(" | ");
 
   return [
     `MENTORVERSLAG - ${driverName}`,
-    [mentorName ? `Mentor: ${mentorName}` : "", personnelNumber ? `Pers.nr.: ${personnelNumber}` : "", startDate || endDate ? `Periode: ${startDate || "-"} t/m ${endDate || "-"}` : ""].filter(Boolean).join(" | "),
+    metaLine,
     "",
     "VOORTGANG",
-    `${totalProgress.done}/${totalProgress.total} punten afgerond (${totalProgress.percentage}%). Lijnen: ${lineSummary.done}/${lineSummary.total} volledig afgerond.`,
+    `De totale voortgang staat op ${totalProgress.done}/${totalProgress.total} punten (${totalProgress.percentage}%). Van de lijnverkenning zijn ${lineSummary.done}/${lineSummary.total} lijnen volledig afgerond.`,
     "",
     "AFTEKENLIJSTEN",
     checklistSummary.lists.map((list) => `- ${list.title}: ${list.done}/${list.total} punten afgetekend (${list.percentage}%).`).join("\n"),
     "",
-    linesTable ? `OPEN LIJNEN\n${linesTable}` : "",
+    linesTable ? `OPEN LIJNEN\nDe volgende lijnen zijn nog niet volledig afgerond:\n${linesTable}` : "",
     "",
     ratingLines.length ? `BEOORDELINGEN\n${ratingLines.join("\n")}` : "",
     attentionText ? `AANDACHT\n${attentionText}` : "",
@@ -1297,7 +1298,7 @@ function formatRatingProgressText(item) {
       ? ` (${item.date})`
       : "";
 
-  return `- ${item.label}: ${item.startValue}% naar ${item.value}%, ${movement}${dateText}.`;
+  return `- ${item.label}: van ${item.startValue}% naar ${item.value}%, ${movement}${dateText}.`;
 }
 
 function buildProgressAttentionText(lineSummary, ratingSummary) {
@@ -1306,16 +1307,16 @@ function buildProgressAttentionText(lineSummary, ratingSummary) {
   const lowRatings = ratingSummary.filter((item) => item.value < 60);
 
   if (lineSummary.openLines.length && linePercentage < 40) {
-    messages.push(`- De lijnverkenning laat nog beperkte voortgang zien: ${lineSummary.doneSteps}/${lineSummary.totalSteps} lijnonderdelen zijn afgevinkt (${linePercentage}%). Plan gericht tijd in om de openstaande lijnen verder af te ronden.`);
+    messages.push(`De lijnverkenning laat nog beperkte voortgang zien: ${lineSummary.doneSteps}/${lineSummary.totalSteps} lijnonderdelen zijn afgevinkt (${linePercentage}%). Plan gericht tijd in om de openstaande lijnen verder af te ronden.`);
   } else if (lineSummary.openLines.length > Math.ceil(lineSummary.total * 0.6)) {
-    messages.push(`- Er staan nog relatief veel lijnen open: ${lineSummary.openLines.length}/${lineSummary.total} lijnen zijn nog niet volledig afgevinkt.`);
+    messages.push(`Er staan nog relatief veel lijnen open: ${lineSummary.openLines.length}/${lineSummary.total} lijnen zijn nog niet volledig afgevinkt.`);
   }
 
   if (lowRatings.length) {
-    messages.push(`- De volgende beoordelingen zitten onder de 60% en vragen extra aandacht: ${lowRatings.map((item) => `${item.label} (${item.value}%)`).join(", ")}.`);
+    messages.push(`De volgende beoordelingen zitten onder de 60% en vragen extra aandacht: ${lowRatings.map((item) => `${item.label} (${item.value}%)`).join(", ")}.`);
   }
 
-  return messages.join("\n");
+  return messages.join("\n\n");
 }
 
 function getOpenChecklistNotes() {
