@@ -364,6 +364,21 @@ body.auth-locked .auth-screen {
   vector-effect: non-scaling-stroke;
 }
 
+.balance-point-circle {
+  fill: #ffffff;
+  stroke: var(--brand-dark);
+  stroke-width: 2.4;
+  vector-effect: non-scaling-stroke;
+}
+
+.balance-point-letter {
+  fill: var(--brand-dark);
+  font-size: 0.55rem;
+  font-weight: 900;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
 .line-chart-trend {
   display: flex;
   flex-wrap: wrap;
@@ -1925,6 +1940,20 @@ body.signature-editing::after {
     stroke: #183d18;
     stroke-width: 3.2;
     r: 4.2;
+  }
+
+  .print-graph .balance-point-circle,
+  .print-web-dashboard .balance-point-circle {
+    fill: #ffffff;
+    stroke: #183d18;
+    stroke-width: 3.2;
+  }
+
+  .print-graph .balance-point-letter,
+  .print-web-dashboard .balance-point-letter {
+    fill: #183d18;
+    font-size: 0.68rem;
+    font-weight: 900;
   }
 
   .print-graph .line-chart-help,

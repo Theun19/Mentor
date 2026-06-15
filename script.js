@@ -1121,7 +1121,7 @@ function updateRatingChart() {
     item.innerHTML = `
       <div class="line-chart-title">${label}</div>
       <div class="line-chart-frame">
-        ${renderLineGraph(graphHistory, 100)}
+        ${isBalance ? renderBalancePointGraph(graphHistory, input) : renderLineGraph(graphHistory, 100)}
       </div>
     `;
     item.addEventListener("click", () => openChartZoom(label, item));
@@ -1476,6 +1476,7 @@ function getRatingHistory(input) {
     {
       time: Date.now(),
       value: getRatingScore(input),
+      ...(input.dataset.ratingType === "balance" ? { position: Math.round(Number(input.value)) } : {}),
     },
   ];
 }
@@ -1631,6 +1632,65 @@ function renderLineGraph(history, maxValue) {
       ${helperText}
     </svg>
   `;
+}
+
+function renderBalancePointGraph(history, input) {
+  const width = 240;
+  const height = 112;
+  const paddingLeft = 28;
+  const paddingRight = 10;
+  const paddingTop = 10;
+  const paddingBottom = 20;
+  const maxValue = 100;
+  const points = history.map((entry, index) => {
+    const x = history.length === 1
+      ? paddingLeft + (width - paddingLeft - paddingRight) / 2
+      : paddingLeft + (index / (history.length - 1)) * (width - paddingLeft - paddingRight);
+    const y = height - paddingBottom - (entry.value / maxValue) * (height - paddingTop - paddingBottom);
+    const label = Number.isFinite(Number(entry.position))
+      ? getBalanceEntryLabel(entry)
+      : getBalancePositionLabel(Number(input.value));
+    return { x, y, label, letter: getBalanceLabelLetter(label) };
+  });
+  const helperText = points.length > 1
+    ? ""
+    : `<text class="line-chart-help" x="${paddingLeft + 6}" y="${paddingTop + 14}">sla nog een meetpunt op</text>`;
+  const xLabels = points.map((point, index) => {
+    const label = formatDayLabel(history[index].time);
+    return `<text class="line-chart-x-label" x="${point.x}" y="${height - 4}">${label}</text>`;
+  }).join("");
+  const midY = height - paddingBottom - 0.5 * (height - paddingTop - paddingBottom);
+
+  return `
+    <svg class="line-chart-svg balance-point-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Puntengrafiek balans">
+      <line class="line-chart-grid" x1="${paddingLeft}" y1="${paddingTop}" x2="${width - paddingRight}" y2="${paddingTop}" />
+      <line class="line-chart-grid" x1="${paddingLeft}" y1="${midY}" x2="${width - paddingRight}" y2="${midY}" />
+      <line class="line-chart-grid" x1="${paddingLeft}" y1="${height - paddingBottom}" x2="${width - paddingRight}" y2="${height - paddingBottom}" />
+      <text class="line-chart-y-label" x="4" y="${paddingTop + 3}">100</text>
+      <text class="line-chart-y-label" x="4" y="${midY + 3}">50</text>
+      <text class="line-chart-y-label" x="4" y="${height - paddingBottom + 3}">0</text>
+      ${points.map((point) => `
+        <g class="balance-point" aria-label="${escapeHtml(point.label)}">
+          <circle class="balance-point-circle" cx="${point.x}" cy="${point.y}" r="7.5" />
+          <text class="balance-point-letter" x="${point.x}" y="${point.y + 3}">${point.letter}</text>
+        </g>
+      `).join("")}
+      ${xLabels}
+      ${helperText}
+    </svg>
+  `;
+}
+
+function getBalanceLabelLetter(label) {
+  const letters = {
+    Angstvallig: "A",
+    Onzeker: "O",
+    Zelfverzekerd: "Z",
+    Lichtzinnig: "L",
+    Roekeloos: "R",
+  };
+
+  return letters[label] || "?";
 }
 
 function formatDayLabel(timestamp) {
