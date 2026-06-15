@@ -22,7 +22,9 @@ const ratingItems = [
     id: "rating-angstvallig-tot-roekeloos",
     type: "balance",
     left: "Angstvallig",
+    leftMid: "Onzeker",
     center: "Zelfverzekerd",
+    rightMid: "Overmoedig",
     right: "Roekeloos",
   },
 ];
@@ -545,7 +547,9 @@ function renderRatings() {
             isBalance
               ? `<div class="rating-scale-labels">
                   <span>${item.left}</span>
+                  <span>${item.leftMid}</span>
                   <span>${item.center}</span>
+                  <span>${item.rightMid}</span>
                   <span>${item.right}</span>
                 </div>`
               : ""
@@ -565,7 +569,9 @@ function renderBalanceParabola(id, item) {
         <path class="balance-curve-path" d="M 12 104 Q 110 -80 208 104" />
         <circle class="balance-curve-marker" id="${id}-marker" cx="110" cy="12" r="6" />
         <text class="balance-curve-label" x="12" y="116">${item.left}</text>
+        <text class="balance-curve-label balance-curve-label-mid-left" x="61" y="56">${item.leftMid}</text>
         <text class="balance-curve-label balance-curve-label-center" x="110" y="18">${item.center}</text>
+        <text class="balance-curve-label balance-curve-label-mid-right" x="159" y="56">${item.rightMid}</text>
         <text class="balance-curve-label balance-curve-label-end" x="208" y="116">${item.right}</text>
       </svg>
     </div>
@@ -663,7 +669,10 @@ function updateProgress() {
 }
 
 function updateRatingValue(input) {
-  document.getElementById(`${input.id}-value`).textContent = `${getRatingScore(input)}%`;
+  const score = getRatingScore(input);
+  document.getElementById(`${input.id}-value`).textContent = input.dataset.ratingType === "balance"
+    ? getBalancePositionLabel(Number(input.value))
+    : `${score}%`;
   updateBalanceMarker(input);
 }
 
@@ -674,6 +683,25 @@ function getRatingScore(input) {
   }
 
   return Math.round(value);
+}
+
+function getBalancePositionLabel(position) {
+  const value = Math.max(0, Math.min(100, Number(position) || 0));
+  if (value < 12.5) return "Angstvallig";
+  if (value < 37.5) return "Onzeker";
+  if (value <= 62.5) return "Zelfverzekerd";
+  if (value < 87.5) return "Overmoedig";
+  return "Roekeloos";
+}
+
+function getBalanceEntryLabel(entry) {
+  if (Number.isFinite(Number(entry?.position))) {
+    return getBalancePositionLabel(Number(entry.position));
+  }
+  const value = Number(entry?.value);
+  if (value >= 95) return "Zelfverzekerd";
+  if (value >= 60) return "Onzeker";
+  return "Angstvallig";
 }
 
 function normalizeRatingValue(input, savedValue) {
@@ -719,7 +747,7 @@ function getRatingRowsForProgress() {
     const item = ratingItems.find((rating) => rating.id === input.dataset.id);
     return {
       id: input.dataset.id,
-      label: item?.type === "balance" ? "Angstvallig / Zelfverzekerd / Roekeloos" : item?.label || input.dataset.id,
+      label: item?.type === "balance" ? "Angstvallig / Onzeker / Zelfverzekerd / Overmoedig / Roekeloos" : item?.label || input.dataset.id,
       input,
       history: getStoredRatingHistory(input),
     };
@@ -798,8 +826,10 @@ function renderRatingProgressTable() {
           <th scope="row">${rating.label}</th>
           ${dayKeys.map((dayKey, index) => {
             const entry = dayKey ? rating.history.find((historyEntry) => getDayKey(historyEntry.time) === dayKey) : null;
+            const balanceLabel = entry && rating.input.dataset.ratingType === "balance" ? getBalanceEntryLabel(entry) : "";
             return `
               <td>
+                ${balanceLabel ? `<div class="rating-table-balance-label">${escapeHtml(balanceLabel)}</div>` : ""}
                 <input
                   class="rating-table-input rating-table-score-input"
                   type="number"
@@ -1134,10 +1164,7 @@ function renderRatingPointList(history) {
 
 function getBalanceChartTitle(input, history = []) {
   const latestEntry = history[history.length - 1];
-  const score = latestEntry ? Number(latestEntry.value) : getRatingScore(input);
-
-  if (score >= 70) return "Zelfverzekerd";
-  return "Angstvallig tot roekeloos";
+  return latestEntry ? getBalanceEntryLabel(latestEntry) : getBalancePositionLabel(Number(input.value));
 }
 
 function openChartZoom(title, sourceItem) {
@@ -1256,7 +1283,7 @@ function getRatingMentorSummary() {
 
     return {
       label: rating.id === "rating-angstvallig-tot-roekeloos"
-        ? getBalanceChartTitle(rating.input, rating.history)
+        ? getBalanceEntryLabel(latest)
         : rating.label,
       value: latest.value,
       startValue: first ? first.value : latest.value,
@@ -1482,6 +1509,7 @@ function saveRatingHistory(input, force = false, timestamp = Date.now()) {
     time: timestamp,
     value,
     scoreVersion: 2,
+    ...(input.dataset.ratingType === "balance" ? { position: Math.round(Number(input.value)) } : {}),
   });
 
   const sortedHistory = withoutSelectedDay

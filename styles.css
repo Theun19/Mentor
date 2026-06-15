@@ -756,18 +756,27 @@ body.signature-editing::after {
   text-anchor: middle;
 }
 
+.balance-curve-label-mid-left,
+.balance-curve-label-mid-right {
+  fill: var(--ink);
+  font-size: 0.54rem;
+  text-anchor: middle;
+}
+
 .balance-curve-label-end {
   text-anchor: end;
 }
 
 .rating-scale-labels {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.35rem;
   margin-top: -0.35rem;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .rating-value {
@@ -941,6 +950,15 @@ body.signature-editing::after {
   border-color: var(--brand);
   background: #ffffff;
   box-shadow: 0 0 0 0.12rem rgba(99, 142, 50, 0.18);
+}
+
+.rating-table-balance-label {
+  margin-bottom: 0.14rem;
+  color: var(--brand-dark);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .rating-table-date-input {
