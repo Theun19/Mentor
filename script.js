@@ -24,7 +24,7 @@ const ratingItems = [
     left: "Angstvallig",
     leftMid: "Onzeker",
     center: "Zelfverzekerd",
-    rightMid: "Overmoedig",
+    rightMid: "Lichtzinnig",
     right: "Roekeloos",
   },
 ];
@@ -690,7 +690,7 @@ function getBalancePositionLabel(position) {
   if (value < 12.5) return "Angstvallig";
   if (value < 37.5) return "Onzeker";
   if (value <= 62.5) return "Zelfverzekerd";
-  if (value < 87.5) return "Overmoedig";
+  if (value < 87.5) return "Lichtzinnig";
   return "Roekeloos";
 }
 
@@ -747,7 +747,7 @@ function getRatingRowsForProgress() {
     const item = ratingItems.find((rating) => rating.id === input.dataset.id);
     return {
       id: input.dataset.id,
-      label: item?.type === "balance" ? "Angstvallig / Onzeker / Zelfverzekerd / Overmoedig / Roekeloos" : item?.label || input.dataset.id,
+      label: item?.type === "balance" ? "Angstvallig / Onzeker / Zelfverzekerd / Lichtzinnig / Roekeloos" : item?.label || input.dataset.id,
       input,
       history: getStoredRatingHistory(input),
     };
@@ -826,10 +826,17 @@ function renderRatingProgressTable() {
           <th scope="row">${rating.label}</th>
           ${dayKeys.map((dayKey, index) => {
             const entry = dayKey ? rating.history.find((historyEntry) => getDayKey(historyEntry.time) === dayKey) : null;
-            const balanceLabel = entry && rating.input.dataset.ratingType === "balance" ? getBalanceEntryLabel(entry) : "";
+            const isBalance = rating.input.dataset.ratingType === "balance";
+            const balanceLabel = entry && isBalance ? getBalanceEntryLabel(entry) : "";
+            if (isBalance) {
+              return `
+                <td>
+                  <div class="rating-table-balance-label">${entry ? escapeHtml(balanceLabel) : "-"}</div>
+                </td>
+              `;
+            }
             return `
               <td>
-                ${balanceLabel ? `<div class="rating-table-balance-label">${escapeHtml(balanceLabel)}</div>` : ""}
                 <input
                   class="rating-table-input rating-table-score-input"
                   type="number"
