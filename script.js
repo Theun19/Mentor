@@ -2648,9 +2648,9 @@ function bindEvents() {
   });
   window.addEventListener("beforeprint", () => buildPrintSummary(currentPrintTarget));
 
-  document.getElementById("infoEmailShareBtn").addEventListener("click", shareInfoByEmail);
+  document.getElementById("infoEmailShareBtn")?.addEventListener("click", shareInfoByEmail);
 
-  document.getElementById("infoWhatsappBtn").addEventListener("click", shareInfoByWhatsapp);
+  document.getElementById("infoWhatsappBtn")?.addEventListener("click", shareInfoByWhatsapp);
 
   document.getElementById("resetBtn").addEventListener("click", () => {
     if (!window.confirm("Alle afgevinkte onderdelen en notities wissen?")) return;
