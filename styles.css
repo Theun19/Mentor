@@ -954,6 +954,16 @@ body.signature-editing::after {
 
 .rating-table-date-cell {
   padding: 0.25rem 0.2rem !important;
+  cursor: pointer;
+}
+
+.rating-table-date-cell.active-rating-day {
+  background: #dff0d4 !important;
+  box-shadow: inset 0 0 0 2px var(--brand);
+}
+
+.rating-table-date-cell.active-rating-day .rating-table-date-input {
+  color: var(--brand-dark);
 }
 
 .rating-column-drag,

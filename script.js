@@ -686,12 +686,13 @@ function getRatingScore(input) {
 }
 
 function getBalancePositionLabel(position) {
-  const value = Math.max(0, Math.min(100, Number(position) || 0));
-  if (value < 12.5) return "Angstvallig";
-  if (value < 37.5) return "Onzeker";
-  if (value <= 62.5) return "Zelfverzekerd";
-  if (value < 87.5) return "Lichtzinnig";
-  return "Roekeloos";
+  const positionValue = Math.max(0, Math.min(100, Number(position) || 0));
+  const score = Math.max(0, Math.round(100 - (Math.abs(positionValue - 50) / 50) ** 2 * 100));
+  const isLeftSide = positionValue < 50;
+
+  if (score >= 80) return "Zelfverzekerd";
+  if (score >= 60) return isLeftSide ? "Onzeker" : "Lichtzinnig";
+  return isLeftSide ? "Angstvallig" : "Roekeloos";
 }
 
 function getBalanceEntryLabel(entry) {
@@ -699,7 +700,7 @@ function getBalanceEntryLabel(entry) {
     return getBalancePositionLabel(Number(entry.position));
   }
   const value = Number(entry?.value);
-  if (value >= 95) return "Zelfverzekerd";
+  if (value >= 80) return "Zelfverzekerd";
   if (value >= 60) return "Onzeker";
   return "Angstvallig";
 }
@@ -791,13 +792,14 @@ function renderRatingProgressTable() {
 
   const ratings = getRatingRowsForProgress();
   const dayKeys = getRatingTableDayKeys(ratings);
+  const activeDayKey = getActiveRatingDayKey();
 
   table.innerHTML = `
     <tbody>
       <tr>
         <th scope="row">Dag</th>
         ${dayKeys.map((dayKey, index) => `
-          <td class="rating-table-date-cell" data-day-key="${escapeHtml(dayKey)}" data-column-index="${index}">
+          <td class="rating-table-date-cell ${dayKey && dayKey === activeDayKey ? "active-rating-day" : ""}" data-day-key="${escapeHtml(dayKey)}" data-column-index="${index}">
             ${
               dayKey
                 ? `
@@ -884,6 +886,46 @@ function getRatingTableDayKeys(ratings, includePadding = true) {
   if (!includePadding) return orderedKeys;
 
   return orderedKeys.concat(Array.from({ length: Math.max(0, 30 - orderedKeys.length) }, () => ""));
+}
+
+function getActiveRatingDayKey() {
+  const timestamp = getSelectedRatingTimestamp();
+  return timestamp ? getDayKey(timestamp) : "";
+}
+
+function activateRatingDayColumn(dayKey) {
+  if (!dayKey) return;
+
+  const input = document.getElementById("ratingDateInput");
+  if (input) input.value = formatDateInputValue(dayKey);
+  applyRatingDayToSliders(dayKey);
+  renderRatingProgressTable();
+  showRatingSaveStatus(timestampFromDayKey(dayKey), `Actieve dag voor schuiven: ${formatDayLabel(timestampFromDayKey(dayKey))}`);
+}
+
+function applyRatingDayToSliders(dayKey) {
+  getRatingRowsForProgress().forEach((rating) => {
+    const entry = rating.history.find((historyEntry) => getDayKey(historyEntry.time) === dayKey);
+    if (!entry) return;
+
+    if (rating.input.dataset.ratingType === "balance") {
+      rating.input.value = Number.isFinite(Number(entry.position))
+        ? String(Math.max(0, Math.min(100, Math.round(Number(entry.position)))))
+        : String(getBalancePositionFromScore(entry.value));
+    } else {
+      rating.input.value = String(Math.max(0, Math.min(100, Math.round(Number(entry.value)))));
+    }
+    setSaved(rating.input.dataset.id, rating.input.value);
+    updateRatingValue(rating.input);
+  });
+  updateRatingChart();
+}
+
+function getBalancePositionFromScore(score) {
+  const value = Math.max(0, Math.min(100, Number(score) || 0));
+  if (value >= 80) return 50;
+  if (value >= 60) return 35;
+  return 15;
 }
 
 function getSavedRatingDays() {
@@ -1029,6 +1071,16 @@ function handleRatingProgressTablePointerUp(event) {
   document.getElementById("ratingProgressTable")?.classList.remove("is-dragging-column");
   moveRatingTableColumnTo(draggedRatingDayKey, targetDayKey);
   draggedRatingDayKey = "";
+}
+
+function handleRatingProgressTableClick(event) {
+  if (draggedRatingDayKey) return;
+  if (event.target.closest(".rating-column-drag")) return;
+  if (event.target.closest(".rating-table-date-input")) return;
+
+  const cell = event.target.closest(".rating-table-date-cell");
+  if (!cell?.dataset.dayKey) return;
+  activateRatingDayColumn(cell.dataset.dayKey);
 }
 
 function handleRatingProgressTableChange(event) {
@@ -2518,9 +2570,16 @@ function bindEvents() {
       updateRatingAverage();
     });
     input.addEventListener("change", () => {
-      saveRatingHistory(input);
+      const timestamp = getSelectedRatingTimestamp() || Date.now();
+      addSavedRatingDay(getDayKey(timestamp));
+      saveRatingHistory(input, false, timestamp);
       updateRatingAverage();
+      renderRatingProgressTable();
     });
+  });
+
+  document.getElementById("ratingDateInput")?.addEventListener("change", () => {
+    renderRatingProgressTable();
   });
 
   document.getElementById("chartZoomClose").addEventListener("click", closeChartZoom);
@@ -2533,6 +2592,7 @@ function bindEvents() {
     if (event.target.id === "lineSummaryModal") closeLineSummary();
   });
   document.getElementById("ratingProgressTable")?.addEventListener("change", handleRatingProgressTableChange);
+  document.getElementById("ratingProgressTable")?.addEventListener("click", handleRatingProgressTableClick);
   document.getElementById("ratingProgressTable")?.addEventListener("focusout", handleRatingProgressTableChange);
   document.getElementById("ratingProgressTable")?.addEventListener("input", handleRatingProgressTableInput);
   document.getElementById("ratingProgressTable")?.addEventListener("keydown", handleRatingProgressTableKeydown);
