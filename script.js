@@ -1387,13 +1387,17 @@ function buildOpenLinesTextTable(openLines) {
   if (!openLines.length) return "";
 
   const columnCount = 4;
+  const columnWidth = 22;
   const visibleLines = openLines.slice(0, 16).map((item) => item.line);
   const extraCount = openLines.length - visibleLines.length;
   if (extraCount > 0) visibleLines.push(`+${extraCount} extra lijnen`);
 
   const rows = [];
   for (let index = 0; index < visibleLines.length; index += columnCount) {
-    rows.push(visibleLines.slice(index, index + columnCount).join("  |  "));
+    rows.push(visibleLines
+      .slice(index, index + columnCount)
+      .map((line, columnIndex) => columnIndex === columnCount - 1 ? line : line.padEnd(columnWidth, " "))
+      .join(""));
   }
 
   return rows.join("\n");
@@ -1974,7 +1978,7 @@ function formatMentorTextForPrint(text) {
       const cleanLine = line.trim();
       if (!cleanLine) return "<br>";
       if (headingPattern.test(cleanLine)) return `<h3>${escapeHtml(cleanLine)}</h3>`;
-      if (cleanLine.includes("  |  ")) return `<p class="line-column-row">${escapeHtml(line)}</p>`;
+      if (line.includes("    ")) return `<p class="line-column-row">${escapeHtml(line)}</p>`;
       return `<p>${escapeHtml(line)}</p>`;
     })
     .join("");
