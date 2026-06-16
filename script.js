@@ -1297,29 +1297,22 @@ function buildMentorGeneratedText() {
   const notes = openNotes.slice(0, 3);
   const metaLine = [mentorName ? `Mentor: ${mentorName}` : "", personnelNumber ? `Pers.nr.: ${personnelNumber}` : "", startDate || endDate ? `Periode: ${startDate || "-"} t/m ${endDate || "-"}` : ""].filter(Boolean).join(" | ");
 
-  return [
+  const sections = [
     `MENTORVERSLAG - ${driverName}`,
     metaLine,
-    "",
-    "VOORTGANG",
-    `De totale voortgang staat op ${totalProgress.done}/${totalProgress.total} punten (${totalProgress.percentage}%). Van de lijnverkenning zijn ${lineSummary.done}/${lineSummary.total} lijnen volledig afgerond.`,
-    "",
-    "AFTEKENLIJSTEN",
-    checklistSummary.lists.map((list) => `- ${list.title}: ${list.done}/${list.total} punten afgetekend (${list.percentage}%).`).join("\n"),
-    "",
+    `VOORTGANG\nDe totale voortgang staat op ${totalProgress.done}/${totalProgress.total} punten (${totalProgress.percentage}%). Van de lijnverkenning zijn ${lineSummary.done}/${lineSummary.total} lijnen volledig afgerond.`,
+    `AFTEKENLIJSTEN\n${checklistSummary.lists.map((list) => `- ${list.title}: ${list.done}/${list.total} punten afgetekend (${list.percentage}%).`).join("\n")}`,
     linesTable ? `OPEN LIJNEN\nDe volgende lijnen zijn nog niet volledig afgerond:\n${linesTable}` : "",
-    "",
     ratingLines.length ? `BEOORDELINGEN\n${ratingLines.join("\n")}` : "",
     attentionText ? `AANDACHT\n${attentionText}` : "",
-    "",
     notes.length
       ? `NOTITIES\n${notes.map((note) => `- ${note}`).join("\n")}`
       : "",
-    "",
     `CONCLUSIE\n${buildMentorAdvice(checklistSummary, lineSummary, ratingSummary)}`,
-    "",
     closingLine,
-  ].filter((line) => line !== "").join("\n");
+  ].filter((line) => line !== "");
+
+  return sections.join("\n\n\n");
 }
 
 function getChecklistMentorSummary() {
