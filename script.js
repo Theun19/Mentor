@@ -1163,8 +1163,11 @@ function updateRatingChart() {
     const baseLabel = input.closest(".rating-row").querySelector(".rating-label").textContent;
     const isBalance = input.dataset.ratingType === "balance";
     const history = getStoredRatingHistory(input);
-    const label = isBalance ? getBalanceChartTitle(input, history) : baseLabel;
-    const graphHistory = history.length ? history : getRatingHistory(input);
+    const tableHistory = isBalance ? getRatingHistoryForTableDays(input) : [];
+    const graphHistory = isBalance
+      ? (tableHistory.length ? tableHistory : getRatingHistory(input))
+      : (history.length ? history : getRatingHistory(input));
+    const label = isBalance ? getBalanceChartTitle(input, graphHistory) : baseLabel;
     const item = document.createElement("div");
     item.className = "line-chart-item";
     item.tabIndex = 0;
@@ -1190,6 +1193,20 @@ function updateRatingChart() {
       }
     });
     chart.appendChild(item);
+  });
+}
+
+function getRatingHistoryForTableDays(input) {
+  const ratingRows = getRatingRowsForProgress();
+  const currentRating = ratingRows.find((rating) => rating.id === input.dataset.id);
+  const dayKeys = getRatingTableDayKeys(ratingRows, false);
+  if (!currentRating || !dayKeys.length) return [];
+
+  return dayKeys.map((dayKey) => {
+    const entry = currentRating.history.find((historyEntry) => getDayKey(historyEntry.time) === dayKey);
+    return entry
+      ? { ...entry, dayKey }
+      : { time: timestampFromDayKey(dayKey), dayKey, value: null, missing: true };
   });
 }
 
@@ -1243,7 +1260,8 @@ function renderRatingPointList(history) {
 }
 
 function getBalanceChartTitle(input, history = []) {
-  const latestEntry = history[history.length - 1];
+  const realHistory = history.filter((entry) => Number.isFinite(Number(entry?.value)));
+  const latestEntry = realHistory[realHistory.length - 1];
   return latestEntry ? getBalanceEntryLabel(latestEntry) : getBalancePositionLabel(Number(input.value));
 }
 
@@ -1724,13 +1742,17 @@ function renderBalancePointGraph(history, input) {
     const x = history.length === 1
       ? paddingLeft + (width - paddingLeft - paddingRight) / 2
       : paddingLeft + (index / (history.length - 1)) * (width - paddingLeft - paddingRight);
+    if (!Number.isFinite(Number(entry.value))) {
+      return { x, y: null, label: "", letter: "", missing: true };
+    }
     const y = height - paddingBottom - (entry.value / maxValue) * (height - paddingTop - paddingBottom);
     const label = Number.isFinite(Number(entry.position))
       ? getBalanceEntryLabel(entry)
       : getBalancePositionLabel(Number(input.value));
     return { x, y, label, letter: getBalanceLabelLetter(label) };
   });
-  const helperText = points.length > 1
+  const visiblePoints = points.filter((point) => !point.missing);
+  const helperText = visiblePoints.length > 1
     ? ""
     : `<text class="line-chart-help" x="${paddingLeft + 6}" y="${paddingTop + 14}">sla nog een meetpunt op</text>`;
   const xLabels = points.map((point, index) => {
@@ -1747,7 +1769,7 @@ function renderBalancePointGraph(history, input) {
       <text class="line-chart-y-label" x="4" y="${paddingTop + 3}">100</text>
       <text class="line-chart-y-label" x="4" y="${midY + 3}">50</text>
       <text class="line-chart-y-label" x="4" y="${height - paddingBottom + 3}">0</text>
-      ${points.map((point) => `
+      ${visiblePoints.map((point) => `
         <g class="balance-point" aria-label="${escapeHtml(point.label)}">
           <text class="balance-point-letter" x="${point.x}" y="${point.y}">${point.letter}</text>
         </g>
