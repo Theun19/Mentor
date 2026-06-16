@@ -138,7 +138,6 @@ const websites = [
   ["Mijn HRM", "mijnhrm.connexxion.nl", "https://mijnhrm.connexxion.nl"],
   ["AFAS Pocket", "Officiele AFAS apppagina", "https://www.afas.nl/software/pocket"],
   ["Webcomm", "diensten.connexxion.nl", "https://diensten.connexxion.nl"],
-  ["Mijn Connexxion", "mijn.connexxion.nl/login", "https://mijn.connexxion.nl/login"],
   ["@Transdev app", "Officiele apppagina", "https://www.transdev.nl/nl/reisinformatie/%40transdev-app"],
   ["Transdev chauffeurs app", "Google Play", "https://play.google.com/store/apps/details?id=com.transdev.teamtransdev&hl=nl"],
   ["Transdev chauffeurs app iPhone", "App Store", "https://apps.apple.com/nl/app/team-transdev-chauffeur-app/id6618151207"],
@@ -2034,7 +2033,7 @@ function buildPrintInfoHtml() {
       </table>
     </div>
     <div class="print-panel">
-      <h2>Belangrijke en handige websites</h2>
+      <h2>Websites en App's</h2>
       <table class="print-table">
         <thead><tr><th>Naam</th><th>Omschrijving</th><th>Link</th></tr></thead>
         <tbody>${websiteRows}</tbody>
@@ -2435,7 +2434,7 @@ function buildInfoShareHtml() {
     <tbody>${contactRows}</tbody>
   </table>
 
-  <h2>Belangrijke en handige websites</h2>
+  <h2>Websites en App's</h2>
   <table>
     <thead>
       <tr><th>Naam</th><th>Omschrijving</th><th>Link</th></tr>
