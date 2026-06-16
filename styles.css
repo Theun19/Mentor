@@ -1674,7 +1674,7 @@ body.signature-editing::after {
 @media print {
   @page {
     size: A4;
-    margin: 7mm;
+    margin: 0;
   }
 
   body > :not(.print-summary) {
@@ -1691,6 +1691,7 @@ body.signature-editing::after {
     display: block;
     color: #18241c;
     font-family: Arial, "Helvetica Neue", sans-serif;
+    padding: 7mm;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
   }
