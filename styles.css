@@ -1478,12 +1478,18 @@ body.signature-editing::after {
   }
 
   .rating-chart {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
     gap: 0.55rem;
   }
 
   .dashboard-rating-card .rating-chart {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(9.25rem, 1fr));
+    min-width: 30rem;
+  }
+
+  .dashboard-rating-card {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   #tab-rating .section-panel {
@@ -1515,11 +1521,11 @@ body.signature-editing::after {
   }
 
   .line-chart-title {
-    font-size: 0.72rem;
+    font-size: 0.78rem;
   }
 
   .line-chart-frame {
-    height: 4.5rem;
+    height: 6rem;
   }
 
   .checklist-progress {
@@ -1629,19 +1635,19 @@ body.signature-editing::after {
   }
 
   .rating-progress-table {
-    min-width: 58rem;
+    min-width: 66rem;
   }
 
   .rating-progress-table th {
-    width: 10rem;
-    min-width: 10rem;
+    width: 13rem;
+    min-width: 13rem;
   }
 
   .rating-progress-table th,
   .rating-progress-table td {
-    width: 4rem;
-    min-width: 4rem;
-    font-size: 0.66rem;
+    width: 4.7rem;
+    min-width: 4.7rem;
+    font-size: 0.74rem;
   }
 
   .balance-curve {
