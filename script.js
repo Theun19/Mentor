@@ -1300,15 +1300,15 @@ function buildMentorGeneratedText() {
   const sections = [
     `MENTORVERSLAG - ${driverName}`,
     metaLine,
-    `VOORTGANG\nDe totale voortgang staat op ${totalProgress.done}/${totalProgress.total} punten (${totalProgress.percentage}%). Van de lijnverkenning zijn ${lineSummary.done}/${lineSummary.total} lijnen volledig afgerond.`,
-    `AFTEKENLIJSTEN\n${checklistSummary.lists.map((list) => `- ${list.title}: ${list.done}/${list.total} punten afgetekend (${list.percentage}%).`).join("\n")}`,
-    linesTable ? `OPEN LIJNEN\nDe volgende lijnen zijn nog niet volledig afgerond:\n${linesTable}` : "",
-    ratingLines.length ? `BEOORDELINGEN\n${ratingLines.join("\n")}` : "",
-    attentionText ? `AANDACHT\n${attentionText}` : "",
+    `VOORTGANG\n\nDe totale voortgang staat op ${totalProgress.done}/${totalProgress.total} punten (${totalProgress.percentage}%). Van de lijnverkenning zijn ${lineSummary.done}/${lineSummary.total} lijnen volledig afgerond.`,
+    `AFTEKENLIJSTEN\n\n${checklistSummary.lists.map((list) => `- ${list.title}: ${list.done}/${list.total} punten afgetekend (${list.percentage}%).`).join("\n")}`,
+    linesTable ? `OPEN LIJNEN\n\nDe volgende lijnen zijn nog niet volledig afgerond:\n\n${linesTable}` : "",
+    ratingLines.length ? `BEOORDELINGEN\n\n${ratingLines.join("\n")}` : "",
+    attentionText ? `AANDACHT\n\n${attentionText}` : "",
     notes.length
-      ? `NOTITIES\n${notes.map((note) => `- ${note}`).join("\n")}`
+      ? `NOTITIES\n\n${notes.map((note) => `- ${note}`).join("\n")}`
       : "",
-    `CONCLUSIE\n${buildMentorAdvice(checklistSummary, lineSummary, ratingSummary)}`,
+    `CONCLUSIE\n\n${buildMentorAdvice(checklistSummary, lineSummary, ratingSummary)}`,
     closingLine,
   ].filter((line) => line !== "");
 
@@ -1969,7 +1969,7 @@ function formatMentorTextForPrint(text) {
     .split("\n")
     .map((line) => {
       const cleanLine = line.trim();
-      if (!cleanLine) return "<br>";
+      if (!cleanLine) return `<div class="print-ai-spacer"></div>`;
       if (headingPattern.test(cleanLine)) return `<h3>${escapeHtml(cleanLine)}</h3>`;
       if (line.includes("    ")) return `<p class="line-column-row">${escapeHtml(line)}</p>`;
       return `<p>${escapeHtml(line)}</p>`;
