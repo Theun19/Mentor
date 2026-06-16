@@ -1073,7 +1073,7 @@ body.signature-editing::after {
 .mentor-ai-text textarea {
   min-height: 12rem;
   resize: vertical;
-  line-height: 1.65;
+  line-height: 1.55;
   font-family: Arial, "Helvetica Neue", sans-serif;
 }
 
@@ -1944,6 +1944,13 @@ body.signature-editing::after {
 
   .print-ai-text p {
     margin: 0 0 0.16rem;
+  }
+
+  .print-ai-text .line-column-row {
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
   }
 
   .print-graphs-panel {
