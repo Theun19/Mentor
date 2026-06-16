@@ -1119,12 +1119,18 @@ function updateRatingChart() {
     item.setAttribute("role", "button");
     item.setAttribute("aria-label", `${label} grafiek vergroten`);
     item.innerHTML = `
-      <div class="line-chart-title">${label}</div>
+      <div class="line-chart-header">
+        <div class="line-chart-title">${label}</div>
+        ${isBalance ? renderBalanceLegend() : ""}
+      </div>
       <div class="line-chart-frame">
         ${isBalance ? renderBalancePointGraph(graphHistory, input) : renderLineGraph(graphHistory, 100)}
       </div>
     `;
-    item.addEventListener("click", () => openChartZoom(label, item));
+    item.addEventListener("click", (event) => {
+      if (event.target.closest(".balance-legend")) return;
+      openChartZoom(label, item);
+    });
     item.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
@@ -1133,6 +1139,21 @@ function updateRatingChart() {
     });
     chart.appendChild(item);
   });
+}
+
+function renderBalanceLegend() {
+  return `
+    <details class="balance-legend">
+      <summary>Legenda</summary>
+      <div class="balance-legend-panel">
+        <span><strong>A</strong> Angstvallig</span>
+        <span><strong>O</strong> Onzeker</span>
+        <span><strong>Z</strong> Zelfverzekerd</span>
+        <span><strong>L</strong> Lichtzinnig</span>
+        <span><strong>R</strong> Roekeloos</span>
+      </div>
+    </details>
+  `;
 }
 
 function renderRatingTrend(history) {
@@ -1671,8 +1692,7 @@ function renderBalancePointGraph(history, input) {
       <text class="line-chart-y-label" x="4" y="${height - paddingBottom + 3}">0</text>
       ${points.map((point) => `
         <g class="balance-point" aria-label="${escapeHtml(point.label)}">
-          <circle class="balance-point-circle" cx="${point.x}" cy="${point.y}" r="7.5" />
-          <text class="balance-point-letter" x="${point.x}" y="${point.y + 3}">${point.letter}</text>
+          <text class="balance-point-letter" x="${point.x}" y="${point.y}">${point.letter}</text>
         </g>
       `).join("")}
       ${xLabels}

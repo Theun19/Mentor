@@ -302,6 +302,7 @@ body.auth-locked .auth-screen {
 }
 
 .line-chart-item {
+  position: relative;
   display: grid;
   gap: 0.45rem;
   min-width: 0;
@@ -319,6 +320,59 @@ body.auth-locked .auth-screen {
   font-weight: 800;
   text-align: center;
   overflow-wrap: anywhere;
+}
+
+.line-chart-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 0.35rem;
+}
+
+.balance-legend {
+  position: relative;
+  cursor: default;
+  z-index: 2;
+}
+
+.balance-legend summary {
+  list-style: none;
+  border: 1px solid #cfe2c1;
+  border-radius: 999px;
+  padding: 0.12rem 0.45rem;
+  color: var(--brand-dark);
+  background: #eef6e8;
+  font-size: 0.66rem;
+  font-weight: 900;
+  cursor: pointer;
+  user-select: none;
+}
+
+.balance-legend summary::-webkit-details-marker {
+  display: none;
+}
+
+.balance-legend-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.25rem);
+  min-width: 9.5rem;
+  display: grid;
+  gap: 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.5rem;
+  color: var(--ink);
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(33, 47, 35, 0.14);
+  font-size: 0.72rem;
+  text-align: left;
+}
+
+.balance-legend-panel span {
+  display: flex;
+  gap: 0.35rem;
+  white-space: nowrap;
 }
 
 .line-chart-frame {
@@ -364,16 +418,9 @@ body.auth-locked .auth-screen {
   vector-effect: non-scaling-stroke;
 }
 
-.balance-point-circle {
-  fill: #ffffff;
-  stroke: var(--brand-dark);
-  stroke-width: 2.4;
-  vector-effect: non-scaling-stroke;
-}
-
 .balance-point-letter {
   fill: var(--brand-dark);
-  font-size: 0.55rem;
+  font-size: 0.42rem;
   font-weight: 900;
   text-anchor: middle;
   dominant-baseline: middle;
@@ -1942,17 +1989,10 @@ body.signature-editing::after {
     r: 4.2;
   }
 
-  .print-graph .balance-point-circle,
-  .print-web-dashboard .balance-point-circle {
-    fill: #ffffff;
-    stroke: #183d18;
-    stroke-width: 3.2;
-  }
-
   .print-graph .balance-point-letter,
   .print-web-dashboard .balance-point-letter {
     fill: #183d18;
-    font-size: 0.68rem;
+    font-size: 0.5rem;
     font-weight: 900;
   }
 
@@ -2132,6 +2172,10 @@ body.signature-editing::after {
     color: #18241c;
     font-size: 6.8pt;
     font-weight: 900;
+  }
+
+  .print-web-dashboard .balance-legend {
+    display: none;
   }
 
   .print-web-dashboard .line-chart-frame {
