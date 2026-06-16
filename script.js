@@ -1855,10 +1855,28 @@ function buildPrintDashboardHtml() {
   if (donut) {
     donut.outerHTML = buildPrintDonutSvg(percentage);
   }
+  const balanceChart = dashboard.querySelector(".balance-point-chart")?.closest(".line-chart-item");
+  const balanceTitle = balanceChart?.querySelector(".line-chart-title");
+  if (balanceTitle && !balanceTitle.textContent.includes("*")) {
+    balanceTitle.textContent = `${balanceTitle.textContent} *`;
+  }
 
   return `
     ${buildPrintHeader("Dashboard")}
-    <div class="print-web-dashboard">${dashboard.outerHTML}</div>
+    <div class="print-web-dashboard">${dashboard.outerHTML}${buildPrintBalanceLegend()}</div>
+  `;
+}
+
+function buildPrintBalanceLegend() {
+  return `
+    <div class="print-balance-legend">
+      <strong>* Legenda balansgrafiek:</strong>
+      <span>A = Angstvallig</span>
+      <span>O = Onzeker</span>
+      <span>Z = Zelfverzekerd</span>
+      <span>L = Lichtzinnig</span>
+      <span>R = Roekeloos</span>
+    </div>
   `;
 }
 

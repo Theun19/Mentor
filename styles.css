@@ -2178,6 +2178,24 @@ body.signature-editing::after {
     display: none;
   }
 
+  .print-balance-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.12rem 0.42rem;
+    align-items: center;
+    margin-top: 0.18rem;
+    border-top: 1px solid #dce5dc;
+    padding-top: 0.12rem;
+    color: #18241c;
+    font-size: 6.3pt;
+    line-height: 1.15;
+  }
+
+  .print-balance-legend strong {
+    color: #385f15;
+    font-weight: 900;
+  }
+
   .print-web-dashboard .line-chart-frame {
     height: 0.82in;
     border: 1.5px solid #9db68c;
