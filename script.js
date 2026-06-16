@@ -1380,8 +1380,9 @@ function buildOpenLinesTextTable(openLines) {
   if (!openLines.length) return "";
 
   const columnCount = 4;
+  const rowCount = 9;
   const columnWidth = 22;
-  const visibleLines = openLines.slice(0, 16).map((item) => item.line);
+  const visibleLines = openLines.slice(0, columnCount * rowCount).map((item) => item.line);
   const extraCount = openLines.length - visibleLines.length;
   if (extraCount > 0) visibleLines.push(`+${extraCount} extra lijnen`);
 
@@ -1957,7 +1958,6 @@ function buildPrintAiHtml() {
   return `
     ${buildPrintHeader("Tekst over chauffeur")}
     <div class="print-panel">
-      <h2>Gegenereerde mentortekst</h2>
       <div class="print-ai-text">${formatMentorTextForPrint(text)}</div>
     </div>
   `;
