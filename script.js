@@ -1108,7 +1108,9 @@ function handleRatingProgressTableClick(event) {
 
   const clickedDateInput = event.target.closest(".rating-table-date-input");
   if (clickedDateInput) {
-    openRatingDatePicker(clickedDateInput, event);
+    const dayKey = clickedDateInput.dataset.dayKey || "";
+    if (dayKey) activateRatingDayColumn(dayKey);
+    openRatingDatePicker(getRatingDateInputByDay(dayKey) || clickedDateInput, event);
     return;
   }
 
