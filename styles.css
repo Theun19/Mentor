@@ -883,6 +883,12 @@ body.signature-editing::after {
   font-weight: 800;
 }
 
+.balance-rating-value {
+  width: 8.75rem;
+  padding-inline: 0.65rem;
+  white-space: nowrap;
+}
+
 .rating-date-input {
   width: 9.25rem;
 }
@@ -1699,6 +1705,10 @@ body.signature-editing::after {
     width: 3.35rem;
     min-height: 1.55rem;
     font-size: 0.82rem;
+  }
+
+  .balance-rating-value {
+    width: 8.25rem;
   }
 
   .rating-date-input {
