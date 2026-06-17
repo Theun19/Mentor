@@ -816,6 +816,11 @@ function renderRatingProgressTable() {
               data-day-key="${escapeHtml(dayKey)}"
               data-column-index="${index}"
               aria-label="Datum kolom ${index + 1}">
+            <button
+              class="rating-date-close"
+              type="button"
+              aria-label="Agenda sluiten"
+              title="Agenda sluiten">×</button>
           </td>
         `).join("")}
       </tr>
@@ -1072,16 +1077,57 @@ function handleRatingProgressTablePointerUp(event) {
 function handleRatingProgressTableClick(event) {
   if (draggedRatingDayKey) return;
   if (event.target.closest(".rating-column-drag")) return;
-  if (event.target.closest(".rating-table-date-input")) return;
+
+  const closeButton = event.target.closest(".rating-date-close");
+  if (closeButton) {
+    closeRatingDatePicker(closeButton.closest(".rating-table-date-cell")?.querySelector(".rating-table-date-input"));
+    return;
+  }
+
+  const clickedDateInput = event.target.closest(".rating-table-date-input");
+  if (clickedDateInput) {
+    openRatingDatePicker(clickedDateInput);
+    return;
+  }
 
   const cell = event.target.closest(".rating-table-date-cell");
   if (!cell?.dataset.dayKey) return;
   activateRatingDayColumn(cell.dataset.dayKey);
+  openRatingDatePicker(cell.querySelector(".rating-table-date-input"));
+}
+
+function openRatingDatePicker(input) {
+  if (!(input instanceof HTMLInputElement)) return;
+
+  try {
+    input.focus({ preventScroll: true });
+  } catch {
+    input.focus();
+  }
+  input.closest(".rating-table-date-cell")?.classList.add("date-picker-open");
+  if (typeof input.showPicker === "function") {
+    try {
+      input.showPicker();
+    } catch {
+      // Sommige browsers laten de native kalender alleen direct via het datumveld zelf openen.
+    }
+  }
+}
+
+function closeRatingDatePicker(input) {
+  if (!(input instanceof HTMLInputElement)) return;
+
+  input.blur();
+  input.closest(".rating-table-date-cell")?.classList.remove("date-picker-open");
 }
 
 function handleRatingProgressTableChange(event) {
   const input = event.target;
   if (!(input instanceof HTMLInputElement)) return;
+
+  if (input.classList.contains("rating-table-date-input")) {
+    input.closest(".rating-table-date-cell")?.classList.remove("date-picker-open");
+  }
 
   if (input.classList.contains("rating-table-date-input")) {
     if (!input.value.trim() && !input.dataset.dayKey) return;
