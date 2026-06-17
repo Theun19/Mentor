@@ -277,6 +277,21 @@
       </div>
     </div>
 
+    <div class="date-picker-modal" id="ratingDateModal" aria-hidden="true">
+      <div class="date-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="ratingDateModalTitle">
+        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+          <h2 class="h6 fw-bold mb-0" id="ratingDateModalTitle">Datum kiezen</h2>
+          <button class="btn btn-outline-secondary btn-sm" id="ratingDateModalClose" type="button">Sluiten</button>
+        </div>
+        <label class="form-label fw-bold" for="ratingDateModalInput">Datum</label>
+        <input class="form-control form-control-lg" id="ratingDateModalInput" type="date" />
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-success flex-fill" id="ratingDateModalSave" type="button">Opslaan</button>
+          <button class="btn btn-outline-secondary flex-fill" id="ratingDateModalCancel" type="button">Annuleren</button>
+        </div>
+      </div>
+    </div>
+
     <section class="print-summary" id="printSummary" aria-label="A4 samenvatting">
       <div class="print-summary-header">
         <div>

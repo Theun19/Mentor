@@ -1053,6 +1053,7 @@ function moveRatingTableColumnTo(dayKey, targetDayKey) {
 }
 
 let draggedRatingDayKey = "";
+let activeRatingDateInput = null;
 
 function handleRatingProgressTablePointerDown(event) {
   const handle = event.target.closest(".rating-column-drag");
@@ -1062,6 +1063,27 @@ function handleRatingProgressTablePointerDown(event) {
   handle.setPointerCapture?.(event.pointerId);
   document.getElementById("ratingProgressTable")?.classList.add("is-dragging-column");
   event.preventDefault();
+}
+
+function handleRatingProgressTableDatePointerDown(event) {
+  if (!shouldUseRatingDateModal()) return;
+  if (event.target.closest(".rating-column-drag") || event.target.closest(".rating-date-close")) return;
+
+  const cell = event.target.closest(".rating-table-date-cell");
+  if (!cell) return;
+
+  const input = cell.querySelector(".rating-table-date-input");
+  if (!(input instanceof HTMLInputElement)) return;
+
+  event.preventDefault();
+  const dayKey = cell.dataset.dayKey || "";
+  if (dayKey) activateRatingDayColumn(dayKey);
+  openRatingDateModal(getRatingDateInputByDay(dayKey) || input);
+}
+
+function getRatingDateInputByDay(dayKey) {
+  if (!dayKey) return null;
+  return document.querySelector(`.rating-table-date-input[data-day-key="${CSS.escape(dayKey)}"]`);
 }
 
 function handleRatingProgressTablePointerUp(event) {
@@ -1086,18 +1108,29 @@ function handleRatingProgressTableClick(event) {
 
   const clickedDateInput = event.target.closest(".rating-table-date-input");
   if (clickedDateInput) {
-    openRatingDatePicker(clickedDateInput);
+    openRatingDatePicker(clickedDateInput, event);
     return;
   }
 
   const cell = event.target.closest(".rating-table-date-cell");
   if (!cell?.dataset.dayKey) return;
-  activateRatingDayColumn(cell.dataset.dayKey);
-  openRatingDatePicker(cell.querySelector(".rating-table-date-input"));
+  const dayKey = cell.dataset.dayKey;
+  activateRatingDayColumn(dayKey);
+  openRatingDatePicker(getRatingDateInputByDay(dayKey) || cell.querySelector(".rating-table-date-input"), event);
 }
 
-function openRatingDatePicker(input) {
+function shouldUseRatingDateModal() {
+  return window.matchMedia?.("(max-width: 767.98px), (pointer: coarse)")?.matches;
+}
+
+function openRatingDatePicker(input, event) {
   if (!(input instanceof HTMLInputElement)) return;
+
+  if (shouldUseRatingDateModal()) {
+    event?.preventDefault();
+    openRatingDateModal(input);
+    return;
+  }
 
   try {
     input.focus({ preventScroll: true });
@@ -1114,8 +1147,55 @@ function openRatingDatePicker(input) {
   }
 }
 
+function openRatingDateModal(sourceInput) {
+  const modal = document.getElementById("ratingDateModal");
+  const modalInput = document.getElementById("ratingDateModalInput");
+  if (!(sourceInput instanceof HTMLInputElement) || !(modalInput instanceof HTMLInputElement) || !modal) return;
+
+  activeRatingDateInput = sourceInput;
+  modalInput.value = sourceInput.value;
+  sourceInput.closest(".rating-table-date-cell")?.classList.add("date-picker-open");
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("date-picker-open-body");
+  try {
+    modalInput.focus({ preventScroll: true });
+  } catch {
+    modalInput.focus();
+  }
+  if (typeof modalInput.showPicker === "function") {
+    try {
+      modalInput.showPicker();
+    } catch {
+      // De grote pop-up blijft bruikbaar als de browser de native picker niet automatisch opent.
+    }
+  }
+}
+
+function closeRatingDateModal(save = false) {
+  const modal = document.getElementById("ratingDateModal");
+  const modalInput = document.getElementById("ratingDateModalInput");
+  if (!modal) return;
+
+  if (save && activeRatingDateInput instanceof HTMLInputElement && modalInput instanceof HTMLInputElement) {
+    activeRatingDateInput.value = modalInput.value;
+    handleRatingProgressTableChange({ target: activeRatingDateInput });
+  }
+
+  activeRatingDateInput?.closest(".rating-table-date-cell")?.classList.remove("date-picker-open");
+  activeRatingDateInput = null;
+  modal.classList.remove("show");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("date-picker-open-body");
+}
+
 function closeRatingDatePicker(input) {
   if (!(input instanceof HTMLInputElement)) return;
+
+  if (activeRatingDateInput === input) {
+    closeRatingDateModal(false);
+    return;
+  }
 
   input.blur();
   input.closest(".rating-table-date-cell")?.classList.remove("date-picker-open");
@@ -2665,8 +2745,16 @@ function bindEvents() {
   document.getElementById("ratingProgressTable")?.addEventListener("focusout", handleRatingProgressTableChange);
   document.getElementById("ratingProgressTable")?.addEventListener("input", handleRatingProgressTableInput);
   document.getElementById("ratingProgressTable")?.addEventListener("keydown", handleRatingProgressTableKeydown);
+  document.getElementById("ratingProgressTable")?.addEventListener("pointerdown", handleRatingProgressTableDatePointerDown);
   document.getElementById("ratingProgressTable")?.addEventListener("pointerdown", handleRatingProgressTablePointerDown);
   document.getElementById("ratingProgressTable")?.addEventListener("pointerup", handleRatingProgressTablePointerUp);
+
+  document.getElementById("ratingDateModalSave")?.addEventListener("click", () => closeRatingDateModal(true));
+  document.getElementById("ratingDateModalClose")?.addEventListener("click", () => closeRatingDateModal(false));
+  document.getElementById("ratingDateModalCancel")?.addEventListener("click", () => closeRatingDateModal(false));
+  document.getElementById("ratingDateModal")?.addEventListener("click", (event) => {
+    if (event.target.id === "ratingDateModal") closeRatingDateModal(false);
+  });
   document.getElementById("generateMentorTextBtn")?.addEventListener("click", generateMentorText);
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
