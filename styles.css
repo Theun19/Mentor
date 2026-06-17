@@ -963,6 +963,15 @@ body.signature-editing::after {
   box-shadow: inset 0 0 0 2px var(--brand);
 }
 
+.rating-progress-table .hover-rating-day {
+  background: #edf7e8 !important;
+}
+
+.rating-progress-table .rating-table-date-cell.hover-rating-day,
+.rating-progress-table .active-rating-day {
+  background: #dff0d4 !important;
+}
+
 .rating-table-date-cell.active-rating-day .rating-table-date-input {
   color: var(--brand-dark);
 }

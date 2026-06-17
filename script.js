@@ -833,13 +833,13 @@ function renderRatingProgressTable() {
             const balanceLabel = entry && isBalance ? getBalanceEntryLabel(entry) : "";
             if (isBalance) {
               return `
-                <td>
+                <td class="${dayKey && dayKey === activeDayKey ? "active-rating-day" : ""}" data-column-index="${index}">
                   <div class="rating-table-balance-label">${entry ? escapeHtml(balanceLabel) : "-"}</div>
                 </td>
               `;
             }
             return `
-              <td>
+              <td class="${dayKey && dayKey === activeDayKey ? "active-rating-day" : ""}" data-column-index="${index}">
                 <input
                   class="rating-table-input rating-table-score-input"
                   type="number"
@@ -861,13 +861,14 @@ function renderRatingProgressTable() {
       `).join("")}
       <tr>
         <th scope="row">Gemiddelde</th>
-        ${dayKeys.map((dayKey) => {
-          if (!dayKey) return `<td></td>`;
+        ${dayKeys.map((dayKey, index) => {
+          const activeClass = dayKey && dayKey === activeDayKey ? "active-rating-day" : "";
+          if (!dayKey) return `<td data-column-index="${index}"></td>`;
           const values = ratings
             .map((rating) => rating.history.find((entry) => getDayKey(entry.time) === dayKey)?.value)
             .filter((value) => Number.isFinite(Number(value)));
-          if (!values.length) return `<td></td>`;
-          return `<td>${Math.round(values.reduce((sum, value) => sum + Number(value), 0) / values.length)}%</td>`;
+          if (!values.length) return `<td class="${activeClass}" data-column-index="${index}"></td>`;
+          return `<td class="${activeClass}" data-column-index="${index}">${Math.round(values.reduce((sum, value) => sum + Number(value), 0) / values.length)}%</td>`;
         }).join("")}
       </tr>
     </tbody>
@@ -1119,6 +1120,29 @@ function handleRatingProgressTableClick(event) {
   const dayKey = cell.dataset.dayKey;
   activateRatingDayColumn(dayKey);
   openRatingDatePicker(getRatingDateInputByDay(dayKey) || cell.querySelector(".rating-table-date-input"), event);
+}
+
+function handleRatingProgressTableHover(event) {
+  if (window.matchMedia?.("(pointer: coarse)")?.matches) return;
+
+  const cell = event.target.closest("[data-column-index]");
+  const table = document.getElementById("ratingProgressTable");
+  if (!table) return;
+
+  table.querySelectorAll(".hover-rating-day").forEach((item) => item.classList.remove("hover-rating-day"));
+  if (!cell || !table.contains(cell)) return;
+
+  const columnIndex = cell.dataset.columnIndex;
+  if (columnIndex === undefined) return;
+  table.querySelectorAll(`[data-column-index="${CSS.escape(columnIndex)}"]`).forEach((item) => {
+    item.classList.add("hover-rating-day");
+  });
+}
+
+function clearRatingProgressTableHover() {
+  document.getElementById("ratingProgressTable")
+    ?.querySelectorAll(".hover-rating-day")
+    .forEach((item) => item.classList.remove("hover-rating-day"));
 }
 
 function shouldUseRatingDateModal() {
@@ -2747,6 +2771,8 @@ function bindEvents() {
   document.getElementById("ratingProgressTable")?.addEventListener("focusout", handleRatingProgressTableChange);
   document.getElementById("ratingProgressTable")?.addEventListener("input", handleRatingProgressTableInput);
   document.getElementById("ratingProgressTable")?.addEventListener("keydown", handleRatingProgressTableKeydown);
+  document.getElementById("ratingProgressTable")?.addEventListener("mouseover", handleRatingProgressTableHover);
+  document.getElementById("ratingProgressTable")?.addEventListener("mouseleave", clearRatingProgressTableHover);
   document.getElementById("ratingProgressTable")?.addEventListener("pointerdown", handleRatingProgressTableDatePointerDown);
   document.getElementById("ratingProgressTable")?.addEventListener("pointerdown", handleRatingProgressTablePointerDown);
   document.getElementById("ratingProgressTable")?.addEventListener("pointerup", handleRatingProgressTablePointerUp);
