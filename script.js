@@ -563,12 +563,16 @@ function renderBalanceParabola(id, item) {
     <div class="balance-curve" aria-hidden="true">
       <svg class="balance-curve-svg" viewBox="0 0 220 120">
         <path class="balance-curve-path" d="M 12 104 Q 110 -80 208 104" />
+        <text class="balance-curve-letter balance-curve-letter-left" x="7" y="104">${getBalanceLabelLetter(item.left)}</text>
+        <text class="balance-curve-letter balance-curve-letter-mid-left" x="50" y="32">${getBalanceLabelLetter(item.leftMid)}</text>
+        <text class="balance-curve-letter balance-curve-letter-center" x="110" y="6">${getBalanceLabelLetter(item.center)}</text>
+        <text class="balance-curve-letter balance-curve-letter-mid-right" x="170" y="32">${getBalanceLabelLetter(item.rightMid)}</text>
+        <text class="balance-curve-letter balance-curve-letter-right" x="213" y="104">${getBalanceLabelLetter(item.right)}</text>
+        <g class="balance-curve-score-badge">
+          <circle cx="110" cy="74" r="18" />
+          <text id="${id}-score" x="110" y="75">100%</text>
+        </g>
         <circle class="balance-curve-marker" id="${id}-marker" cx="110" cy="12" r="6" />
-        <text class="balance-curve-label" x="12" y="116">${item.left}</text>
-        <text class="balance-curve-label balance-curve-label-mid-left" x="61" y="56">${item.leftMid}</text>
-        <text class="balance-curve-label balance-curve-label-center" x="110" y="18">${item.center}</text>
-        <text class="balance-curve-label balance-curve-label-mid-right" x="159" y="56">${item.rightMid}</text>
-        <text class="balance-curve-label balance-curve-label-end" x="208" y="116">${item.right}</text>
       </svg>
     </div>
   `;
@@ -719,6 +723,7 @@ function updateBalanceMarker(input) {
   if (input.dataset.ratingType !== "balance") return;
 
   const marker = document.getElementById(`${input.id}-marker`);
+  const scoreText = document.getElementById(`${input.id}-score`);
   if (!marker) return;
 
   const value = Number(input.value);
@@ -727,6 +732,7 @@ function updateBalanceMarker(input) {
   const y = 104 - (4 * t * (1 - t) * 92);
   marker.setAttribute("cx", x.toFixed(1));
   marker.setAttribute("cy", y.toFixed(1));
+  if (scoreText) scoreText.textContent = `${getRatingScore(input)}%`;
 }
 
 function updateRatingAverage() {
