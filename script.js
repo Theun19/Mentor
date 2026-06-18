@@ -618,11 +618,195 @@ function restoreState() {
   });
 
   renderLineTable();
+  renderSignatureMeta();
+  restoreSignatures();
+}
+
+function renderSignatureMeta() {
+  const driverName = getSaved("driverName") || getActiveDriverProfile()?.name || "-";
+  const mentorName = getSaved("mentorName") || "-";
+  const endDate = formatSignatureDate(getSaved("endDate"));
+
+  document.querySelectorAll("[data-signature-meta]").forEach((container) => {
+    container.innerHTML = `
+      <div>
+        <span>Chauffeur</span>
+        <strong>${escapeHtml(driverName)}</strong>
+      </div>
+      <div>
+        <span>Mentor</span>
+        <strong>${escapeHtml(mentorName)}</strong>
+      </div>
+      <div>
+        <span>Einddatum</span>
+        <strong>${escapeHtml(endDate)}</strong>
+      </div>
+    `;
+  });
+}
+
+function formatSignatureDate(value) {
+  if (!value) return "-";
+  const timestamp = Date.parse(value);
+  if (!Number.isFinite(timestamp)) return value;
+  return new Date(timestamp).toLocaleDateString("nl-NL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }
 
 function updateRowState(input) {
   const row = input.closest(".task-row");
   if (row) row.classList.toggle("done", input.checked);
+}
+
+function setupSignaturePads() {
+  document.querySelectorAll(".signature-canvas").forEach((canvas) => {
+    const context = canvas.getContext("2d");
+    let drawing = false;
+    resizeSignatureCanvas(canvas);
+
+    canvas.addEventListener("pointerdown", (event) => {
+      if (!canvas.closest(".signature-box")?.classList.contains("signature-expanded")) {
+        expandSignatureBox(canvas);
+        return;
+      }
+
+      drawing = true;
+      canvas.setPointerCapture(event.pointerId);
+      const point = getCanvasPoint(canvas, event);
+      context.beginPath();
+      context.moveTo(point.x, point.y);
+    });
+
+    canvas.addEventListener("pointermove", (event) => {
+      if (!drawing) return;
+      const point = getCanvasPoint(canvas, event);
+      context.lineTo(point.x, point.y);
+      context.strokeStyle = "#18241c";
+      context.lineWidth = 2.5;
+      context.lineCap = "round";
+      context.lineJoin = "round";
+      context.stroke();
+    });
+
+    canvas.addEventListener("pointerup", () => {
+      if (!drawing) return;
+      drawing = false;
+      saveSignature(canvas);
+    });
+
+    canvas.addEventListener("pointercancel", () => {
+      drawing = false;
+    });
+  });
+
+  document.querySelectorAll(".signature-clear").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      clearSignature(document.getElementById(button.dataset.target));
+    });
+  });
+
+  document.querySelectorAll(".signature-close").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      closeSignatureBox(button.closest(".signature-box"));
+    });
+  });
+
+  window.addEventListener("resize", () => {
+    document.querySelectorAll(".signature-canvas").forEach((canvas) => {
+      const savedSignature = getSaved(canvas.id);
+      resizeSignatureCanvas(canvas);
+      if (savedSignature) drawSignatureImage(canvas, savedSignature);
+    });
+  });
+}
+
+function expandSignatureBox(canvas) {
+  const box = canvas.closest(".signature-box");
+  if (!box) return;
+
+  const savedSignature = getSaved(canvas.id);
+  document.querySelectorAll(".signature-box.signature-expanded").forEach((openBox) => {
+    if (openBox !== box) closeSignatureBox(openBox);
+  });
+  box.classList.add("signature-expanded");
+  document.body.classList.add("signature-editing");
+  resizeSignatureCanvas(canvas);
+  if (savedSignature) drawSignatureImage(canvas, savedSignature);
+}
+
+function closeSignatureBox(box) {
+  if (!box) return;
+
+  const canvas = box.querySelector(".signature-canvas");
+  const savedSignature = canvas ? getSaved(canvas.id) : "";
+  box.classList.remove("signature-expanded");
+  if (!document.querySelector(".signature-box.signature-expanded")) {
+    document.body.classList.remove("signature-editing");
+  }
+  if (!canvas) return;
+
+  resizeSignatureCanvas(canvas);
+  if (savedSignature) drawSignatureImage(canvas, savedSignature);
+}
+
+function resizeSignatureCanvas(canvas) {
+  const ratio = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+  canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+  const context = canvas.getContext("2d");
+  context.setTransform(ratio, 0, 0, ratio, 0, 0);
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, rect.width, rect.height);
+}
+
+function getCanvasPoint(canvas, event) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+  };
+}
+
+function saveSignature(canvas) {
+  setSaved(canvas.id, canvas.toDataURL("image/png"));
+}
+
+function clearSignature(canvas, save = true) {
+  if (!(canvas instanceof HTMLCanvasElement)) return;
+  const context = canvas.getContext("2d");
+  const rect = canvas.getBoundingClientRect();
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, rect.width, rect.height);
+  if (save) localStorage.removeItem(driverKey(getActiveDriverId(), canvas.id));
+}
+
+function restoreSignatures() {
+  document.querySelectorAll(".signature-canvas").forEach((canvas) => {
+    const savedSignature = getSaved(canvas.id);
+    if (savedSignature) {
+      drawSignatureImage(canvas, savedSignature);
+    } else {
+      clearSignature(canvas, false);
+    }
+  });
+}
+
+function drawSignatureImage(canvas, source) {
+  const image = new Image();
+  image.addEventListener("load", () => {
+    const context = canvas.getContext("2d");
+    const rect = canvas.getBoundingClientRect();
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, rect.width, rect.height);
+    context.drawImage(image, 0, 0, rect.width, rect.height);
+  });
+  image.src = source;
 }
 
 function updateProgress() {
@@ -2841,6 +3025,7 @@ renderContacts();
 renderRatings();
 renderWebsites();
 renderDriverProfiles();
+setupSignaturePads();
 restoreState();
 setDefaultRatingDate();
 bindEvents();

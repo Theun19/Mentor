@@ -653,6 +653,38 @@ body.auth-locked .auth-screen {
   background: #fbfcfa;
 }
 
+.signature-section {
+  border-top: 1px solid var(--line);
+}
+
+.signature-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.signature-meta div {
+  border: 1px solid #cfe2c1;
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+  background: #eef6e8;
+}
+
+.signature-meta span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.signature-meta strong {
+  display: block;
+  color: var(--brand-dark);
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
 .signature-close {
   display: none;
 }
@@ -1657,6 +1689,11 @@ body.signature-editing::after {
 
   .signature-box {
     padding: 0.55rem;
+  }
+
+  .signature-meta {
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
   }
 
   .signature-canvas {
