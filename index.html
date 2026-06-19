@@ -305,28 +305,30 @@
               </div>
             </div>
           </div>
-          <div class="section-panel signature-section mt-3 p-3 p-md-4">
-            <h2 class="h5 fw-bold mb-3">Ondertekening info</h2>
-            <div class="signature-meta mb-3" data-signature-meta></div>
-            <div class="row g-3">
-              <div class="col-12 col-lg-6">
-                <div class="signature-box">
-                  <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-                    <label class="form-label mb-0" for="infoDriverSignature">Handtekening chauffeur</label>
-                    <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
-                    <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="infoDriverSignature">Wissen</button>
+          <div class="section-panel mt-3 p-3 p-md-4">
+            <div class="signature-section">
+              <h2 class="h5 fw-bold mb-3">Ondertekening info</h2>
+              <div class="signature-meta mb-3" data-signature-meta></div>
+              <div class="row g-3">
+                <div class="col-12 col-lg-6">
+                  <div class="signature-box">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                      <label class="form-label mb-0" for="infoDriverSignature">Handtekening chauffeur</label>
+                      <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
+                      <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="infoDriverSignature">Wissen</button>
+                    </div>
+                    <canvas class="signature-canvas" id="infoDriverSignature" aria-label="Handtekening chauffeur info"></canvas>
                   </div>
-                  <canvas class="signature-canvas" id="infoDriverSignature" aria-label="Handtekening chauffeur info"></canvas>
                 </div>
-              </div>
-              <div class="col-12 col-lg-6">
-                <div class="signature-box">
-                  <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
-                    <label class="form-label mb-0" for="infoMentorSignature">Handtekening mentor</label>
-                    <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
-                    <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="infoMentorSignature">Wissen</button>
+                <div class="col-12 col-lg-6">
+                  <div class="signature-box">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                      <label class="form-label mb-0" for="infoMentorSignature">Handtekening mentor</label>
+                      <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
+                      <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="infoMentorSignature">Wissen</button>
+                    </div>
+                    <canvas class="signature-canvas" id="infoMentorSignature" aria-label="Handtekening mentor info"></canvas>
                   </div>
-                  <canvas class="signature-canvas" id="infoMentorSignature" aria-label="Handtekening mentor info"></canvas>
                 </div>
               </div>
             </div>
