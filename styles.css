@@ -2471,7 +2471,8 @@ body.signature-editing::after {
   .closure-print .print-details dd,
   .closure-print .print-details dt,
   .closure-print .print-signature-stack span {
-    font-size: 11pt;
+    font-size: 9.5pt;
+    line-height: 1.15;
   }
 
   .closure-print .print-summary-header {
@@ -2480,21 +2481,21 @@ body.signature-editing::after {
   }
 
   .closure-print .print-summary-header h1 {
-    font-size: 14pt;
+    font-size: 12.5pt;
   }
 
   .closure-print .print-panel {
-    padding: 0.22rem;
-    margin-bottom: 0.22rem;
+    padding: 0.26rem;
+    margin-bottom: 0.24rem;
   }
 
   .closure-print .print-panel h2 {
-    margin-bottom: 0.16rem;
-    font-size: 11pt;
+    margin-bottom: 0.18rem;
+    font-size: 10.5pt;
   }
 
   .closure-print .print-table {
-    line-height: 1.05;
+    line-height: 1.12;
   }
 
   .closure-print .print-table th,
@@ -2529,8 +2530,8 @@ body.signature-editing::after {
     gap: 0.16rem;
     align-items: start;
     min-height: 0;
-    font-size: 11pt;
-    line-height: 1.05;
+    font-size: 9.5pt;
+    line-height: 1.12;
   }
 
   .closure-check-item span {
