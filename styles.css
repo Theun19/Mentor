@@ -2466,6 +2466,98 @@ body.signature-editing::after {
     break-inside: avoid;
   }
 
+  .closure-print,
+  .closure-print .print-table,
+  .closure-print .print-details dd,
+  .closure-print .print-details dt,
+  .closure-print .print-signature-stack span {
+    font-size: 11pt;
+  }
+
+  .closure-print .print-summary-header {
+    margin-bottom: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .closure-print .print-summary-header h1 {
+    font-size: 14pt;
+  }
+
+  .closure-print .print-panel {
+    padding: 0.22rem;
+    margin-bottom: 0.22rem;
+  }
+
+  .closure-print .print-panel h2 {
+    margin-bottom: 0.16rem;
+    font-size: 11pt;
+  }
+
+  .closure-print .print-table {
+    line-height: 1.05;
+  }
+
+  .closure-print .print-table th,
+  .closure-print .print-table td {
+    padding: 0.12rem 0.16rem;
+  }
+
+  .closure-info-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 0.25rem;
+  }
+
+  .closure-check-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.22rem;
+  }
+
+  .closure-check-panel {
+    break-inside: avoid;
+  }
+
+  .closure-check-list {
+    display: grid;
+    gap: 0.08rem;
+  }
+
+  .closure-check-item {
+    display: grid;
+    grid-template-columns: 1.1rem 1fr;
+    gap: 0.16rem;
+    align-items: start;
+    min-height: 0;
+    font-size: 11pt;
+    line-height: 1.05;
+  }
+
+  .closure-check-item span {
+    color: #385f15;
+    font-weight: 900;
+    text-align: center;
+  }
+
+  .closure-check-item strong {
+    font-weight: 700;
+  }
+
+  .closure-check-item em {
+    grid-column: 2;
+    color: #647066;
+    font-style: normal;
+  }
+
+  .closure-print .print-section-signatures {
+    margin-top: 0.2rem;
+  }
+
+  .closure-print .print-signature-empty,
+  .closure-print .print-signature-stack img {
+    height: 2.2rem;
+  }
+
   .print-signatures {
     margin-bottom: 0;
   }

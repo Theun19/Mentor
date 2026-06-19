@@ -2193,10 +2193,12 @@ function buildPrintCompleteHtml() {
 
 function buildPrintClosureHtml() {
   return `
-    <section class="print-page">${buildPrintDriverHtml("Afsluiting Mentorfase - Chauffeursinformatie")}</section>
-    <section class="print-page">${buildPrintChecklistHtml("Afsluiting Mentorfase - Checklist")}</section>
-    <section class="print-page">${buildPrintInfoHtml("Afsluiting Mentorfase - Info")}</section>
-    <section class="print-page">${buildPrintLinesHtml("Afsluiting Mentorfase - Lijnverkenning")}</section>
+    <div class="closure-print">
+      <section class="print-page">${buildPrintDriverHtml("Afsluiting Mentorfase - Chauffeursinformatie")}</section>
+      <section class="print-page">${buildPrintChecklistHtml("Afsluiting Mentorfase - Checklist", true)}</section>
+      <section class="print-page">${buildPrintInfoHtml("Afsluiting Mentorfase - Info", true)}</section>
+      <section class="print-page">${buildPrintLinesHtml("Afsluiting Mentorfase - Lijnverkenning")}</section>
+    </div>
   `;
 }
 
@@ -2245,12 +2247,21 @@ function buildPrintDriverHtml(title = "Chauffeur information") {
   `;
 }
 
-function buildPrintChecklistHtml(title = "Checklist") {
+function buildPrintChecklistHtml(title = "Checklist", compact = false) {
   const checklistPanels = checklists.map((list, listIndex) => {
     const rows = list.items.map((item, itemIndex) => {
       const id = `list-${listIndex}-item-${itemIndex}`;
       const done = getSaved(id) === "true";
       const note = getSaved(`${id}-note`);
+      if (compact) {
+        return `
+          <div class="closure-check-item ${done ? "done" : ""}">
+            <span>${done ? "X" : "-"}</span>
+            <strong>${escapeHtml(item)}</strong>
+            ${note ? `<em>${escapeHtml(note)}</em>` : ""}
+          </div>
+        `;
+      }
       return `
         <tr>
           <td>${done ? "Afgevinkt" : "Open"}</td>
@@ -2260,6 +2271,15 @@ function buildPrintChecklistHtml(title = "Checklist") {
       `;
     }).join("");
     const doneCount = list.items.filter((_, itemIndex) => getSaved(`list-${listIndex}-item-${itemIndex}`) === "true").length;
+
+    if (compact) {
+      return `
+        <div class="print-panel closure-check-panel">
+          <h2>${escapeHtml(list.title)} (${doneCount}/${list.items.length})</h2>
+          <div class="closure-check-list">${rows}</div>
+        </div>
+      `;
+    }
 
     return `
       <div class="print-panel">
@@ -2275,7 +2295,7 @@ function buildPrintChecklistHtml(title = "Checklist") {
   return `
     ${buildPrintHeader(title)}
     ${buildPrintSignatureMetaPanel()}
-    ${checklistPanels}
+    <div class="${compact ? "closure-check-grid" : ""}">${checklistPanels}</div>
     ${buildPrintSectionSignatures("Ondertekening checklist", "checklistDriverSignature", "checklistMentorSignature")}
   `;
 }
@@ -2424,7 +2444,7 @@ function getCompactPrintAiText() {
   return compact.length > 620 ? `${compact.slice(0, 617)}...` : compact;
 }
 
-function buildPrintInfoHtml(title = "Information") {
+function buildPrintInfoHtml(title = "Information", compact = false) {
   const contactRows = contacts.map(([role, name, phone, whatsapp]) => `
     <tr>
       <td>${escapeHtml(role)}</td>
@@ -2443,6 +2463,7 @@ function buildPrintInfoHtml(title = "Information") {
 
   return `
     ${buildPrintHeader(title)}
+    <div class="${compact ? "closure-info-grid" : ""}">
     <div class="print-panel">
       <h2>Belangrijke telefoonnummers</h2>
       <table class="print-table">
@@ -2456,6 +2477,7 @@ function buildPrintInfoHtml(title = "Information") {
         <thead><tr><th>Naam</th><th>Omschrijving</th><th>Link</th></tr></thead>
         <tbody>${websiteRows}</tbody>
       </table>
+    </div>
     </div>
     ${buildPrintSectionSignatures("Ondertekening info", "infoDriverSignature", "infoMentorSignature")}
   `;
