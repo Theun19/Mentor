@@ -626,11 +626,6 @@ function renderSignatureMeta() {
   const driverName = getSaved("driverName") || getActiveDriverProfile()?.name || "-";
   const mentorName = getSaved("mentorName") || "-";
   const endDate = formatSignatureDate(getSaved("endDate"));
-  const personLabels = {
-    driver: ["Chauffeur", driverName],
-    mentor: ["Mentor", mentorName],
-    manager: ["Leidinggevende", getSaved("managerName") || "-"],
-  };
 
   document.querySelectorAll("[data-signature-meta]").forEach((container) => {
     container.innerHTML = `
@@ -646,15 +641,6 @@ function renderSignatureMeta() {
         <span>Einddatum</span>
         <strong>${escapeHtml(endDate)}</strong>
       </div>
-    `;
-  });
-
-  document.querySelectorAll("[data-signature-person]").forEach((container) => {
-    const [label, name] = personLabels[container.dataset.signaturePerson] || ["Naam", "-"];
-    container.innerHTML = `
-      <span>${escapeHtml(label)}</span>
-      <strong>${escapeHtml(name || "-")}</strong>
-      <em>Einddatum: ${escapeHtml(endDate)}</em>
     `;
   });
 }

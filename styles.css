@@ -685,37 +685,6 @@ body.auth-locked .auth-screen {
   overflow-wrap: anywhere;
 }
 
-.signature-field-meta {
-  display: grid;
-  gap: 0.1rem;
-  margin-bottom: 0.45rem;
-  border: 1px solid #dcebd3;
-  border-radius: 7px;
-  padding: 0.45rem 0.55rem;
-  background: #f4faef;
-}
-
-.signature-field-meta span {
-  color: var(--muted);
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.signature-field-meta strong {
-  color: var(--brand-dark);
-  font-size: 0.95rem;
-  font-weight: 900;
-  overflow-wrap: anywhere;
-}
-
-.signature-field-meta em {
-  color: var(--muted);
-  font-size: 0.78rem;
-  font-style: normal;
-  font-weight: 700;
-}
-
 .signature-close {
   display: none;
 }

@@ -104,16 +104,6 @@ function setSaved(name, value) {
   localStorage.setItem(key(name), value);
 }
 
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-  }[character]));
-}
-
 function getDriverProfiles() {
   try {
     const profiles = JSON.parse(localStorage.getItem(driverProfilesKey)) || [];
@@ -235,40 +225,9 @@ function restoreFields() {
       input.addEventListener("input", () => {
         setSaved(input.id, input.value);
         if (input.id === "driverName") updateActiveDriverName(input.value);
-        renderSignatureFieldMeta();
       });
       input.dataset.bound = "true";
     }
-  });
-  renderSignatureFieldMeta();
-}
-
-function renderSignatureFieldMeta() {
-  const endDate = formatSignatureDate(getSaved("endDate"));
-  const personLabels = {
-    driver: ["Chauffeur", getSaved("driverName") || getActiveDriverProfile()?.name || "-"],
-    mentor: ["Mentor", getSaved("mentorName") || "-"],
-    manager: ["Leidinggevende", getSaved("managerName") || "-"],
-  };
-
-  document.querySelectorAll("[data-signature-person]").forEach((container) => {
-    const [label, name] = personLabels[container.dataset.signaturePerson] || ["Naam", "-"];
-    container.innerHTML = `
-      <span>${escapeHtml(label)}</span>
-      <strong>${escapeHtml(name || "-")}</strong>
-      <em>Einddatum: ${escapeHtml(endDate)}</em>
-    `;
-  });
-}
-
-function formatSignatureDate(value) {
-  if (!value) return "-";
-  const timestamp = Date.parse(value);
-  if (!Number.isFinite(timestamp)) return value;
-  return new Date(timestamp).toLocaleDateString("nl-NL", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
   });
 }
 
