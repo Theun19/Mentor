@@ -685,6 +685,21 @@ body.auth-locked .auth-screen {
   overflow-wrap: anywhere;
 }
 
+.signature-date-line {
+  margin: -0.35rem 0 0.75rem;
+  color: var(--brand-dark);
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.signature-name-line {
+  margin: -0.25rem 0 0.45rem;
+  color: var(--brand-dark);
+  font-size: 0.95rem;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
 .signature-close {
   display: none;
 }
@@ -2441,6 +2456,21 @@ body.signature-editing::after {
     color: #647066;
     font-size: 8pt;
     font-weight: 700;
+  }
+
+  .print-signature-date {
+    margin: -0.08rem 0 0.18rem;
+    color: #385f15;
+    font-size: 9pt;
+    font-weight: 800;
+  }
+
+  .print-signature-name {
+    display: block;
+    margin-bottom: 0.14rem;
+    color: #18241c;
+    font-size: 9pt;
+    font-weight: 900;
   }
 
   .print-signature-empty {

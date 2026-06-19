@@ -626,6 +626,14 @@ function renderSignatureMeta() {
   const driverName = getSaved("driverName") || getActiveDriverProfile()?.name || "-";
   const mentorName = getSaved("mentorName") || "-";
   const endDate = formatSignatureDate(getSaved("endDate"));
+  const names = {
+    driver: driverName,
+    mentor: mentorName,
+  };
+
+  document.querySelectorAll("[data-signature-date]").forEach((container) => {
+    container.textContent = `Datum: ${endDate}`;
+  });
 
   document.querySelectorAll("[data-signature-meta]").forEach((container) => {
     container.innerHTML = `
@@ -642,6 +650,11 @@ function renderSignatureMeta() {
         <strong>${escapeHtml(endDate)}</strong>
       </div>
     `;
+  });
+
+  document.querySelectorAll("[data-signature-name]").forEach((container) => {
+    const role = container.dataset.signatureName;
+    container.textContent = names[role] || "-";
   });
 }
 
@@ -2323,17 +2336,23 @@ function buildPrintSignatureMetaPanel() {
 function buildPrintSectionSignatures(title, driverSignatureId, mentorSignatureId) {
   const driverSignature = getSaved(driverSignatureId);
   const mentorSignature = getSaved(mentorSignatureId);
+  const driverName = getSaved("driverName") || getActiveDriverProfile()?.name || "-";
+  const mentorName = getSaved("mentorName") || "-";
+  const endDate = formatSignatureDate(getSaved("endDate"));
 
   return `
     <div class="print-panel print-section-signatures">
       <h2>${escapeHtml(title)}</h2>
+      <p class="print-signature-date">Datum: ${escapeHtml(endDate)}</p>
       <div class="print-signature-stack print-signature-stack-two">
         <div>
           <span>Chauffeur</span>
+          <strong class="print-signature-name">${escapeHtml(driverName)}</strong>
           ${driverSignature ? `<img src="${escapeHtml(driverSignature)}" alt="Handtekening chauffeur" />` : `<div class="print-signature-empty">-</div>`}
         </div>
         <div>
           <span>Mentor</span>
+          <strong class="print-signature-name">${escapeHtml(mentorName)}</strong>
           ${mentorSignature ? `<img src="${escapeHtml(mentorSignature)}" alt="Handtekening mentor" />` : `<div class="print-signature-empty">-</div>`}
         </div>
       </div>
