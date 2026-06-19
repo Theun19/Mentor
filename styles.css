@@ -2446,7 +2446,7 @@ body.signature-editing::after {
   .print-signature-empty {
     display: grid;
     place-items: center;
-    height: 2.9rem;
+    height: 11.6rem;
     border: 1px dashed #bfd2bd;
     border-radius: 5px;
     color: #647066;
@@ -2455,7 +2455,7 @@ body.signature-editing::after {
   .print-signature-stack img {
     display: block;
     width: 100%;
-    height: 2.9rem;
+    height: 11.6rem;
     object-fit: contain;
     border: 1px dashed #bfd2bd;
     border-radius: 5px;
@@ -2530,7 +2530,7 @@ body.signature-editing::after {
 
   .closure-info-grid + .print-section-signatures .print-signature-empty,
   .closure-info-grid + .print-section-signatures .print-signature-stack img {
-    height: 1.75rem;
+    height: 7rem;
   }
 
   .closure-check-grid {
@@ -2580,7 +2580,7 @@ body.signature-editing::after {
 
   .closure-print .print-signature-empty,
   .closure-print .print-signature-stack img {
-    height: 2.2rem;
+    height: 8.8rem;
   }
 
   .print-signatures {
@@ -2590,7 +2590,7 @@ body.signature-editing::after {
   .print-signatures img {
     display: block;
     width: 100%;
-    height: 2.9rem;
+    height: 11.6rem;
     object-fit: contain;
     border: 1px dashed #bfd2bd;
     border-radius: 5px;
