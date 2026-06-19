@@ -2166,7 +2166,9 @@ function buildPrintSummary(target = "dashboard") {
 
   const builders = {
     complete: buildPrintCompleteHtml,
+    closure: buildPrintClosureHtml,
     driver: buildPrintDriverHtml,
+    checklist: buildPrintChecklistHtml,
     dashboard: buildPrintDashboardHtml,
     ai: buildPrintAiHtml,
     info: buildPrintInfoHtml,
@@ -2189,6 +2191,15 @@ function buildPrintCompleteHtml() {
   `;
 }
 
+function buildPrintClosureHtml() {
+  return `
+    <section class="print-page">${buildPrintDriverHtml("Afsluiting Mentorfase - Chauffeursinformatie")}</section>
+    <section class="print-page">${buildPrintChecklistHtml("Afsluiting Mentorfase - Checklist")}</section>
+    <section class="print-page">${buildPrintInfoHtml("Afsluiting Mentorfase - Info")}</section>
+    <section class="print-page">${buildPrintLinesHtml("Afsluiting Mentorfase - Lijnverkenning")}</section>
+  `;
+}
+
 function buildPrintHeader(title) {
   return `
     <div class="print-summary-header">
@@ -2201,13 +2212,13 @@ function buildPrintHeader(title) {
   `;
 }
 
-function buildPrintDriverHtml() {
+function buildPrintDriverHtml(title = "Chauffeur information") {
   const driverSignature = getSaved("driverSignature");
   const mentorSignature = getSaved("mentorSignature");
   const managerSignature = getSaved("managerSignature");
 
   return `
-    ${buildPrintHeader("Chauffeur information")}
+    ${buildPrintHeader(title)}
     <div class="print-grid">
       <div class="print-panel">
         <h2>Chauffeur</h2>
@@ -2234,6 +2245,41 @@ function buildPrintDriverHtml() {
   `;
 }
 
+function buildPrintChecklistHtml(title = "Checklist") {
+  const checklistPanels = checklists.map((list, listIndex) => {
+    const rows = list.items.map((item, itemIndex) => {
+      const id = `list-${listIndex}-item-${itemIndex}`;
+      const done = getSaved(id) === "true";
+      const note = getSaved(`${id}-note`);
+      return `
+        <tr>
+          <td>${done ? "Afgevinkt" : "Open"}</td>
+          <td>${escapeHtml(item)}</td>
+          <td>${escapeHtml(note || "-")}</td>
+        </tr>
+      `;
+    }).join("");
+    const doneCount = list.items.filter((_, itemIndex) => getSaved(`list-${listIndex}-item-${itemIndex}`) === "true").length;
+
+    return `
+      <div class="print-panel">
+        <h2>${escapeHtml(list.title)} (${doneCount}/${list.items.length})</h2>
+        <table class="print-table">
+          <thead><tr><th>Status</th><th>Onderdeel</th><th>Notitie</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    ${buildPrintHeader(title)}
+    ${buildPrintSignatureMetaPanel()}
+    ${checklistPanels}
+    ${buildPrintSectionSignatures("Ondertekening checklist", "checklistDriverSignature", "checklistMentorSignature")}
+  `;
+}
+
 function buildPrintDriverDetails() {
   return `
     <dl class="print-details">
@@ -2243,6 +2289,36 @@ function buildPrintDriverDetails() {
       <div><dt>Einddatum</dt><dd>${escapeHtml(getSaved("endDate") || "-")}</dd></div>
       <div><dt>Mentor</dt><dd>${escapeHtml(getSaved("mentorName") || "-")}</dd></div>
     </dl>
+  `;
+}
+
+function buildPrintSignatureMetaPanel() {
+  return `
+    <div class="print-panel">
+      <h2>Gegevens</h2>
+      ${buildPrintDriverDetails()}
+    </div>
+  `;
+}
+
+function buildPrintSectionSignatures(title, driverSignatureId, mentorSignatureId) {
+  const driverSignature = getSaved(driverSignatureId);
+  const mentorSignature = getSaved(mentorSignatureId);
+
+  return `
+    <div class="print-panel print-section-signatures">
+      <h2>${escapeHtml(title)}</h2>
+      <div class="print-signature-stack print-signature-stack-two">
+        <div>
+          <span>Chauffeur</span>
+          ${driverSignature ? `<img src="${escapeHtml(driverSignature)}" alt="Handtekening chauffeur" />` : `<div class="print-signature-empty">-</div>`}
+        </div>
+        <div>
+          <span>Mentor</span>
+          ${mentorSignature ? `<img src="${escapeHtml(mentorSignature)}" alt="Handtekening mentor" />` : `<div class="print-signature-empty">-</div>`}
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -2348,7 +2424,7 @@ function getCompactPrintAiText() {
   return compact.length > 620 ? `${compact.slice(0, 617)}...` : compact;
 }
 
-function buildPrintInfoHtml() {
+function buildPrintInfoHtml(title = "Information") {
   const contactRows = contacts.map(([role, name, phone, whatsapp]) => `
     <tr>
       <td>${escapeHtml(role)}</td>
@@ -2366,7 +2442,7 @@ function buildPrintInfoHtml() {
   `).join("");
 
   return `
-    ${buildPrintHeader("Information")}
+    ${buildPrintHeader(title)}
     <div class="print-panel">
       <h2>Belangrijke telefoonnummers</h2>
       <table class="print-table">
@@ -2381,16 +2457,17 @@ function buildPrintInfoHtml() {
         <tbody>${websiteRows}</tbody>
       </table>
     </div>
+    ${buildPrintSectionSignatures("Ondertekening info", "infoDriverSignature", "infoMentorSignature")}
   `;
 }
 
-function buildPrintLinesHtml() {
+function buildPrintLinesHtml(title = "Chauffeursgegevens en lijnverkenning") {
   const summary = getSortedLineSummary();
   const todoLines = summary.filter((item) => !item.done);
   const doneLines = summary.filter((item) => item.done);
 
   return `
-    ${buildPrintHeader("Chauffeursgegevens en lijnverkenning")}
+    ${buildPrintHeader(title)}
     <div class="print-panel">
       <h2>Chauffeur</h2>
       ${buildPrintDriverDetails()}
@@ -2399,6 +2476,7 @@ function buildPrintLinesHtml() {
       ${renderPrintLineOverviewColumn("Lijnen nog te doen", todoLines)}
       ${renderPrintLineOverviewColumn("Lijnen afgevinkt", doneLines)}
     </div>
+    ${buildPrintSectionSignatures("Ondertekening lijnverkenning", "lineDriverSignature", "lineMentorSignature")}
   `;
 }
 

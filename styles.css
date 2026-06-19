@@ -2431,6 +2431,10 @@ body.signature-editing::after {
     gap: 0.4rem;
   }
 
+  .print-signature-stack-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .print-signature-stack span {
     display: block;
     margin-bottom: 0.12rem;
@@ -2446,6 +2450,20 @@ body.signature-editing::after {
     border: 1px dashed #bfd2bd;
     border-radius: 5px;
     color: #647066;
+  }
+
+  .print-signature-stack img {
+    display: block;
+    width: 100%;
+    height: 2.9rem;
+    object-fit: contain;
+    border: 1px dashed #bfd2bd;
+    border-radius: 5px;
+    background: #ffffff;
+  }
+
+  .print-section-signatures {
+    break-inside: avoid;
   }
 
   .print-signatures {
