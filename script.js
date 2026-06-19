@@ -2294,7 +2294,6 @@ function buildPrintChecklistHtml(title = "Checklist", compact = false) {
 
   return `
     ${buildPrintHeader(title)}
-    ${buildPrintSignatureMetaPanel()}
     <div class="${compact ? "closure-check-grid" : ""}">${checklistPanels}</div>
     ${buildPrintSectionSignatures("Ondertekening checklist", "checklistDriverSignature", "checklistMentorSignature")}
   `;
@@ -2490,10 +2489,6 @@ function buildPrintLinesHtml(title = "Chauffeursgegevens en lijnverkenning") {
 
   return `
     ${buildPrintHeader(title)}
-    <div class="print-panel">
-      <h2>Chauffeur</h2>
-      ${buildPrintDriverDetails()}
-    </div>
     <div class="print-grid print-line-overview">
       ${renderPrintLineOverviewColumn("Lijnen nog te doen", todoLines)}
       ${renderPrintLineOverviewColumn("Lijnen afgevinkt", doneLines)}
