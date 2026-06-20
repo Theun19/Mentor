@@ -310,7 +310,7 @@ body {
 
 .dashboard-donut-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.85rem;
 }
 
@@ -399,6 +399,14 @@ body {
   background: linear-gradient(180deg, #fff6c7, #f4d36a);
 }
 
+.donut-center.donut-tone-orange {
+  background: linear-gradient(180deg, #ffe8c2, #f0a23c);
+}
+
+.donut-center.donut-tone-light-green {
+  background: linear-gradient(180deg, #f1f9df, #c6e58f);
+}
+
 .donut-center.donut-tone-green {
   background: linear-gradient(180deg, #ecf8df, #cde9bd);
 }
@@ -416,7 +424,9 @@ body {
 }
 
 .donut-center.donut-tone-red strong,
+.donut-center.donut-tone-orange strong,
 .donut-center.donut-tone-yellow strong,
+.donut-center.donut-tone-light-green strong,
 .donut-center.donut-tone-green strong,
 .donut-center.donut-tone-greener strong,
 .donut-center.donut-tone-strong strong,
@@ -425,7 +435,9 @@ body {
 }
 
 .donut-center.donut-tone-red span,
+.donut-center.donut-tone-orange span,
 .donut-center.donut-tone-yellow span,
+.donut-center.donut-tone-light-green span,
 .donut-center.donut-tone-green span,
 .donut-center.donut-tone-greener span,
 .donut-center.donut-tone-strong span,
@@ -1761,16 +1773,19 @@ body.signature-editing::after {
   }
 
   .dashboard-donut-grid {
-    grid-template-columns: repeat(3, minmax(8.8rem, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.55rem;
-    overflow-x: auto;
+    overflow-x: visible;
     padding-bottom: 0.15rem;
-    -webkit-overflow-scrolling: touch;
   }
 
   .dashboard-donut-card {
-    min-height: 11.25rem;
-    padding: 0.7rem;
+    min-height: 10.4rem;
+    padding: 0.6rem;
+  }
+
+  .dashboard-donut-card .donut-chart {
+    width: min(100%, 6.85rem);
   }
 
   .dashboard-donut-meta strong {
@@ -2487,7 +2502,7 @@ body.signature-editing::after {
 
   .print-web-dashboard .dashboard-donut-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.18rem;
   }
 

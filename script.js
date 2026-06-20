@@ -871,15 +871,15 @@ function updateProgress() {
   renderLineOverviewColumns();
 }
 
-function setDonutProgress(id, percentage) {
+function setDonutProgress(id, percentage, toneClass = "") {
   const donut = document.getElementById(id);
   if (!donut) return;
   const value = Math.max(0, Math.min(100, Number(percentage) || 0));
   donut.style.background = `conic-gradient(var(--brand) 0deg ${value * 3.6}deg, #e8eee5 ${value * 3.6}deg 360deg)`;
   const center = donut.querySelector(".donut-center");
   if (!center) return;
-  center.classList.remove("donut-tone-red", "donut-tone-yellow", "donut-tone-green", "donut-tone-greener", "donut-tone-strong", "donut-tone-gold");
-  center.classList.add(getDonutToneClass(value));
+  center.classList.remove("donut-tone-red", "donut-tone-orange", "donut-tone-yellow", "donut-tone-light-green", "donut-tone-green", "donut-tone-greener", "donut-tone-strong", "donut-tone-gold");
+  center.classList.add(toneClass || getDonutToneClass(value));
 }
 
 function getDonutToneClass(value) {
@@ -889,6 +889,14 @@ function getDonutToneClass(value) {
   if (value >= 80) return "donut-tone-strong";
   if (value >= 70) return "donut-tone-greener";
   return "donut-tone-green";
+}
+
+function getRatingDonutToneClass(value) {
+  if (value < 50) return "donut-tone-red";
+  if (value < 60) return "donut-tone-orange";
+  if (value < 70) return "donut-tone-light-green";
+  if (value < 90) return "donut-tone-green";
+  return "donut-tone-gold";
 }
 
 function updateRatingValue(input) {
@@ -962,10 +970,22 @@ function updateRatingAverage() {
   const ratings = [...document.querySelectorAll(".rating-range")].map((input) => getRatingScore(input));
   const total = ratings.reduce((sum, value) => sum + value, 0);
   const average = ratings.length ? Math.round(total / ratings.length) : 0;
+  const lowest = ratings.length ? Math.min(...ratings) : 0;
   document.getElementById("ratingAverage").textContent = `Gemiddelde: ${average}%`;
+  updateRatingDonut(average, lowest);
   updateRatingChart();
   renderRatingDayLog();
   renderRatingProgressTable();
+}
+
+function updateRatingDonut(average, lowest) {
+  const percent = document.getElementById("ratingDonutPercent");
+  const detail = document.getElementById("ratingDonutDetail");
+  if (!percent || !detail) return;
+
+  percent.textContent = `${average}%`;
+  detail.textContent = `laagste score: ${lowest}%`;
+  setDonutProgress("ratingDonut", average, getRatingDonutToneClass(lowest));
 }
 
 function getRatingRowsForProgress() {
