@@ -1658,27 +1658,24 @@ function buildMentorGeneratedText() {
   const openNotes = getOpenChecklistNotes();
   const totalProgress = getTotalMentorProgress(checklistSummary, lineSummary);
   const attentionText = buildProgressAttentionText(lineSummary, ratingSummary);
-  const closingLine = totalProgress.open === 0
-    ? "Alle onderdelen zijn afgevinkt. De chauffeur is klaar om zelfstandig ingezet te worden."
-    : "Volgende week volgt een nieuwe update van de voortgang.";
+  const closingLine = buildMentorClosingLine(totalProgress, lineSummary, ratingSummary);
   const linesTable = buildOpenLinesTextTable(lineSummary.openLines);
   const ratingLines = ratingSummary.slice(0, 4).map(formatRatingProgressText);
   const notes = openNotes.slice(0, 3);
   const metaLine = [mentorName ? `Mentor: ${mentorName}` : "", personnelNumber ? `Pers.nr.: ${personnelNumber}` : "", startDate || endDate ? `Periode: ${startDate || "-"} t/m ${endDate || "-"}` : ""].filter(Boolean).join(" | ");
 
   const sections = [
-    `MENTORVERSLAG - ${driverName}`,
+    `1. Mentorverslag - ${driverName}`,
     metaLine,
-    `VOORTGANG\n\nDe totale voortgang staat op ${totalProgress.done}/${totalProgress.total} punten (${totalProgress.percentage}%). Van de lijnverkenning zijn ${lineSummary.done}/${lineSummary.total} lijnen volledig afgerond.`,
-    `AFTEKENLIJSTEN\n\n${checklistSummary.lists.map((list) => `- ${list.title}: ${list.done}/${list.total} punten afgetekend (${list.percentage}%).`).join("\n")}`,
-    linesTable ? `OPEN LIJNEN\n\nDe volgende lijnen zijn nog niet volledig afgerond:\n\n${linesTable}` : "",
-    ratingLines.length ? `BEOORDELINGEN\n\n${ratingLines.join("\n")}` : "",
-    attentionText ? `AANDACHT\n\n${attentionText}` : "",
+    `2. Voortgang\n\nTotale voortgang: ${totalProgress.done}/${totalProgress.total} punten (${totalProgress.percentage}%).\nLijnverkenning: ${lineSummary.done}/${lineSummary.total} lijnen volledig afgerond.`,
+    `3. Aftekenlijsten\n\n${checklistSummary.lists.map((list) => `- ${list.title}: ${list.done}/${list.total} punten afgetekend (${list.percentage}%).`).join("\n")}`,
+    linesTable ? `4. Open lijnen\n\nNog niet volledig afgerond:\n\n${linesTable}` : "",
+    ratingLines.length ? `5. Beoordelingen\n\n${ratingLines.join("\n")}` : "",
+    attentionText ? `6. Aandacht\n\n${attentionText}` : "",
     notes.length
-      ? `NOTITIES\n\n${notes.map((note) => `- ${note}`).join("\n")}`
+      ? `7. Notities\n\n${notes.map((note) => `- ${note}`).join("\n")}`
       : "",
-    `CONCLUSIE\n\n${buildMentorAdvice(checklistSummary, lineSummary, ratingSummary)}`,
-    closingLine,
+    `8. Conclusie\n\n${buildMentorAdvice(checklistSummary, lineSummary, ratingSummary, totalProgress)}\n\n${closingLine}`,
   ].filter((line) => line !== "");
 
   return sections.join("\n\n\n");
@@ -1811,15 +1808,71 @@ function getOpenChecklistNotes() {
   )).filter(Boolean).slice(0, 10);
 }
 
-function buildMentorAdvice(checklistSummary, lineSummary, ratingSummary) {
+function buildMentorAdvice(checklistSummary, lineSummary, ratingSummary, totalProgress) {
   const lowRatings = ratingSummary.filter((item) => item.value < 70);
-  const ratingText = !ratingSummary.length
-    ? ""
-    : lowRatings.length
-    ? `De beoordelingen laten zien dat ${lowRatings.map((item) => item.label).join(", ")} nog onder het gewenste niveau zit.`
-    : "De laatste beoordelingen laten een stabiel beeld boven de 70% zien.";
+  const strongRatings = ratingSummary.filter((item) => item.value >= 80);
+  const improvedRatings = ratingSummary.filter((item) => item.difference > 0);
+  const declinedRatings = ratingSummary.filter((item) => item.difference < 0);
+  const checklistPercentage = checklistSummary.percentage;
+  const lineStepPercentage = lineSummary.totalSteps ? Math.round((lineSummary.doneSteps / lineSummary.totalSteps) * 100) : 0;
+  const parts = [];
 
-  return ratingText ? `Conclusie: ${ratingText}` : "";
+  if (totalProgress.open === 0) {
+    parts.push("Alle onderdelen zijn afgerond en de mentorperiode is compleet vastgelegd.");
+  } else if (totalProgress.percentage >= 80) {
+    parts.push(`De voortgang is ruim op weg: ${totalProgress.percentage}% van alle onderdelen is afgerond.`);
+  } else if (totalProgress.percentage >= 50) {
+    parts.push(`De voortgang is zichtbaar in ontwikkeling: ${totalProgress.percentage}% van alle onderdelen is afgerond.`);
+  } else {
+    parts.push(`De voortgang staat nog in de opbouwfase met ${totalProgress.percentage}% afgeronde onderdelen.`);
+  }
+
+  if (lineSummary.openLines.length) {
+    parts.push(`Bij de lijnverkenning is ${lineStepPercentage}% van de lijnonderdelen afgevinkt; er staan nog ${lineSummary.openLines.length} lijnen open.`);
+  } else {
+    parts.push("De lijnverkenning is volledig afgerond.");
+  }
+
+  if (checklistSummary.open) {
+    parts.push(`De aftekenlijsten staan op ${checklistPercentage}%, waardoor er nog checklistpunten afgerond moeten worden.`);
+  } else {
+    parts.push("Alle aftekenlijsten zijn volledig afgetekend.");
+  }
+
+  if (lowRatings.length) {
+    parts.push(`De beoordelingen laten zien dat ${lowRatings.map((item) => item.label).join(", ")} nog onder het gewenste niveau zit.`);
+  } else if (strongRatings.length) {
+    parts.push(`De sterkste punten op dit moment zijn ${strongRatings.map((item) => item.label).join(", ")}.`);
+  } else if (ratingSummary.length) {
+    parts.push("De beoordelingen geven een stabiel middenbeeld zonder grote uitschieters.");
+  }
+
+  if (declinedRatings.length) {
+    parts.push(`Let op: ${declinedRatings.map((item) => item.label).join(", ")} is gedaald ten opzichte van het eerste meetpunt.`);
+  } else if (improvedRatings.length) {
+    parts.push(`Positief is dat ${improvedRatings.map((item) => item.label).join(", ")} verbetering laat zien.`);
+  }
+
+  return parts.join("\n\n");
+}
+
+function buildMentorClosingLine(totalProgress, lineSummary, ratingSummary) {
+  const lowRatings = ratingSummary.filter((item) => item.value < 60);
+  const lineStepPercentage = lineSummary.totalSteps ? Math.round((lineSummary.doneSteps / lineSummary.totalSteps) * 100) : 0;
+
+  if (totalProgress.open === 0) {
+    return "Alles is afgevinkt. De chauffeur kan beginnen met zelfstandig ingezet worden.";
+  }
+
+  if (lowRatings.length || lineStepPercentage < 40) {
+    return "Bij de volgende update is het belangrijk om vooral deze aandachtspunten opnieuw te beoordelen.";
+  }
+
+  if (totalProgress.percentage >= 75) {
+    return "Volgende week kan de laatste voortgang gericht worden aangevuld.";
+  }
+
+  return "Volgende week volgt een nieuwe update van de voortgang.";
 }
 
 function lineTaskId(line, type) {
@@ -2439,13 +2492,14 @@ function buildPrintAiHtml() {
 }
 
 function formatMentorTextForPrint(text) {
-  const headingPattern = /^(MENTORVERSLAG.*|VOORTGANG|AFTEKENLIJSTEN|OPEN LIJNEN|BEOORDELINGEN|AANDACHT|NOTITIES|CONCLUSIE)$/;
+  const headingPattern = /^(\d+\.\s+)?(MENTORVERSLAG.*|VOORTGANG|AFTEKENLIJSTEN|OPEN LIJNEN|BEOORDELINGEN|AANDACHT|NOTITIES|CONCLUSIE)$/i;
   return text
     .split("\n")
     .map((line) => {
       const cleanLine = line.trim();
       if (!cleanLine) return `<div class="print-ai-spacer"></div>`;
       if (headingPattern.test(cleanLine)) return `<h3>${escapeHtml(cleanLine)}</h3>`;
+      if (cleanLine.startsWith("- ")) return `<p class="print-ai-bullet">${escapeHtml(cleanLine.slice(2))}</p>`;
       if (line.includes("    ")) return `<p class="line-column-row">${escapeHtml(line)}</p>`;
       return `<p>${escapeHtml(line)}</p>`;
     })
