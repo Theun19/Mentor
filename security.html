@@ -26,6 +26,15 @@
           </div>
 
           <div class="app-actions" aria-label="Acties">
+            <div class="translate-control">
+              <label class="visually-hidden" for="securityLanguageSelect">Taal kiezen</label>
+              <select class="form-select form-select-sm translate-select" id="securityLanguageSelect" aria-label="Taal kiezen">
+                <option value="nl">Nederlands</option>
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+                <option value="tr">Türkçe</option>
+              </select>
+            </div>
             <a class="btn btn-outline-secondary btn-sm" href="index.html">Terug</a>
           </div>
         </div>
@@ -81,6 +90,9 @@
       </section>
     </main>
 
+    <div id="google_translate_element" class="google-translate-element" aria-hidden="true"></div>
+    <script src="translate.js"></script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <script src="security.js"></script>
   </body>
 </html>

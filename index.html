@@ -22,6 +22,15 @@
         <p class="text-uppercase small fw-semibold text-success mb-1">Beveiligde toegang</p>
         <h2 class="h4 fw-bold mb-3" id="mainLoginTitle">Inloggen</h2>
         <div class="mb-3">
+          <label class="form-label" for="loginLanguageSelect">Taal</label>
+          <select class="form-select form-select-sm translate-select" id="loginLanguageSelect" aria-label="Taal kiezen">
+            <option value="nl">Nederlands</option>
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+            <option value="tr">Türkçe</option>
+          </select>
+        </div>
+        <div class="mb-3">
           <label class="form-label" for="mainLoginUsername">Gebruikersnaam</label>
           <input class="form-control" id="mainLoginUsername" type="text" autocomplete="username" required />
         </div>
@@ -54,17 +63,26 @@
           </div>
 
           <div class="app-actions" aria-label="Acties">
+            <div class="translate-control">
+              <label class="visually-hidden" for="headerLanguageSelect">Taal kiezen</label>
+              <select class="form-select form-select-sm translate-select" id="headerLanguageSelect" aria-label="Taal kiezen">
+                <option value="nl">Nederlands</option>
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+                <option value="tr">Türkçe</option>
+              </select>
+            </div>
             <div class="dropdown">
               <button class="btn btn-success btn-sm dropdown-toggle" id="printMenuBtn" type="button" data-bs-toggle="dropdown" aria-expanded="false">Print</button>
               <div class="dropdown-menu dropdown-menu-end share-menu" aria-labelledby="printMenuBtn">
                 <button class="dropdown-item" data-print-target="complete" type="button">Tussentijds rapport</button>
                 <button class="dropdown-item" data-print-target="closure" type="button">Afsluiting Mentorfase</button>
                 <div class="dropdown-divider"></div>
-                <button class="dropdown-item" data-print-target="driver" type="button">Print Chauffeur information</button>
-                <button class="dropdown-item" data-print-target="dashboard" type="button">Print Dashboard</button>
+                <button class="dropdown-item" data-print-target="driver" type="button">Print chauffeursinformatie</button>
+                <button class="dropdown-item" data-print-target="dashboard" type="button">Print dashboard</button>
                 <button class="dropdown-item" data-print-target="ai" type="button">Print tekst over chauffeur</button>
-                <button class="dropdown-item" data-print-target="info" type="button">Print Information</button>
-                <button class="dropdown-item" data-print-target="lines" type="button">Print Lijnverkenning</button>
+                <button class="dropdown-item" data-print-target="info" type="button">Print informatie</button>
+                <button class="dropdown-item" data-print-target="lines" type="button">Print lijnverkenning</button>
               </div>
             </div>
             <div class="dropdown">
@@ -102,7 +120,7 @@
                 <div class="dashboard-hero-copy">
                   <span class="dashboard-kicker">Mentoroverzicht</span>
                   <h2 class="h4 mb-1">Dashboard</h2>
-                  <p class="text-secondary mb-0">Voortgang, aftekenlijsten en beoordelingen in een overzicht.</p>
+                  <p class="text-secondary mb-0">Voortgang, aftekenlijsten en beoordelingen in één overzicht.</p>
                 </div>
                 <span class="status-pill" id="progressText">0% afgerond</span>
               </div>
@@ -307,7 +325,7 @@
             </div>
             <div class="col-12 col-lg-5">
               <div class="section-panel p-3 p-md-4 h-100">
-                <h2 class="h5 fw-bold mb-3">Websites en App's</h2>
+                <h2 class="h5 fw-bold mb-3">Websites en apps</h2>
                 <div class="vstack gap-2" id="websiteList"></div>
               </div>
             </div>
@@ -386,7 +404,7 @@
       <div class="print-summary-header">
         <div>
           <p>Mentormap nieuwe chauffeurs</p>
-          <h1>Dashboard en gegevens chauffeur</h1>
+          <h1>Dashboard en chauffeursgegevens</h1>
         </div>
         <strong id="printDate"></strong>
       </div>
@@ -441,8 +459,11 @@
       </div>
     </section>
 
+    <div id="google_translate_element" class="google-translate-element" aria-hidden="true"></div>
     <script src="html2canvas.min.js"></script>
     <script src="jspdf.umd.min.js"></script>
+    <script src="translate.js"></script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <script src="script.js"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

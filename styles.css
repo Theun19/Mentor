@@ -111,6 +111,26 @@ body.auth-locked .auth-screen {
   min-width: 10rem;
 }
 
+.translate-control {
+  min-width: 8.5rem;
+}
+
+.translate-select {
+  border-color: rgba(84, 133, 31, 0.35);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.google-translate-element,
+.goog-te-banner-frame,
+.goog-te-gadget {
+  display: none !important;
+}
+
+body {
+  top: 0 !important;
+}
+
 .app-menu {
   min-width: 14rem;
 }
@@ -1528,11 +1548,13 @@ body.signature-editing::after {
   }
 
   .app-actions > .btn,
-  .app-actions > .dropdown {
+  .app-actions > .dropdown,
+  .app-actions > .translate-control {
     flex: 1 1 0;
   }
 
-  .app-actions .dropdown > .btn {
+  .app-actions .dropdown > .btn,
+  .translate-select {
     width: 100%;
   }
 

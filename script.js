@@ -42,7 +42,7 @@ const checklists = [
       "Routeboek",
       "Schadeformulier ontvangen inclusief uitleg hoe te handelen bij schade",
       "Garage / cleanteam",
-      "AFAS app koppelen aan Mijn HRM",
+      "AFAS-app koppelen aan Mijn HRM",
     ],
   },
   {
@@ -50,14 +50,14 @@ const checklists = [
     items: [
       "Zitinstructie",
       "Brandstofbesparing",
-      "Uitleg on-board camera",
+      "Uitleg boordcamera",
       "Uitleg omloop (bordje)",
       "Uitleg rolstoelplank",
       "Uitleg VIRIBUS",
       "Valpartijen",
       "Uitleg perronindeling",
       "Afsluiting bus (wanneer hoofdschakelaar uit)",
-      "Buffer-protocol",
+      "Bufferprotocol",
       "Stallingsprotocol (waar staat de bus overdag en 's avonds)",
     ],
   },
@@ -66,10 +66,10 @@ const checklists = [
     items: [
       "Uitleg muurkrant",
       "Aangemeld bij ruilen.nu",
-      "Verlof-aanvraag",
+      "Verlofaanvraag",
       "OIS (aanmelden op de pc stalling)",
       "Aangemeld om omleidingen te ontvangen via mail",
-      "Podbus-protocol",
+      "Podbusprotocol",
       "Voertuiggewenning",
     ],
   },
@@ -136,16 +136,16 @@ const contacts = [
 
 const websites = [
   ["Mijn HRM", "mijnhrm.connexxion.nl", "https://mijnhrm.connexxion.nl"],
-  ["AFAS Pocket", "Officiele AFAS apppagina", "https://www.afas.nl/software/pocket"],
+  ["AFAS Pocket", "Officiële AFAS-apppagina", "https://www.afas.nl/software/pocket"],
   ["Webcomm", "diensten.connexxion.nl", "https://diensten.connexxion.nl"],
-  ["@Transdev app", "Officiele apppagina", "https://www.transdev.nl/nl/reisinformatie/%40transdev-app"],
-  ["Transdev chauffeurs app", "Google Play", "https://play.google.com/store/apps/details?id=com.transdev.teamtransdev&hl=nl"],
-  ["Transdev chauffeurs app iPhone", "App Store", "https://apps.apple.com/nl/app/team-transdev-chauffeur-app/id6618151207"],
+  ["@Transdev-app", "Officiële apppagina", "https://www.transdev.nl/nl/reisinformatie/%40transdev-app"],
+  ["Transdev chauffeursapp", "Google Play", "https://play.google.com/store/apps/details?id=com.transdev.teamtransdev&hl=nl"],
+  ["Transdev chauffeursapp iPhone", "App Store", "https://apps.apple.com/nl/app/team-transdev-chauffeur-app/id6618151207"],
   ["Groenendijk Bedrijfskleding", "corpwear.nl", "https://www.corpwear.nl/login.aspx"],
-  ["Groenendijk app", "app.corpwear.nl", "https://app.corpwear.nl"],
+  ["Groenendijk-app", "app.corpwear.nl", "https://app.corpwear.nl"],
   ["CBR", "cbr.nl", "https://www.cbr.nl"],
   ["Mijn CBR", "mijn.cbr.nl", "https://mijn.cbr.nl"],
-  ["RRReis app", "Officiele apppagina", "https://www.rrreis.nl/app/"],
+  ["RRReis-app", "Officiële apppagina", "https://www.rrreis.nl/app/"],
   ["iLost Connexxion", "Gevonden voorwerpen", "https://www.connexxion.nl/nl/klantenservice/gevonden-voorwerpen"],
   ["iLost", "ilost.co/nl", "https://ilost.co/nl"],
   ["OVinfo Android", "Google Play", "https://play.google.com/store/apps/details?id=nl.skywave.ovinfo&hl=nl"],
@@ -2209,8 +2209,8 @@ function buildPrintClosureHtml() {
     <div class="closure-print">
       <section class="print-page">${buildPrintDriverHtml("Afsluiting Mentorfase - Chauffeursinformatie")}</section>
       <section class="print-page">${buildPrintChecklistHtml("Afsluiting Mentorfase - Checklist", true)}</section>
-      <section class="print-page">${buildPrintInfoHtml("Afsluiting Mentorfase - Info", true)}</section>
-      <section class="print-page">${buildPrintLinesHtml("Afsluiting Mentorfase - Lijnverkenning")}</section>
+      <section class="print-page">${buildPrintInfoHtml("Afsluiting Mentorfase - Info", true, true)}</section>
+      <section class="print-page">${buildPrintLinesHtml("Afsluiting Mentorfase - Lijnverkenning", true)}</section>
     </div>
   `;
 }
@@ -2227,7 +2227,7 @@ function buildPrintHeader(title) {
   `;
 }
 
-function buildPrintDriverHtml(title = "Chauffeur information") {
+function buildPrintDriverHtml(title = "Chauffeursinformatie") {
   const driverSignature = getSaved("driverSignature");
   const mentorSignature = getSaved("mentorSignature");
   const managerSignature = getSaved("managerSignature");
@@ -2463,7 +2463,7 @@ function getCompactPrintAiText() {
   return compact.length > 620 ? `${compact.slice(0, 617)}...` : compact;
 }
 
-function buildPrintInfoHtml(title = "Information", compact = false) {
+function buildPrintInfoHtml(title = "Informatie", compact = false, includeSignatures = false) {
   const contactRows = contacts.map(([role, name, phone, whatsapp]) => `
     <tr>
       <td>${escapeHtml(role)}</td>
@@ -2491,18 +2491,18 @@ function buildPrintInfoHtml(title = "Information", compact = false) {
       </table>
     </div>
     <div class="print-panel">
-      <h2>Websites en App's</h2>
+      <h2>Websites en apps</h2>
       <table class="print-table">
         <thead><tr><th>Naam</th><th>Omschrijving</th><th>Link</th></tr></thead>
         <tbody>${websiteRows}</tbody>
       </table>
     </div>
     </div>
-    ${buildPrintSectionSignatures("Ondertekening info", "infoDriverSignature", "infoMentorSignature")}
+    ${includeSignatures ? buildPrintSectionSignatures("Ondertekening info", "infoDriverSignature", "infoMentorSignature") : ""}
   `;
 }
 
-function buildPrintLinesHtml(title = "Chauffeursgegevens en lijnverkenning") {
+function buildPrintLinesHtml(title = "Chauffeursgegevens en lijnverkenning", includeSignatures = false) {
   const summary = getSortedLineSummary();
   const todoLines = summary.filter((item) => !item.done);
   const doneLines = summary.filter((item) => item.done);
@@ -2513,7 +2513,7 @@ function buildPrintLinesHtml(title = "Chauffeursgegevens en lijnverkenning") {
       ${renderPrintLineOverviewColumn("Lijnen nog te doen", todoLines)}
       ${renderPrintLineOverviewColumn("Lijnen afgevinkt", doneLines)}
     </div>
-    ${buildPrintSectionSignatures("Ondertekening lijnverkenning", "lineDriverSignature", "lineMentorSignature")}
+    ${includeSignatures ? buildPrintSectionSignatures("Ondertekening lijnverkenning", "lineDriverSignature", "lineMentorSignature") : ""}
   `;
 }
 
@@ -2643,7 +2643,7 @@ function buildDashboardPdfLines() {
 
   return [
     "Mentormap nieuwe chauffeurs Nijmegen",
-    "Dashboard en gegevens chauffeur",
+    "Dashboard en chauffeursgegevens",
     `Datum: ${new Date().toLocaleDateString("nl-NL")}`,
     "",
     "Chauffeur",
@@ -2891,7 +2891,7 @@ function buildInfoShareHtml() {
     <tbody>${contactRows}</tbody>
   </table>
 
-  <h2>Websites en App's</h2>
+  <h2>Websites en apps</h2>
   <table>
     <thead>
       <tr><th>Naam</th><th>Omschrijving</th><th>Link</th></tr>
