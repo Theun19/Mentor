@@ -904,7 +904,7 @@ function updateLineDonut(percentage, doneLines, totalLines) {
   const detail = document.getElementById("lineDetail");
 
   if (detail) {
-    detail.textContent = `${doneLines}/${totalLines} klaar · ${activeDays} dagen · doel ${phase.target}%`;
+    detail.textContent = `${doneLines}/${totalLines} klaar · ${activeDays} actieve rijdagen · doel ${phase.target}%`;
   }
 
   setDonutProgress("lineDonut", percentage, getLineDonutToneClass(percentage, activeDays));
@@ -1022,6 +1022,7 @@ function updateRatingAverage() {
   const lowest = ratings.length ? Math.min(...ratings) : 0;
   document.getElementById("ratingAverage").textContent = `Gemiddelde: ${average}%`;
   updateRatingDonut(average, lowest);
+  updateProgress();
   updateRatingChart();
   renderRatingDayLog();
   renderRatingProgressTable();
