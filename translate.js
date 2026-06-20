@@ -64,7 +64,7 @@ window.googleTranslateElementInit = function googleTranslateElementInit() {
 
   new window.google.translate.TranslateElement({
     pageLanguage: "nl",
-    includedLanguages: "en,ar,tr",
+    includedLanguages: "en,ar,tr,ro,hu,bg",
     autoDisplay: false,
   }, "google_translate_element");
 
