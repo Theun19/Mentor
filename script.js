@@ -837,8 +837,7 @@ function updateProgress() {
   document.getElementById("dashboardTotalDetail").textContent = `${done}/${checks.length} afgerond`;
   setDonutProgress("progressDonut", percentage);
   document.getElementById("linePercent").textContent = `${linePercentage}%`;
-  document.getElementById("lineDetail").textContent = `${doneLines}/${lineSummary.length} klaar`;
-  setDonutProgress("lineDonut", linePercentage);
+  updateLineDonut(linePercentage, doneLines, lineSummary.length);
   document.getElementById("progressBar").style.width = `${percentage}%`;
 
   const checklistChart = document.getElementById("checklistChart");
@@ -897,6 +896,56 @@ function getRatingDonutToneClass(value) {
   if (value < 70) return "donut-tone-light-green";
   if (value < 90) return "donut-tone-green";
   return "donut-tone-gold";
+}
+
+function updateLineDonut(percentage, doneLines, totalLines) {
+  const activeDays = getActiveDrivingDayCount();
+  const phase = getLineProgressPhase(activeDays);
+  const detail = document.getElementById("lineDetail");
+
+  if (detail) {
+    detail.textContent = `${doneLines}/${totalLines} klaar · ${activeDays} dagen · doel ${phase.target}%`;
+  }
+
+  setDonutProgress("lineDonut", percentage, getLineDonutToneClass(percentage, activeDays));
+}
+
+function getActiveDrivingDayCount() {
+  const ratingRows = document.querySelectorAll(".rating-range").length ? getRatingRowsForProgress() : [];
+  return getRatingTableDayKeys(ratingRows, false).length;
+}
+
+function getLineProgressPhase(activeDays) {
+  if (activeDays >= 15) {
+    return { target: 100, gold: 100, green: 90, orange: 80, yellow: null };
+  }
+  if (activeDays >= 10) {
+    return { target: 70, gold: 70, green: 65, orange: 50, yellow: null };
+  }
+  return { target: 40, gold: 40, green: 30, orange: null, yellow: 20 };
+}
+
+function getLineDonutToneClass(percentage, activeDays) {
+  const value = Math.max(0, Math.min(100, Number(percentage) || 0));
+
+  if (activeDays >= 15) {
+    if (value >= 100) return "donut-tone-gold";
+    if (value >= 90) return "donut-tone-green";
+    if (value >= 80) return "donut-tone-orange";
+    return "donut-tone-red";
+  }
+
+  if (activeDays >= 10) {
+    if (value >= 70) return "donut-tone-gold";
+    if (value >= 65) return "donut-tone-green";
+    if (value >= 50) return "donut-tone-orange";
+    return "donut-tone-red";
+  }
+
+  if (value >= 40) return "donut-tone-gold";
+  if (value >= 30) return "donut-tone-green";
+  if (value >= 20) return "donut-tone-yellow";
+  return "donut-tone-red";
 }
 
 function updateRatingValue(input) {
@@ -984,8 +1033,16 @@ function updateRatingDonut(average, lowest) {
   if (!percent || !detail) return;
 
   percent.textContent = `${average}%`;
-  detail.textContent = `laagste score: ${lowest}%`;
+  detail.textContent = `${getRatingDonutStatus(lowest)}: laagste ${lowest}%`;
   setDonutProgress("ratingDonut", average, getRatingDonutToneClass(lowest));
+}
+
+function getRatingDonutStatus(value) {
+  if (value < 50) return "onvoldoende";
+  if (value < 60) return "twijfelachtig";
+  if (value < 70) return "voldoende";
+  if (value < 90) return "goed";
+  return "uitstekend";
 }
 
 function getRatingRowsForProgress() {
