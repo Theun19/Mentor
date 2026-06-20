@@ -308,6 +308,54 @@ body {
   text-transform: uppercase;
 }
 
+.dashboard-donut-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.dashboard-donut-card {
+  display: grid;
+  align-content: center;
+  gap: 0.75rem;
+  min-height: 15rem;
+  text-align: center;
+}
+
+.dashboard-donut-button {
+  width: 100%;
+  color: inherit;
+  border-color: rgba(84, 133, 31, 0.2);
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.dashboard-donut-button:hover,
+.dashboard-donut-button:focus-visible {
+  border-color: #b7d3a5;
+  background: #f4f9ef;
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.dashboard-donut-meta {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.dashboard-donut-meta strong {
+  color: var(--brand-dark);
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.dashboard-donut-meta span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .donut-chart {
   display: grid;
   place-items: center;
@@ -1669,6 +1717,27 @@ body.signature-editing::after {
     width: 7.25rem;
   }
 
+  .dashboard-donut-grid {
+    grid-template-columns: repeat(3, minmax(8.8rem, 1fr));
+    gap: 0.55rem;
+    overflow-x: auto;
+    padding-bottom: 0.15rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dashboard-donut-card {
+    min-height: 11.25rem;
+    padding: 0.7rem;
+  }
+
+  .dashboard-donut-meta strong {
+    font-size: 0.86rem;
+  }
+
+  .dashboard-donut-meta span {
+    font-size: 0.72rem;
+  }
+
   .donut-center strong {
     font-size: 1.35rem;
   }
@@ -2373,6 +2442,12 @@ body.signature-editing::after {
     --bs-gutter-y: 0.24rem;
   }
 
+  .print-web-dashboard .dashboard-donut-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.18rem;
+  }
+
   .print-web-dashboard .chart-card,
   .print-web-dashboard .metric-box {
     border: 1px solid #dce5dc;
@@ -2382,6 +2457,19 @@ body.signature-editing::after {
 
   .print-web-dashboard .chart-card {
     padding: 0.2rem;
+  }
+
+  .print-web-dashboard .dashboard-donut-card {
+    min-height: 1.78in;
+    gap: 0.12rem;
+  }
+
+  .print-web-dashboard .dashboard-donut-meta strong {
+    font-size: 7.6pt;
+  }
+
+  .print-web-dashboard .dashboard-donut-meta span {
+    font-size: 6.5pt;
   }
 
   .print-web-dashboard .metric-box {

@@ -131,51 +131,48 @@
                 <span class="status-pill" id="progressText">0% afgerond</span>
               </div>
 
-              <div class="row g-3">
-                <div class="col-12 col-md-4">
-                  <div class="chart-card h-100">
-                    <div class="donut-chart" id="progressDonut">
-                      <div class="donut-center">
-                        <strong id="dashboardPercent">0%</strong>
-                        <span>totaal</span>
-                      </div>
+              <div class="dashboard-donut-grid">
+                <div class="chart-card dashboard-donut-card">
+                  <div class="donut-chart" id="progressDonut">
+                    <div class="donut-center">
+                      <strong id="dashboardPercent">0%</strong>
+                      <span>totaal</span>
                     </div>
                   </div>
-                </div>
-                <div class="col-12 col-md-8">
-                  <div class="row g-2 h-100">
-                    <div class="col-6 col-lg-3">
-                      <div class="metric-box">
-                        <span class="metric-value" id="totalTasks">0</span>
-                        <span class="metric-label">taken open</span>
-                      </div>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                      <div class="metric-box">
-                        <span class="metric-value" id="doneTasks">0</span>
-                        <span class="metric-label">klaar</span>
-                      </div>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                      <div class="metric-box">
-                        <span class="metric-value" id="openChecklists">0</span>
-                        <span class="metric-label">checklijsten open</span>
-                      </div>
-                    </div>
-                    <div class="col-6 col-lg-3">
-                      <button class="metric-box metric-button" id="lineSummaryBtn" type="button">
-                        <span class="metric-value" id="lineCount">0</span>
-                        <span class="metric-label">lijnen open</span>
-                      </button>
-                    </div>
-                    <div class="col-12">
-                      <div class="chart-card">
-                        <div class="chart-title">Aftekenlijsten per onderdeel</div>
-                        <div class="vstack gap-2" id="checklistChart"></div>
-                      </div>
-                    </div>
+                  <div class="dashboard-donut-meta">
+                    <strong>Totaal</strong>
+                    <span id="dashboardTotalDetail">0/0 afgerond</span>
                   </div>
                 </div>
+                <div class="chart-card dashboard-donut-card">
+                  <div class="donut-chart donut-chart-checklists" id="checklistDonut">
+                    <div class="donut-center">
+                      <strong id="checklistPercent">0%</strong>
+                      <span>checklists</span>
+                    </div>
+                  </div>
+                  <div class="dashboard-donut-meta">
+                    <strong>Checklists</strong>
+                    <span id="checklistDetail">0/0 punten</span>
+                  </div>
+                </div>
+                <button class="chart-card dashboard-donut-card dashboard-donut-button" id="lineSummaryBtn" type="button">
+                  <div class="donut-chart donut-chart-lines" id="lineDonut">
+                    <div class="donut-center">
+                      <strong id="linePercent">0%</strong>
+                      <span>lijnen</span>
+                    </div>
+                  </div>
+                  <div class="dashboard-donut-meta">
+                    <strong>Lijnen</strong>
+                    <span id="lineDetail">0/0 klaar</span>
+                  </div>
+                </button>
+              </div>
+
+              <div class="chart-card mt-3">
+                <div class="chart-title">Aftekenlijsten per onderdeel</div>
+                <div class="vstack gap-2" id="checklistChart"></div>
               </div>
               <div class="progress checklist-progress mt-3" role="progressbar" aria-label="Checklist voortgang">
                 <div class="progress-bar bg-success" id="progressBar"></div>

@@ -825,18 +825,20 @@ function drawSignatureImage(canvas, source) {
 function updateProgress() {
   const checks = [...document.querySelectorAll(".task-check")];
   const done = checks.filter((input) => input.checked).length;
-  const openTasks = checks.length - done;
   const percentage = checks.length ? Math.round((done / checks.length) * 100) : 0;
   const lineSummary = getLineSummary();
-  const openLines = lineSummary.filter((item) => !item.done).length;
-  let openChecklists = 0;
+  const doneLines = lineSummary.filter((item) => item.done).length;
+  const linePercentage = lineSummary.length ? Math.round((doneLines / lineSummary.length) * 100) : 0;
+  let checklistDone = 0;
+  let checklistTotal = 0;
 
-  document.getElementById("totalTasks").textContent = openTasks;
-  document.getElementById("doneTasks").textContent = done;
-  document.getElementById("lineCount").textContent = openLines;
   document.getElementById("progressText").textContent = `${percentage}% afgerond`;
   document.getElementById("dashboardPercent").textContent = `${percentage}%`;
-  document.getElementById("progressDonut").style.background = `conic-gradient(var(--brand) 0deg ${percentage * 3.6}deg, #e8eee5 ${percentage * 3.6}deg 360deg)`;
+  document.getElementById("dashboardTotalDetail").textContent = `${done}/${checks.length} afgerond`;
+  setDonutProgress("progressDonut", percentage);
+  document.getElementById("linePercent").textContent = `${linePercentage}%`;
+  document.getElementById("lineDetail").textContent = `${doneLines}/${lineSummary.length} klaar`;
+  setDonutProgress("lineDonut", linePercentage);
   document.getElementById("progressBar").style.width = `${percentage}%`;
 
   const checklistChart = document.getElementById("checklistChart");
@@ -846,7 +848,8 @@ function updateProgress() {
     const listChecks = [...document.querySelectorAll(`[data-id^="list-${listIndex}-item-"]`)];
     const listDone = listChecks.filter((input) => input.checked).length;
     const listPercentage = list.items.length ? Math.round((listDone / list.items.length) * 100) : 0;
-    if (listDone < list.items.length) openChecklists += 1;
+    checklistDone += listDone;
+    checklistTotal += list.items.length;
     document.getElementById(`list-count-${listIndex}`).textContent = `${listDone}/${list.items.length}`;
 
     const row = document.createElement("div");
@@ -861,8 +864,18 @@ function updateProgress() {
     checklistChart.appendChild(row);
   });
 
-  document.getElementById("openChecklists").textContent = openChecklists;
+  const checklistPercentage = checklistTotal ? Math.round((checklistDone / checklistTotal) * 100) : 0;
+  document.getElementById("checklistPercent").textContent = `${checklistPercentage}%`;
+  document.getElementById("checklistDetail").textContent = `${checklistDone}/${checklistTotal} punten`;
+  setDonutProgress("checklistDonut", checklistPercentage);
   renderLineOverviewColumns();
+}
+
+function setDonutProgress(id, percentage) {
+  const donut = document.getElementById(id);
+  if (!donut) return;
+  const value = Math.max(0, Math.min(100, Number(percentage) || 0));
+  donut.style.background = `conic-gradient(var(--brand) 0deg ${value * 3.6}deg, #e8eee5 ${value * 3.6}deg 360deg)`;
 }
 
 function updateRatingValue(input) {
@@ -2434,12 +2447,11 @@ function buildPrintDashboardHtml() {
     element.removeAttribute("aria-label");
   });
   dashboard.querySelectorAll(".chart-zoom, .dropdown-menu").forEach((element) => element.remove());
-  const donut = dashboard.querySelector("#progressDonut");
-  const percentText = dashboard.querySelector("#dashboardPercent")?.textContent || "0%";
-  const percentage = Math.max(0, Math.min(100, Number.parseInt(percentText, 10) || 0));
-  if (donut) {
+  dashboard.querySelectorAll(".donut-chart").forEach((donut) => {
+    const percentText = donut.querySelector("strong")?.textContent || "0%";
+    const percentage = Math.max(0, Math.min(100, Number.parseInt(percentText, 10) || 0));
     donut.outerHTML = buildPrintDonutSvg(percentage);
-  }
+  });
   const balanceChart = dashboard.querySelector(".balance-point-chart")?.closest(".line-chart-item");
   const balanceTitle = balanceChart?.querySelector(".line-chart-title");
   if (balanceTitle && !balanceTitle.textContent.includes("*")) {
