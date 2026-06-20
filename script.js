@@ -11,9 +11,9 @@ const defaultPassword = "Transdev2026!";
 const loginVersion = "2";
 let currentPrintTarget = "dashboard";
 const dashboardDonutState = {
-  checklist: 0,
-  lines: 0,
-  ratings: 0,
+  checklist: { score: 0, tone: "donut-tone-red" },
+  lines: { score: 0, tone: "donut-tone-red" },
+  ratings: { score: 0, tone: "donut-tone-red" },
 };
 
 const ratingItems = [
@@ -870,16 +870,25 @@ function updateProgress() {
   const checklistPercentage = checklistTotal ? Math.round((checklistDone / checklistTotal) * 100) : 0;
   document.getElementById("checklistPercent").textContent = `${checklistPercentage}%`;
   document.getElementById("checklistDetail").textContent = `${checklistDone}/${checklistTotal} punten`;
-  dashboardDonutState.checklist = checklistPercentage;
+  dashboardDonutState.checklist = {
+    score: checklistPercentage,
+    tone: getDonutToneClass(checklistPercentage),
+  };
   setDonutProgress("checklistDonut", checklistPercentage);
   updateTotalDonutHeart(percentage);
   renderLineOverviewColumns();
 }
 
 function updateTotalDonutHeart(percentage) {
-  const heartAverage = Math.round((dashboardDonutState.checklist + dashboardDonutState.lines + dashboardDonutState.ratings) / 3);
-  document.getElementById("dashboardTotalDetail").textContent = `${percentage}% totaal · hart ${heartAverage}%`;
-  setDonutProgress("progressDonut", percentage, getDonutToneClass(heartAverage));
+  const parts = [dashboardDonutState.checklist, dashboardDonutState.lines, dashboardDonutState.ratings];
+  const lowest = parts.reduce((currentLowest, part) => part.score < currentLowest.score ? part : currentLowest, parts[0]);
+  const heartAverage = Math.round(parts.reduce((sum, part) => sum + part.score, 0) / parts.length);
+  const heartTone = lowest.score < 60 ? lowest.tone : getDonutToneClass(heartAverage);
+  const detailText = lowest.score < 60
+    ? `${percentage}% totaal · laagste hart ${lowest.score}%`
+    : `${percentage}% totaal · gemiddeld hart ${heartAverage}%`;
+  document.getElementById("dashboardTotalDetail").textContent = detailText;
+  setDonutProgress("progressDonut", percentage, heartTone);
 }
 
 function setDonutProgress(id, percentage, toneClass = "") {
@@ -919,8 +928,12 @@ function updateLineDonut(percentage, doneLines, totalLines) {
     detail.textContent = `${doneLines}/${totalLines} klaar · ${activeDays} actieve rijdagen · doel ${phase.target}%`;
   }
 
-  dashboardDonutState.lines = percentage;
-  setDonutProgress("lineDonut", percentage, getLineDonutToneClass(percentage, activeDays));
+  const lineTone = getLineDonutToneClass(percentage, activeDays);
+  dashboardDonutState.lines = {
+    score: percentage,
+    tone: lineTone,
+  };
+  setDonutProgress("lineDonut", percentage, lineTone);
 }
 
 function getActiveDrivingDayCount() {
@@ -1048,8 +1061,12 @@ function updateRatingDonut(average, lowest) {
 
   percent.textContent = `${average}%`;
   detail.textContent = `${getRatingDonutStatus(lowest)}: laagste geldig ${lowest}%`;
-  dashboardDonutState.ratings = average;
-  setDonutProgress("ratingDonut", average, getRatingDonutToneClass(lowest));
+  const ratingTone = getRatingDonutToneClass(lowest);
+  dashboardDonutState.ratings = {
+    score: lowest,
+    tone: ratingTone,
+  };
+  setDonutProgress("ratingDonut", average, ratingTone);
   const totalPercent = Number.parseInt(document.getElementById("dashboardPercent")?.textContent || "0", 10) || 0;
   updateTotalDonutHeart(totalPercent);
 }
