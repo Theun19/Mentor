@@ -2320,6 +2320,7 @@ function buildPrintDriverDetails() {
       <div><dt>Startdatum</dt><dd>${escapeHtml(getSaved("startDate") || "-")}</dd></div>
       <div><dt>Einddatum</dt><dd>${escapeHtml(getSaved("endDate") || "-")}</dd></div>
       <div><dt>Mentor</dt><dd>${escapeHtml(getSaved("mentorName") || "-")}</dd></div>
+      <div><dt>Leidinggevende</dt><dd>${escapeHtml(getSaved("managerName") || "-")}</dd></div>
     </dl>
   `;
 }
