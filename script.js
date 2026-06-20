@@ -1019,9 +1019,9 @@ function updateRatingAverage() {
   const ratings = [...document.querySelectorAll(".rating-range")].map((input) => getRatingScore(input));
   const total = ratings.reduce((sum, value) => sum + value, 0);
   const average = ratings.length ? Math.round(total / ratings.length) : 0;
-  const lowest = ratings.length ? Math.min(...ratings) : 0;
+  const dashboardRating = getDashboardRatingScoreSummary(ratings);
   document.getElementById("ratingAverage").textContent = `Gemiddelde: ${average}%`;
-  updateRatingDonut(average, lowest);
+  updateRatingDonut(dashboardRating.average, dashboardRating.lowest);
   updateProgress();
   updateRatingChart();
   renderRatingDayLog();
@@ -1034,8 +1034,43 @@ function updateRatingDonut(average, lowest) {
   if (!percent || !detail) return;
 
   percent.textContent = `${average}%`;
-  detail.textContent = `${getRatingDonutStatus(lowest)}: laagste ${lowest}%`;
+  detail.textContent = `${getRatingDonutStatus(lowest)}: laagste geldig ${lowest}%`;
   setDonutProgress("ratingDonut", average, getRatingDonutToneClass(lowest));
+}
+
+function getDashboardRatingScoreSummary(fallbackRatings) {
+  const rows = getRatingRowsForProgress();
+  const dayKeys = getRatingTableDayKeys(rows, false);
+  const scores = rows.map((rating) => {
+    const values = dayKeys
+      .map((dayKey) => rating.history.find((entry) => getDayKey(entry.time) === dayKey)?.value)
+      .filter((value) => Number.isFinite(Number(value)))
+      .map((value) => Math.max(0, Math.min(100, Math.round(Number(value)))));
+
+    if (!values.length) return null;
+    const countedValues = getCountedRatingValues(values);
+    const total = countedValues.reduce((sum, value) => sum + value, 0);
+    return Math.round(total / countedValues.length);
+  }).filter((value) => Number.isFinite(Number(value)));
+
+  const usableScores = scores.length ? scores : fallbackRatings;
+  const total = usableScores.reduce((sum, value) => sum + value, 0);
+  return {
+    average: usableScores.length ? Math.round(total / usableScores.length) : 0,
+    lowest: usableScores.length ? Math.min(...usableScores) : 0,
+  };
+}
+
+function getCountedRatingValues(values) {
+  if (values.length < 3) return values;
+
+  const sorted = values.slice().sort((first, second) => first - second);
+  const underThirtyCount = sorted.filter((value) => value < 30).length;
+  const counted = underThirtyCount >= 3
+    ? sorted.slice(0, -1)
+    : sorted.slice(1, -1);
+
+  return counted.length ? counted : sorted;
 }
 
 function getRatingDonutStatus(value) {
