@@ -876,6 +876,19 @@ function setDonutProgress(id, percentage) {
   if (!donut) return;
   const value = Math.max(0, Math.min(100, Number(percentage) || 0));
   donut.style.background = `conic-gradient(var(--brand) 0deg ${value * 3.6}deg, #e8eee5 ${value * 3.6}deg 360deg)`;
+  const center = donut.querySelector(".donut-center");
+  if (!center) return;
+  center.classList.remove("donut-tone-red", "donut-tone-yellow", "donut-tone-green", "donut-tone-greener", "donut-tone-strong", "donut-tone-gold");
+  center.classList.add(getDonutToneClass(value));
+}
+
+function getDonutToneClass(value) {
+  if (value < 50) return "donut-tone-red";
+  if (value < 60) return "donut-tone-yellow";
+  if (value >= 90) return "donut-tone-gold";
+  if (value >= 80) return "donut-tone-strong";
+  if (value >= 70) return "donut-tone-greener";
+  return "donut-tone-green";
 }
 
 function updateRatingValue(input) {
@@ -2335,7 +2348,7 @@ function buildPrintChecklistHtml(title = "Checklist", compact = false) {
       if (compact) {
         return `
           <div class="closure-check-item ${done ? "done" : ""}">
-            <span>${done ? "X" : "-"}</span>
+            <span>${done ? "V" : "-"}</span>
             <strong>${escapeHtml(item)}</strong>
             ${note ? `<em>${escapeHtml(note)}</em>` : ""}
           </div>

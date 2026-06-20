@@ -376,6 +376,7 @@ body {
   background: linear-gradient(180deg, #ffffff, #f7faf5);
   text-align: center;
   box-shadow: 0 6px 18px rgba(33, 47, 35, 0.1);
+  transition: background 0.18s ease, color 0.18s ease;
 }
 
 .donut-center strong {
@@ -388,6 +389,48 @@ body {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 700;
+}
+
+.donut-center.donut-tone-red {
+  background: linear-gradient(180deg, #ffe7e7, #f6b6b6);
+}
+
+.donut-center.donut-tone-yellow {
+  background: linear-gradient(180deg, #fff6c7, #f4d36a);
+}
+
+.donut-center.donut-tone-green {
+  background: linear-gradient(180deg, #ecf8df, #cde9bd);
+}
+
+.donut-center.donut-tone-greener {
+  background: linear-gradient(180deg, #dff4cd, #a8d987);
+}
+
+.donut-center.donut-tone-strong {
+  background: linear-gradient(180deg, #ccefba, #78bf55);
+}
+
+.donut-center.donut-tone-gold {
+  background: linear-gradient(180deg, #fff4bf, #d9a821);
+}
+
+.donut-center.donut-tone-red strong,
+.donut-center.donut-tone-yellow strong,
+.donut-center.donut-tone-green strong,
+.donut-center.donut-tone-greener strong,
+.donut-center.donut-tone-strong strong,
+.donut-center.donut-tone-gold strong {
+  color: #18241c;
+}
+
+.donut-center.donut-tone-red span,
+.donut-center.donut-tone-yellow span,
+.donut-center.donut-tone-green span,
+.donut-center.donut-tone-greener span,
+.donut-center.donut-tone-strong span,
+.donut-center.donut-tone-gold span {
+  color: rgba(24, 36, 28, 0.72);
 }
 
 .checklist-chart-row {
@@ -2791,9 +2834,12 @@ body.signature-editing::after {
   }
 
   .closure-check-item span {
-    color: #385f15;
     font-weight: 900;
     text-align: center;
+  }
+
+  .closure-check-item.done span {
+    color: #0b7a3b;
   }
 
   .closure-check-item strong {
