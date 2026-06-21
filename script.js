@@ -1047,23 +1047,25 @@ function updateRatingAverage() {
   const average = ratings.length ? Math.round(total / ratings.length) : 0;
   const dashboardRating = getDashboardRatingScoreSummary(ratings);
   document.getElementById("ratingAverage").textContent = `Gemiddelde: ${average}%`;
-  updateRatingDonut(dashboardRating.average, dashboardRating.lowest);
+  updateRatingDonut(dashboardRating.average, dashboardRating.lowest, dashboardRating.criticalLow);
   updateProgress();
   updateRatingChart();
   renderRatingDayLog();
   renderRatingProgressTable();
 }
 
-function updateRatingDonut(average, lowest) {
+function updateRatingDonut(average, lowest, criticalLow = null) {
   const percent = document.getElementById("ratingDonutPercent");
   const detail = document.getElementById("ratingDonutDetail");
   if (!percent || !detail) return;
 
   percent.textContent = `${average}%`;
-  detail.textContent = `${getRatingDonutStatus(lowest)}: laagste geldig ${lowest}%`;
-  const ratingTone = getRatingDonutToneClass(lowest);
+  detail.textContent = criticalLow
+    ? `kritiek: ${criticalLow.reason}`
+    : `${getRatingDonutStatus(lowest)}: laagste geldig ${lowest}%`;
+  const ratingTone = criticalLow ? "donut-tone-red" : getRatingDonutToneClass(lowest);
   dashboardDonutState.ratings = {
-    score: lowest,
+    score: criticalLow ? criticalLow.value : lowest,
     tone: ratingTone,
   };
   setDonutProgress("ratingDonut", average, ratingTone);
@@ -1074,6 +1076,7 @@ function updateRatingDonut(average, lowest) {
 function getDashboardRatingScoreSummary(fallbackRatings) {
   const rows = getRatingRowsForProgress();
   const dayKeys = getRatingTableDayKeys(rows, false);
+  let criticalLow = null;
   const scores = rows.map((rating) => {
     const values = dayKeys
       .map((dayKey) => rating.history.find((entry) => getDayKey(entry.time) === dayKey)?.value)
@@ -1081,6 +1084,7 @@ function getDashboardRatingScoreSummary(fallbackRatings) {
       .map((value) => Math.max(0, Math.min(100, Math.round(Number(value)))));
 
     if (!values.length) return null;
+    criticalLow = getMoreSevereCriticalLow(criticalLow, getCriticalLowRatingStatus(values, rating.label));
     const countedValues = getCountedRatingValues(values);
     const total = countedValues.reduce((sum, value) => sum + value, 0);
     return Math.round(total / countedValues.length);
@@ -1091,7 +1095,34 @@ function getDashboardRatingScoreSummary(fallbackRatings) {
   return {
     average: usableScores.length ? Math.round(total / usableScores.length) : 0,
     lowest: usableScores.length ? Math.min(...usableScores) : 0,
+    criticalLow,
   };
+}
+
+function getCriticalLowRatingStatus(values, label) {
+  const lowest = Math.min(...values);
+  if (lowest <= 10) {
+    return {
+      value: lowest,
+      reason: `${label} heeft een score van ${lowest}%`,
+    };
+  }
+
+  const lowCount = values.filter((value) => value <= 20).length;
+  if (lowCount >= 2) {
+    return {
+      value: lowest,
+      reason: `${label} is ${lowCount}x 20% of lager`,
+    };
+  }
+
+  return null;
+}
+
+function getMoreSevereCriticalLow(current, next) {
+  if (!next) return current;
+  if (!current) return next;
+  return next.value < current.value ? next : current;
 }
 
 function getCountedRatingValues(values) {
