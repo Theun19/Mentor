@@ -879,7 +879,7 @@ function updateProgress() {
     : "donut-tone-empty";
   document.getElementById("checklistPercent").textContent = `${checklistPercentage}%`;
   document.getElementById("checklistDetail").textContent = checklistTarget.hasActiveDays
-    ? `${checklistDone}/${checklistTotal} punten · doel ${checklistTarget.target}`
+    ? `${checklistDone}/${checklistTotal} punten · dag ${checklistTarget.activeDays} doel ${checklistTarget.target}`
     : `${checklistDone}/${checklistTotal} punten`;
   dashboardDonutState.checklist = {
     score: checklistTarget.hasActiveDays ? Math.min(100, checklistTargetProgress) : checklistPercentage,
@@ -896,7 +896,12 @@ function getChecklistProgressTarget(totalTasks) {
   if (!activeDays) return { target: 0, activeDays, hasActiveDays: false };
 
   const dayCount = Math.min(activeDays, 10);
-  const target = Math.min(totalTasks, Math.ceil((totalTasks * dayCount) / 10));
+  const baseTasksPerDay = Math.floor(totalTasks / 10);
+  const extraTasks = totalTasks % 10;
+  const target = Math.min(
+    totalTasks,
+    (baseTasksPerDay * dayCount) + Math.min(dayCount, extraTasks)
+  );
   return { target, activeDays, hasActiveDays: true };
 }
 
