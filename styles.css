@@ -2600,8 +2600,51 @@ body.signature-editing::after {
     transform-origin: 50% 50%;
   }
 
+  .print-donut-heart {
+    fill: rgb(255, 255, 255);
+    stroke: #d7ded6;
+    stroke-width: 2;
+  }
+
+  .print-donut-svg.donut-tone-red .print-donut-heart {
+    fill: rgb(235, 68, 68);
+    stroke: rgb(150, 25, 25);
+  }
+
+  .print-donut-svg.donut-tone-orange .print-donut-heart {
+    fill: rgb(245, 124, 0);
+    stroke: rgb(166, 78, 0);
+  }
+
+  .print-donut-svg.donut-tone-yellow .print-donut-heart {
+    fill: rgb(255, 203, 52);
+    stroke: rgb(163, 117, 0);
+  }
+
+  .print-donut-svg.donut-tone-light-green .print-donut-heart {
+    fill: rgb(139, 214, 93);
+    stroke: rgb(76, 132, 44);
+  }
+
+  .print-donut-svg.donut-tone-green .print-donut-heart,
+  .print-donut-svg.donut-tone-greener .print-donut-heart {
+    fill: rgb(48, 172, 85);
+    stroke: rgb(18, 105, 48);
+  }
+
+  .print-donut-svg.donut-tone-strong .print-donut-heart {
+    fill: rgb(0, 122, 63);
+    stroke: rgb(0, 82, 41);
+  }
+
+  .print-donut-svg.donut-tone-gold .print-donut-heart {
+    fill: rgb(214, 151, 0);
+    stroke: rgb(132, 83, 0);
+    stroke-width: 3;
+  }
+
   .print-donut-value {
-    fill: #385f15;
+    fill: #12320f;
     font-size: 17px;
     font-weight: 900;
     text-anchor: middle;

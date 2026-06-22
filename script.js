@@ -2707,7 +2707,9 @@ function buildPrintDashboardHtml() {
   dashboard.querySelectorAll(".donut-chart").forEach((donut) => {
     const percentText = donut.querySelector("strong")?.textContent || "0%";
     const percentage = Math.max(0, Math.min(100, Number.parseInt(percentText, 10) || 0));
-    donut.outerHTML = buildPrintDonutSvg(percentage);
+    const label = donut.querySelector(".donut-center span")?.textContent || "totaal";
+    const toneClass = [...(donut.querySelector(".donut-center")?.classList || [])].find((className) => className.startsWith("donut-tone-")) || "donut-tone-empty";
+    donut.outerHTML = buildPrintDonutSvg(percentage, label, toneClass);
   });
   const balanceChart = dashboard.querySelector(".balance-point-chart")?.closest(".line-chart-item");
   const balanceTitle = balanceChart?.querySelector(".line-chart-title");
@@ -2734,17 +2736,19 @@ function buildPrintBalanceLegend() {
   `;
 }
 
-function buildPrintDonutSvg(percentage) {
+function buildPrintDonutSvg(percentage, label = "totaal", toneClass = "donut-tone-empty") {
   const radius = 39;
   const circumference = 2 * Math.PI * radius;
   const dash = (percentage / 100) * circumference;
+  const safeToneClass = /^donut-tone-[a-z-]+$/.test(toneClass) ? toneClass : "donut-tone-empty";
 
   return `
-    <svg class="print-donut-svg" viewBox="0 0 100 100" role="img" aria-label="${percentage}% totaal">
+    <svg class="print-donut-svg ${safeToneClass}" viewBox="0 0 100 100" role="img" aria-label="${percentage}% ${escapeHtml(label)}">
       <circle class="print-donut-track" cx="50" cy="50" r="${radius}" />
       <circle class="print-donut-fill" cx="50" cy="50" r="${radius}" stroke-dasharray="${dash.toFixed(2)} ${circumference.toFixed(2)}" />
+      <circle class="print-donut-heart" cx="50" cy="50" r="29" />
       <text class="print-donut-value" x="50" y="48">${percentage}%</text>
-      <text class="print-donut-label" x="50" y="62">totaal</text>
+      <text class="print-donut-label" x="50" y="62">${escapeHtml(label)}</text>
     </svg>
   `;
 }
