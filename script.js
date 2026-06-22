@@ -889,11 +889,11 @@ function updateTotalDonutHeart(percentage) {
     return;
   }
 
-  const lowest = activeParts.reduce((currentLowest, part) => part.score < currentLowest.score ? part : currentLowest, activeParts[0]);
+  const redPart = activeParts.find((part) => part.tone === "donut-tone-red");
   const heartAverage = Math.round(activeParts.reduce((sum, part) => sum + part.score, 0) / activeParts.length);
-  const heartTone = lowest.score < 60 ? lowest.tone : getDonutToneClass(heartAverage);
-  const detailText = lowest.score < 60
-    ? `${percentage}% totaal · laagste hart ${lowest.score}%`
+  const heartTone = redPart ? "donut-tone-red" : getDonutToneClass(heartAverage);
+  const detailText = redPart
+    ? `${percentage}% totaal · rood onderdeel ${redPart.score}%`
     : `${percentage}% totaal · gemiddeld hart ${heartAverage}%`;
   document.getElementById("dashboardTotalDetail").textContent = detailText;
   setDonutProgress("progressDonut", percentage, heartTone);
