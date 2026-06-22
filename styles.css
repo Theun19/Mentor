@@ -392,6 +392,11 @@ body {
   font-weight: 700;
 }
 
+.donut-center.donut-tone-empty {
+  border-color: rgb(220, 229, 220);
+  background: linear-gradient(180deg, rgb(255, 255, 255), rgb(247, 250, 245));
+}
+
 .donut-center.donut-tone-red {
   border-color: rgb(150, 0, 0);
   background: linear-gradient(180deg, rgb(255, 92, 92), rgb(210, 20, 20));
@@ -440,6 +445,7 @@ body {
 }
 
 .donut-center.donut-tone-red strong,
+.donut-center.donut-tone-empty strong,
 .donut-center.donut-tone-orange strong,
 .donut-center.donut-tone-yellow strong,
 .donut-center.donut-tone-light-green strong,
@@ -451,6 +457,7 @@ body {
 }
 
 .donut-center.donut-tone-red span,
+.donut-center.donut-tone-empty span,
 .donut-center.donut-tone-orange span,
 .donut-center.donut-tone-yellow span,
 .donut-center.donut-tone-light-green span,
