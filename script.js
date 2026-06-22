@@ -914,8 +914,9 @@ function getDonutToneClass(value) {
 function getRatingDonutToneClass(value) {
   if (value < 50) return "donut-tone-red";
   if (value < 60) return "donut-tone-orange";
-  if (value < 70) return "donut-tone-light-green";
-  if (value < 90) return "donut-tone-green";
+  if (value < 70) return "donut-tone-yellow";
+  if (value < 80) return "donut-tone-light-green";
+  if (value < 90) return "donut-tone-strong";
   return "donut-tone-gold";
 }
 
