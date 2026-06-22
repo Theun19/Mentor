@@ -1010,10 +1010,6 @@ function getLineDonutToneClass(percentage, activeDays, doneLines = 0, totalLines
     return "donut-tone-gold";
   }
 
-  if (activeDays > 0 && activeDays < 5) {
-    return getEarlyLineDonutToneClass(activeDays, doneLines);
-  }
-
   const phase = getLineProgressPhase(activeDays, totalLines);
   const normalTarget = phase.targetLines || 0;
   const normalProgress = normalTarget ? Math.round((doneLines / normalTarget) * 100) : value;
@@ -1037,38 +1033,6 @@ function getCompletedLineDonutToneClass(activeDays) {
   if (activeDays <= 15) return "donut-tone-green";
   if (activeDays <= 20) return "donut-tone-yellow";
   if (getSaved("driverAccepted") === "true") return "donut-tone-orange";
-  return "donut-tone-red";
-}
-
-function getEarlyLineDonutToneClass(activeDays, doneLines) {
-  if (activeDays === 1) {
-    if (doneLines >= 2) return "donut-tone-green";
-    return "donut-tone-yellow";
-  }
-
-  if (activeDays === 2) {
-    if (doneLines >= 4) return "donut-tone-green";
-    if (doneLines === 3) return "donut-tone-yellow";
-    if (doneLines >= 1) return "donut-tone-orange";
-    return "donut-tone-red";
-  }
-
-  if (activeDays === 3) {
-    if (doneLines >= 6) return "donut-tone-gold";
-    if (doneLines === 5) return "donut-tone-green";
-    if (doneLines === 4) return "donut-tone-yellow";
-    if (doneLines >= 1) return "donut-tone-orange";
-    return "donut-tone-red";
-  }
-
-  if (activeDays === 4) {
-    if (doneLines >= 8) return "donut-tone-gold";
-    if (doneLines === 7) return "donut-tone-green";
-    if (doneLines === 6) return "donut-tone-yellow";
-    if (doneLines >= 2) return "donut-tone-orange";
-    return "donut-tone-red";
-  }
-
   return "donut-tone-red";
 }
 
