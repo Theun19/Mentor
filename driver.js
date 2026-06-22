@@ -220,12 +220,19 @@ function switchDriverProfile(profileId) {
 
 function restoreFields() {
   document.querySelectorAll(".driver-save-field").forEach((input) => {
-    input.value = getSaved(input.id);
+    if (input.type === "checkbox") {
+      input.checked = getSaved(input.id) === "true";
+    } else {
+      input.value = getSaved(input.id);
+    }
     if (!input.dataset.bound) {
       input.addEventListener("input", () => {
-        setSaved(input.id, input.value);
+        setSaved(input.id, input.type === "checkbox" ? input.checked : input.value);
         if (input.id === "driverName") updateActiveDriverName(input.value);
       });
+      if (input.type === "checkbox") {
+        input.addEventListener("change", () => setSaved(input.id, input.checked));
+      }
       input.dataset.bound = "true";
     }
   });

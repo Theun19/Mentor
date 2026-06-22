@@ -930,14 +930,21 @@ function getRatingDonutToneClass(value) {
 
 function updateLineDonut(percentage, doneLines, totalLines) {
   const activeDays = getActiveDrivingDayCount();
-  const phase = getLineProgressPhase(activeDays);
+  const phase = getLineProgressPhase(activeDays, totalLines);
   const detail = document.getElementById("lineDetail");
 
   if (detail) {
-    detail.textContent = `${doneLines}/${totalLines} klaar · ${activeDays} actieve rijdagen · doel ${phase.target}%`;
+    const targetText = !activeDays
+      ? "nog geen actieve rijdag"
+      : phase.extendedTargetLines
+      ? `doel ${phase.targetLines} lijnen · uitloop ${phase.extendedTargetLines}`
+      : phase.targetLines
+      ? `doel ${phase.targetLines} lijnen`
+      : `doel ${phase.target}%`;
+    detail.textContent = `${doneLines}/${totalLines} klaar · ${activeDays} actieve rijdagen · ${targetText}`;
   }
 
-  const lineTone = doneLines ? getLineDonutToneClass(percentage, activeDays) : "donut-tone-empty";
+  const lineTone = doneLines ? getLineDonutToneClass(percentage, activeDays, doneLines, totalLines) : "donut-tone-empty";
   dashboardDonutState.lines = {
     score: percentage,
     tone: lineTone,
@@ -951,36 +958,76 @@ function getActiveDrivingDayCount() {
   return getRatingTableDayKeys(ratingRows, false).length;
 }
 
-function getLineProgressPhase(activeDays) {
-  if (activeDays >= 15) {
-    return { target: 100, gold: 100, green: 90, orange: 80, yellow: null };
+function getLineProgressPhase(activeDays, totalLines = lines.length) {
+  const availableLines = Math.max(0, Number(totalLines) || 0);
+  if (activeDays > 0 && activeDays < 5) {
+    return { targetLines: Math.min(activeDays * 2, availableLines) };
   }
-  if (activeDays >= 10) {
-    return { target: 70, gold: 70, green: 65, orange: 50, yellow: null };
-  }
-  return { target: 40, gold: 40, green: 30, orange: null, yellow: 20 };
+  return {
+    targetLines: Math.min(Math.ceil((availableLines * activeDays) / 15), availableLines),
+    extendedTargetLines: Math.min(Math.ceil((availableLines * activeDays) / 20), availableLines),
+  };
 }
 
-function getLineDonutToneClass(percentage, activeDays) {
+function getLineDonutToneClass(percentage, activeDays, doneLines = 0, totalLines = lines.length) {
   const value = Math.max(0, Math.min(100, Number(percentage) || 0));
+  if (totalLines > 0 && doneLines >= totalLines) {
+    return getCompletedLineDonutToneClass(activeDays);
+  }
 
-  if (activeDays >= 15) {
-    if (value >= 100) return "donut-tone-gold";
-    if (value >= 90) return "donut-tone-green";
-    if (value >= 80) return "donut-tone-orange";
+  if (activeDays > 0 && activeDays < 5) {
+    return getEarlyLineDonutToneClass(activeDays, doneLines);
+  }
+
+  const phase = getLineProgressPhase(activeDays, totalLines);
+  const normalTarget = phase.targetLines || 0;
+  const extendedTarget = phase.extendedTargetLines || normalTarget;
+  const normalProgress = normalTarget ? Math.round((doneLines / normalTarget) * 100) : value;
+  const extendedProgress = extendedTarget ? Math.round((doneLines / extendedTarget) * 100) : value;
+
+  if (normalProgress >= 100) return "donut-tone-gold";
+  if (normalProgress >= 80) return "donut-tone-green";
+  if (extendedProgress >= 100) return "donut-tone-yellow";
+  return "donut-tone-red";
+}
+
+function getCompletedLineDonutToneClass(activeDays) {
+  if (activeDays <= 12) return "donut-tone-gold";
+  if (activeDays <= 15) return "donut-tone-green";
+  if (activeDays <= 20) return "donut-tone-yellow";
+  if (getSaved("driverAccepted") === "true") return "donut-tone-orange";
+  return "donut-tone-red";
+}
+
+function getEarlyLineDonutToneClass(activeDays, doneLines) {
+  if (activeDays === 1) {
+    if (doneLines >= 2) return "donut-tone-green";
+    return "donut-tone-yellow";
+  }
+
+  if (activeDays === 2) {
+    if (doneLines >= 4) return "donut-tone-green";
+    if (doneLines === 3) return "donut-tone-yellow";
+    if (doneLines >= 1) return "donut-tone-orange";
     return "donut-tone-red";
   }
 
-  if (activeDays >= 10) {
-    if (value >= 70) return "donut-tone-gold";
-    if (value >= 65) return "donut-tone-green";
-    if (value >= 50) return "donut-tone-orange";
+  if (activeDays === 3) {
+    if (doneLines >= 6) return "donut-tone-gold";
+    if (doneLines === 5) return "donut-tone-green";
+    if (doneLines === 4) return "donut-tone-yellow";
+    if (doneLines >= 1) return "donut-tone-orange";
     return "donut-tone-red";
   }
 
-  if (value >= 40) return "donut-tone-gold";
-  if (value >= 30) return "donut-tone-green";
-  if (value >= 20) return "donut-tone-yellow";
+  if (activeDays === 4) {
+    if (doneLines >= 8) return "donut-tone-gold";
+    if (doneLines === 7) return "donut-tone-green";
+    if (doneLines === 6) return "donut-tone-yellow";
+    if (doneLines >= 2) return "donut-tone-orange";
+    return "donut-tone-red";
+  }
+
   return "donut-tone-red";
 }
 
@@ -2591,6 +2638,7 @@ function buildPrintDriverDetails() {
       <div><dt>Einddatum</dt><dd>${escapeHtml(getSaved("endDate") || "-")}</dd></div>
       <div><dt>Mentor</dt><dd>${escapeHtml(getSaved("mentorName") || "-")}</dd></div>
       <div><dt>Leidinggevende</dt><dd>${escapeHtml(getSaved("managerName") || "-")}</dd></div>
+      <div><dt>Aangenomen</dt><dd>${getSaved("driverAccepted") === "true" ? "Ja" : "Nee"}</dd></div>
     </dl>
   `;
 }
