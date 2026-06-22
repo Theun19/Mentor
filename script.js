@@ -868,16 +868,45 @@ function updateProgress() {
   });
 
   const checklistPercentage = checklistTotal ? Math.round((checklistDone / checklistTotal) * 100) : 0;
+  const checklistTarget = getChecklistProgressTarget(checklistTotal);
+  const checklistTargetProgress = checklistTarget.target
+    ? Math.round((checklistDone / checklistTarget.target) * 100)
+    : checklistPercentage;
+  const checklistTone = checklistTarget.hasActiveDays
+    ? getChecklistDonutToneClass(checklistTargetProgress)
+    : checklistDone
+    ? getChecklistDonutToneClass(checklistPercentage)
+    : "donut-tone-empty";
   document.getElementById("checklistPercent").textContent = `${checklistPercentage}%`;
-  document.getElementById("checklistDetail").textContent = `${checklistDone}/${checklistTotal} punten`;
+  document.getElementById("checklistDetail").textContent = checklistTarget.hasActiveDays
+    ? `${checklistDone}/${checklistTotal} punten · doel ${checklistTarget.target}`
+    : `${checklistDone}/${checklistTotal} punten`;
   dashboardDonutState.checklist = {
-    score: checklistPercentage,
-    tone: checklistDone ? getDonutToneClass(checklistPercentage) : "donut-tone-empty",
-    hasData: checklistDone > 0,
+    score: checklistTarget.hasActiveDays ? Math.min(100, checklistTargetProgress) : checklistPercentage,
+    tone: checklistTone,
+    hasData: checklistDone > 0 || checklistTarget.hasActiveDays,
   };
   setDonutProgress("checklistDonut", checklistPercentage, dashboardDonutState.checklist.tone);
   updateTotalDonutHeart(percentage);
   renderLineOverviewColumns();
+}
+
+function getChecklistProgressTarget(totalTasks) {
+  const activeDays = getActiveDrivingDayCount();
+  if (!activeDays) return { target: 0, activeDays, hasActiveDays: false };
+
+  const dayCount = Math.min(activeDays, 10);
+  const target = Math.min(totalTasks, Math.ceil((totalTasks * dayCount) / 10));
+  return { target, activeDays, hasActiveDays: true };
+}
+
+function getChecklistDonutToneClass(progress) {
+  const value = Math.max(0, Number(progress) || 0);
+  if (value >= 100) return "donut-tone-gold";
+  if (value >= 80) return "donut-tone-green";
+  if (value >= 60) return "donut-tone-yellow";
+  if (value >= 50) return "donut-tone-orange";
+  return "donut-tone-red";
 }
 
 function updateTotalDonutHeart(percentage) {
