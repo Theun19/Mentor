@@ -257,6 +257,25 @@
                 <table class="table table-sm rating-progress-table mb-0" id="ratingProgressTable"></table>
               </div>
             </div>
+            <div class="rating-logbook mt-3">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <div>
+                  <h3 class="h6 fw-bold mb-0">Logboek rijdag</h3>
+                  <span class="text-secondary small" id="ratingLogbookDate">Vandaag</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-outline-success btn-sm" id="ratingDictationBtn" type="button" aria-pressed="false">Microfoon</button>
+                  <button class="btn btn-success btn-sm" id="saveRatingLogBtn" type="button">Logboek opslaan</button>
+                </div>
+              </div>
+              <textarea
+                class="form-control"
+                id="ratingDayNote"
+                rows="4"
+                placeholder="Beschrijf deze rijdag. Je kunt typen of de microfoon gebruiken om te dicteren."></textarea>
+              <div class="rating-dictation-status" id="ratingDictationStatus" aria-live="polite"></div>
+              <div class="rating-day-log mt-3" id="ratingDayLog"></div>
+            </div>
             <div class="mentor-ai-text mt-3">
               <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
                 <h3 class="h6 fw-bold mb-0">Tekst over chauffeur</h3>

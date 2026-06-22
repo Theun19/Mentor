@@ -1228,9 +1228,13 @@ function renderRatingDayLog() {
   if (!log) return;
 
   const ratings = getRatingRowsForProgress();
-  const dayKeys = getRatingTableDayKeys(ratings, false).filter(Boolean);
+  const notes = getRatingDayNotes();
+  const dayKeys = [...new Set([
+    ...getRatingTableDayKeys(ratings, false).filter(Boolean),
+    ...Object.keys(notes).filter((dayKey) => /^\d{4}-\d{2}-\d{2}$/.test(dayKey)),
+  ])].sort();
   if (!dayKeys.length) {
-    log.innerHTML = `<p class="text-secondary mb-0">Nog geen rijlesdag opgeslagen.</p>`;
+    log.innerHTML = `<p class="text-secondary mb-0">Nog geen logboekregel opgeslagen.</p>`;
     return;
   }
 
@@ -1244,14 +1248,173 @@ function renderRatingDayLog() {
         </div>
       `;
     }).join("");
+    const note = notes[dayKey]?.trim();
 
     return `
       <article class="rating-day-card">
         <div class="rating-day-date">${formatDayLabel(dayKey)}</div>
-        <div class="rating-day-scores">${scores}</div>
+        <div>
+          <div class="rating-day-scores">${scores}</div>
+          ${note ? `<p class="rating-day-note">${escapeHtml(note)}</p>` : ""}
+        </div>
       </article>
     `;
   }).join("");
+}
+
+function getRatingDayNotes() {
+  const notes = getSavedJson("rating-day-notes", {});
+  return notes && typeof notes === "object" && !Array.isArray(notes) ? notes : {};
+}
+
+function saveRatingDayNotes(notes) {
+  const cleanNotes = {};
+  Object.entries(notes || {}).forEach(([dayKey, note]) => {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dayKey) && String(note || "").trim()) {
+      cleanNotes[dayKey] = String(note).trim();
+    }
+  });
+  setSavedJson("rating-day-notes", cleanNotes);
+}
+
+function getSelectedRatingDayKey() {
+  const timestamp = getSelectedRatingTimestamp();
+  return timestamp ? getDayKey(timestamp) : "";
+}
+
+function loadRatingDayNote(dayKey = getSelectedRatingDayKey()) {
+  const textarea = document.getElementById("ratingDayNote");
+  const dateLabel = document.getElementById("ratingLogbookDate");
+  if (!textarea) return;
+
+  const notes = getRatingDayNotes();
+  textarea.value = dayKey ? notes[dayKey] || "" : "";
+  if (dateLabel) {
+    dateLabel.textContent = dayKey ? `Rijdag: ${formatDayLabel(dayKey)}` : "Kies eerst een geldige datum";
+  }
+}
+
+function saveCurrentRatingDayNote(options = {}) {
+  const textarea = document.getElementById("ratingDayNote");
+  const dayKey = getSelectedRatingDayKey();
+  if (!textarea || !dayKey) {
+    if (!options.silent) showRatingDictationStatus("Kies eerst een geldige datum.");
+    return false;
+  }
+
+  const notes = getRatingDayNotes();
+  const text = textarea.value.trim();
+  if (text) {
+    notes[dayKey] = text;
+  } else {
+    delete notes[dayKey];
+  }
+  saveRatingDayNotes(notes);
+  addSavedRatingDay(dayKey);
+  renderRatingDayLog();
+  renderRatingProgressTable();
+  if (!options.silent) showRatingDictationStatus(`Logboek opgeslagen voor ${formatDayLabel(dayKey)}.`);
+  return true;
+}
+
+function getSpeechRecognitionConstructor() {
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+
+function setupRatingDictation() {
+  const button = document.getElementById("ratingDictationBtn");
+  if (!button) return;
+
+  const SpeechRecognition = getSpeechRecognitionConstructor();
+  if (!SpeechRecognition) {
+    button.disabled = true;
+    button.textContent = "Microfoon niet beschikbaar";
+    showRatingDictationStatus("Dicteren wordt niet ondersteund door deze browser. Typen blijft mogelijk.");
+    return;
+  }
+
+  ratingRecognition = new SpeechRecognition();
+  ratingRecognition.lang = "nl-NL";
+  ratingRecognition.continuous = true;
+  ratingRecognition.interimResults = true;
+
+  let finalTranscript = "";
+  ratingRecognition.addEventListener("start", () => {
+    ratingRecognitionActive = true;
+    finalTranscript = "";
+    button.classList.remove("btn-outline-success");
+    button.classList.add("btn-success");
+    button.textContent = "Stop microfoon";
+    button.setAttribute("aria-pressed", "true");
+    showRatingDictationStatus("Luisteren...");
+  });
+
+  ratingRecognition.addEventListener("result", (event) => {
+    let interimTranscript = "";
+    for (let index = event.resultIndex; index < event.results.length; index += 1) {
+      const transcript = event.results[index][0]?.transcript || "";
+      if (event.results[index].isFinal) {
+        finalTranscript += `${transcript.trim()} `;
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+
+    const textarea = document.getElementById("ratingDayNote");
+    if (!textarea) return;
+    const baseText = textarea.dataset.dictationBase || textarea.value;
+    textarea.value = [baseText, finalTranscript, interimTranscript]
+      .map((part) => String(part || "").trim())
+      .filter(Boolean)
+      .join(" ");
+  });
+
+  ratingRecognition.addEventListener("end", () => {
+    ratingRecognitionActive = false;
+    button.classList.add("btn-outline-success");
+    button.classList.remove("btn-success");
+    button.textContent = "Microfoon";
+    button.setAttribute("aria-pressed", "false");
+    document.getElementById("ratingDayNote")?.removeAttribute("data-dictation-base");
+    saveCurrentRatingDayNote();
+  });
+
+  ratingRecognition.addEventListener("error", (event) => {
+    showRatingDictationStatus(event.error === "not-allowed"
+      ? "Microfoon geweigerd. Geef de browser toestemming voor de microfoon."
+      : "Dicteren is gestopt. Probeer het opnieuw.");
+  });
+}
+
+function toggleRatingDictation() {
+  if (!ratingRecognition) {
+    setupRatingDictation();
+  }
+  if (!ratingRecognition) return;
+
+  if (ratingRecognitionActive) {
+    ratingRecognition.stop();
+    return;
+  }
+
+  const textarea = document.getElementById("ratingDayNote");
+  if (textarea) textarea.dataset.dictationBase = textarea.value.trim();
+  try {
+    ratingRecognition.start();
+  } catch (error) {
+    showRatingDictationStatus("De microfoon is al actief of kon niet starten.");
+  }
+}
+
+function showRatingDictationStatus(text) {
+  const status = document.getElementById("ratingDictationStatus");
+  if (!status) return;
+
+  status.textContent = text || "";
+  if (!text) return;
+  window.setTimeout(() => {
+    if (status.textContent === text) status.textContent = "";
+  }, 4500);
 }
 
 function renderRatingProgressTable() {
@@ -1373,6 +1536,7 @@ function activateRatingDayColumn(dayKey) {
   const input = document.getElementById("ratingDateInput");
   if (input) input.value = formatDateInputValue(dayKey);
   applyRatingDayToSliders(dayKey);
+  loadRatingDayNote(dayKey);
   renderRatingProgressTable();
   showRatingSaveStatus(timestampFromDayKey(dayKey), `Actieve dag voor schuiven: ${formatDayLabel(timestampFromDayKey(dayKey))}`);
 }
@@ -1527,6 +1691,8 @@ function moveRatingTableColumnTo(dayKey, targetDayKey) {
 
 let draggedRatingDayKey = "";
 let activeRatingDateInput = null;
+let ratingRecognition = null;
+let ratingRecognitionActive = false;
 
 function handleRatingProgressTablePointerDown(event) {
   const handle = event.target.closest(".rating-column-drag");
@@ -2302,6 +2468,7 @@ function saveAllRatingHistories() {
     return;
   }
 
+  saveCurrentRatingDayNote();
   addSavedRatingDay(getDayKey(timestamp));
   document.querySelectorAll(".rating-range").forEach((input) => {
     saveRatingHistory(input, true, timestamp);
@@ -3386,8 +3553,13 @@ function bindEvents() {
   });
 
   document.getElementById("ratingDateInput")?.addEventListener("change", () => {
+    loadRatingDayNote();
     renderRatingProgressTable();
   });
+  document.getElementById("ratingDayNote")?.addEventListener("input", () => saveCurrentRatingDayNote({ silent: true }));
+  document.getElementById("saveRatingLogBtn")?.addEventListener("click", saveCurrentRatingDayNote);
+  document.getElementById("ratingDictationBtn")?.addEventListener("click", toggleRatingDictation);
+  setupRatingDictation();
 
   document.getElementById("chartZoomClose").addEventListener("click", closeChartZoom);
   document.getElementById("chartZoom").addEventListener("click", (event) => {
@@ -3470,6 +3642,8 @@ renderDriverProfiles();
 setupSignaturePads();
 restoreState();
 setDefaultRatingDate();
+loadRatingDayNote();
+renderRatingDayLog();
 bindEvents();
 initMainLogin();
 updateProgress();

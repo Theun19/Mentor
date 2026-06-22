@@ -1156,6 +1156,24 @@ body.signature-editing::after {
   font-weight: 700;
 }
 
+.rating-logbook {
+  border-top: 1px solid var(--line);
+  padding-top: 0.9rem;
+}
+
+.rating-logbook textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.rating-dictation-status {
+  min-height: 1.25rem;
+  margin-top: 0.35rem;
+  color: var(--brand-dark);
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
 .rating-day-log {
   border-top: 1px solid var(--line);
   padding-top: 0.85rem;
@@ -1199,6 +1217,17 @@ body.signature-editing::after {
 
 .rating-day-score strong {
   color: var(--brand-dark);
+}
+
+.rating-day-note {
+  margin: 0.55rem 0 0;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  background: #eef5ea;
+  color: #24351f;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
 }
 
 .rating-progress-table-wrap {
@@ -2026,6 +2055,20 @@ body.signature-editing::after {
     font-size: 0.72rem;
   }
 
+  .rating-logbook {
+    margin-top: 0.65rem !important;
+    padding-top: 0.6rem;
+  }
+
+  .rating-logbook textarea {
+    min-height: 5.5rem;
+    font-size: 0.85rem;
+  }
+
+  .rating-dictation-status {
+    font-size: 0.72rem;
+  }
+
   .rating-day-log {
     margin-top: 0.65rem !important;
     padding-top: 0.6rem;
@@ -2043,6 +2086,11 @@ body.signature-editing::after {
 
   .rating-day-scores {
     grid-template-columns: 1fr;
+  }
+
+  .rating-day-note {
+    font-size: 0.78rem;
+    padding: 0.45rem 0.5rem;
   }
 
   .rating-progress-table-wrap {
