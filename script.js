@@ -1406,7 +1406,7 @@ async function improveCurrentRatingLogText() {
     saveCurrentRatingDayNote({ silent: true });
     showRatingDictationStatus(openAiText
       ? "Tekst verbeterd met OpenAI."
-      : "Spelling en interpunctie lokaal verbeterd. Start de OpenAI-server voor betere zinsbouw.");
+      : "Spelling, interpunctie en zinsbouw lokaal verbeterd.");
   } finally {
     if (button) button.disabled = false;
   }
@@ -2306,7 +2306,24 @@ function polishLogbookText(text) {
     .filter(Boolean)
     .map((sentence) => restoreLogbookAbbreviations(formatLogbookSentence(sentence)));
 
-  return sentences.join(" ");
+  return improveLocalSentenceConstruction(sentences.join(" "));
+}
+
+function improveLocalSentenceConstruction(text) {
+  return String(text || "")
+    .replace(/\bDe chauffeur rijdt goed, maar kijkt laat\./gi, "De chauffeur rijdt goed, maar kijkt nog te laat vooruit.")
+    .replace(/\bDe chauffeur reed goed, maar keek laat\./gi, "De chauffeur reed goed, maar keek nog te laat vooruit.")
+    .replace(/\bBochten beter, want hij stuurt rustiger\./gi, "Het nemen van bochten is verbeterd, doordat de chauffeur rustiger stuurt.")
+    .replace(/\bBochten beter, want (.+?)\./gi, "Het nemen van bochten is verbeterd, omdat $1.")
+    .replace(/\bRemmen beter, want hij remt rustiger\./gi, "Het remmen is verbeterd, doordat de chauffeur rustiger remt.")
+    .replace(/\bRemmen beter, want (.+?)\./gi, "Het remmen is verbeterd, omdat $1.")
+    .replace(/\bKijken beter, want hij kijkt verder vooruit\./gi, "Het kijkgedrag is verbeterd, doordat de chauffeur verder vooruit kijkt.")
+    .replace(/\bKijken beter, want (.+?)\./gi, "Het kijkgedrag is verbeterd, omdat $1.")
+    .replace(/\bVerkeersinzicht is beter\b/gi, "Het verkeersinzicht is verbeterd")
+    .replace(/\bHet verkeersinzicht is verbeterd ook\b/gi, "Het verkeersinzicht is verbeterd. Ook")
+    .replace(/\bKlantvriendelijk contact\b/gi, "het contact met klanten is klantvriendelijk")
+    .replace(/\bI\.v\.m\. drukte\b/g, "i.v.m. drukte")
+    .trim();
 }
 
 function formatLogbookSentence(sentence) {
