@@ -1380,7 +1380,7 @@ function deleteRatingDayNote(dayKey = getSelectedLogbookDayKey(), options = {}) 
   return true;
 }
 
-async function improveCurrentRatingLogText() {
+function improveCurrentLogbookSpelling() {
   const textarea = document.getElementById("ratingDayNote");
   if (!textarea) return;
 
@@ -1390,49 +1390,79 @@ async function improveCurrentRatingLogText() {
     return;
   }
 
-  const button = document.getElementById("improveRatingLogBtn");
-  if (button) button.disabled = true;
-  showRatingDictationStatus("Tekst wordt verbeterd...");
-
-  try {
-    const openAiText = await improveLogbookTextWithOpenAI(originalText);
-    const improvedText = openAiText || polishLogbookText(originalText);
-    if (!improvedText) {
-      showRatingDictationStatus("Er staat nog geen tekst om te verbeteren.");
-      return;
-    }
-
-    textarea.value = improvedText;
-    saveCurrentRatingDayNote({ silent: true });
-    showRatingDictationStatus(openAiText
-      ? "Tekst verbeterd met OpenAI."
-      : "Spelling, interpunctie en zinsbouw lokaal verbeterd.");
-  } finally {
-    if (button) button.disabled = false;
-  }
+  const improvedText = improveLogbookSpellingAndSentences(originalText);
+  textarea.value = improvedText;
+  saveCurrentRatingDayNote({ silent: true });
+  showRatingDictationStatus("Spelling en zinsopbouw verbeterd.");
 }
 
-async function improveLogbookTextWithOpenAI(text) {
-  if (!text.trim() || window.location.protocol === "file:") return "";
+function improveLogbookSpellingAndSentences(text) {
+  const normalizedText = String(text || "")
+    .replace(/\s+/g, " ")
+    .replace(/\s+([,.!?;:])/g, "$1")
+    .replace(/([,.!?;:])(?=\S)/g, "$1 ")
+    .replace(/\bzn\b/gi, "zijn")
+    .replace(/\bme\b/gi, "mijn")
+    .replace(/\bgebeurd\b/gi, "gebeurt")
+    .replace(/\bverkeers inzicht\b/gi, "verkeersinzicht")
+    .replace(/\bklant vriendelijk\b/gi, "klantvriendelijk")
+    .replace(/\bi\.?v\.?m\.?\b/gi, "i.v.m.")
+    .replace(/\bt\.?o\.?v\.?\b/gi, "t.o.v.")
+    .replace(/\bm\.?b\.?t\.?\b/gi, "m.b.t.")
+    .replace(/\bo\.?a\.?\b/gi, "o.a.")
+    .replace(/\bbv\.?\b/gi, "bijv.")
+    .trim();
+  if (!normalizedText) return "";
 
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 12000);
-  try {
-    const response = await fetch("/api/improve-logbook", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-      signal: controller.signal,
-    });
-    if (!response.ok) return "";
+  const protectedText = normalizedText
+    .replace(/i\.v\.m\./gi, "ivm§")
+    .replace(/t\.o\.v\./gi, "tov§")
+    .replace(/m\.b\.t\./gi, "mbt§")
+    .replace(/o\.a\./gi, "oa§")
+    .replace(/bijv\./gi, "bijv§");
 
-    const data = await response.json();
-    return typeof data.text === "string" ? data.text.trim() : "";
-  } catch (error) {
-    return "";
-  } finally {
-    window.clearTimeout(timeout);
-  }
+  const sentenceText = protectedText
+    .replace(/\s+(daarna|vervolgens|hierna)\s+/gi, ". $1 ")
+    .replace(/\s+(maar|want|dus|terwijl)\s+/gi, ", $1 ");
+
+  return sentenceText
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean)
+    .map(formatImprovedLogbookSentence)
+    .join(" ")
+    .replace(/\bivm§/gi, "i.v.m.")
+    .replace(/\btov§/gi, "t.o.v.")
+    .replace(/\bmbt§/gi, "m.b.t.")
+    .replace(/\boa§/gi, "o.a.")
+    .replace(/\bbijv§/gi, "bijv.");
+}
+
+function formatImprovedLogbookSentence(sentence) {
+  const keepUppercase = new Set(["MAT", "ROV", "RRR", "AFAS", "OV"]);
+  const corrected = sentence
+    .replace(/\b[A-ZÁÉÍÓÚÜÄËÏÖ]{2,}\b/g, (word) => (keepUppercase.has(word) ? word : word.toLowerCase()))
+    .replace(/\bEn\b/g, "en")
+    .replace(/\bMaar\b/g, "maar")
+    .replace(/\bWant\b/g, "want")
+    .replace(/\bOmdat\b/g, "omdat")
+    .replace(/\bDus\b/g, "dus")
+    .replace(/\bOok\b/g, "ook")
+    .replace(/\bRijdt\b/g, "rijdt")
+    .replace(/\bReed\b/g, "reed")
+    .replace(/\bKijkt\b/g, "kijkt")
+    .replace(/\bRemt\b/g, "remt")
+    .replace(/\bStuurt\b/g, "stuurt")
+    .replace(/\bGoed\b/g, "goed")
+    .replace(/\bBeter\b/g, "beter")
+    .replace(/\bRustig\b/g, "rustig")
+    .replace(/\bbochten beter, want hij stuurt rustiger\b/gi, "het nemen van bochten is beter, omdat de chauffeur rustiger stuurt")
+    .replace(/\bremmen beter, want hij remt rustiger\b/gi, "het remmen is beter, omdat de chauffeur rustiger remt")
+    .replace(/\bkijken beter, want hij kijkt verder vooruit\b/gi, "het kijkgedrag is beter, omdat de chauffeur verder vooruit kijkt")
+    .replace(/\bverkeersinzicht is beter ook\b/gi, "verkeersinzicht is beter. Ook")
+    .trim();
+  const formattedSentence = corrected.charAt(0).toUpperCase() + corrected.slice(1);
+  return /[.!?]$/.test(formattedSentence) ? formattedSentence : `${formattedSentence}.`;
 }
 
 function getSpeechRecognitionConstructor() {
@@ -2273,137 +2303,8 @@ function getIncludedRatingLogs() {
     .slice(-5)
     .map((dayKey) => ({
       dayKey,
-      text: improveRatingLogText(notes[dayKey]),
+      text: notes[dayKey].trim(),
     }));
-}
-
-function improveRatingLogText(text) {
-  const improvedText = polishLogbookText(text);
-  if (!improvedText) return "";
-
-  return `Tijdens deze rijdag is genoteerd dat ${improvedText.charAt(0).toLowerCase()}${improvedText.slice(1)}`;
-}
-
-function polishLogbookText(text) {
-  const cleanText = String(text || "")
-    .replace(/\s+/g, " ")
-    .replace(/\s+([,.!?;:])/g, "$1")
-    .replace(/([,.!?;:])(?=\S)/g, "$1 ")
-    .replace(/\s+([,.!?;:])/g, "$1")
-    .replace(/\bzn\b/gi, "zijn")
-    .replace(/\bme\b/gi, "mijn")
-    .replace(/\bgebeurd\b/gi, "gebeurt")
-    .replace(/\bverkeers inzicht\b/gi, "verkeersinzicht")
-    .replace(/\bklant vriendelijk\b/gi, "klantvriendelijk")
-    .trim();
-  if (!cleanText) return "";
-
-  const textWithAbbreviations = protectLogbookAbbreviations(normalizeLogbookAbbreviations(cleanText));
-  const sentenceReadyText = addLogbookSentenceBreaks(textWithAbbreviations);
-  const sentences = sentenceReadyText
-    .split(/(?<=[.!?])\s+/)
-    .map((sentence) => sentence.trim())
-    .filter(Boolean)
-    .map((sentence) => restoreLogbookAbbreviations(formatLogbookSentence(sentence)));
-
-  return improveLocalSentenceConstruction(sentences.join(" "));
-}
-
-function improveLocalSentenceConstruction(text) {
-  return String(text || "")
-    .replace(/\bDe chauffeur rijdt goed, maar kijkt laat\./gi, "De chauffeur rijdt goed, maar kijkt nog te laat vooruit.")
-    .replace(/\bDe chauffeur reed goed, maar keek laat\./gi, "De chauffeur reed goed, maar keek nog te laat vooruit.")
-    .replace(/\bBochten beter, want hij stuurt rustiger\./gi, "Het nemen van bochten is verbeterd, doordat de chauffeur rustiger stuurt.")
-    .replace(/\bBochten beter, want (.+?)\./gi, "Het nemen van bochten is verbeterd, omdat $1.")
-    .replace(/\bRemmen beter, want hij remt rustiger\./gi, "Het remmen is verbeterd, doordat de chauffeur rustiger remt.")
-    .replace(/\bRemmen beter, want (.+?)\./gi, "Het remmen is verbeterd, omdat $1.")
-    .replace(/\bKijken beter, want hij kijkt verder vooruit\./gi, "Het kijkgedrag is verbeterd, doordat de chauffeur verder vooruit kijkt.")
-    .replace(/\bKijken beter, want (.+?)\./gi, "Het kijkgedrag is verbeterd, omdat $1.")
-    .replace(/\bVerkeersinzicht is beter\b/gi, "Het verkeersinzicht is verbeterd")
-    .replace(/\bHet verkeersinzicht is verbeterd ook\b/gi, "Het verkeersinzicht is verbeterd. Ook")
-    .replace(/\bKlantvriendelijk contact\b/gi, "het contact met klanten is klantvriendelijk")
-    .replace(/\bI\.v\.m\. drukte\b/g, "i.v.m. drukte")
-    .trim();
-}
-
-function formatLogbookSentence(sentence) {
-  const preserveUppercaseWords = new Set(["MAT", "ROV", "RRR", "AFAS", "OV"]);
-  const corrected = sentence
-    .replace(/\b[A-ZÁÉÍÓÚÜÄËÏÖ]{2,}\b/g, (word) => (preserveUppercaseWords.has(word) ? word : word.toLowerCase()))
-    .replace(/\bEn\b/g, "en")
-    .replace(/\bMaar\b/g, "maar")
-    .replace(/\bWant\b/g, "want")
-    .replace(/\bOmdat\b/g, "omdat")
-    .replace(/\bDus\b/g, "dus")
-    .replace(/\bOok\b/g, "ook")
-    .replace(/\bRijdt\b/g, "rijdt")
-    .replace(/\bReed\b/g, "reed")
-    .replace(/\bKijkt\b/g, "kijkt")
-    .replace(/\bRemt\b/g, "remt")
-    .replace(/\bStuurt\b/g, "stuurt")
-    .replace(/\bGoed\b/g, "goed")
-    .replace(/\bBeter\b/g, "beter")
-    .replace(/\bRustig\b/g, "rustig")
-    .trim();
-  const lowerCased = corrected === corrected.toUpperCase() ? corrected.toLowerCase() : corrected;
-  const punctuated = addLogbookCommas(lowerCased);
-  const sentenceCased = punctuated.charAt(0).toUpperCase() + punctuated.slice(1);
-  const completed = sentenceCased;
-  return /[.!?]$/.test(completed) ? completed : `${completed}.`;
-}
-
-function normalizeLogbookAbbreviations(text) {
-  return String(text || "")
-    .replace(/\bdwz\.?\b/gi, "d.w.z.")
-    .replace(/\bi\.?v\.?m\.?\b/gi, "i.v.m.")
-    .replace(/\bt\.?o\.?v\.?\b/gi, "t.o.v.")
-    .replace(/\bm\.?b\.?t\.?\b/gi, "m.b.t.")
-    .replace(/\bo\.?a\.?\b/gi, "o.a.")
-    .replace(/\bbv\.?\b/gi, "bijv.")
-    .replace(/\bbijv(?=\s|$)/gi, "bijv.")
-    .replace(/\bnr\.?\b/gi, "nr.");
-}
-
-function protectLogbookAbbreviations(text) {
-  return String(text || "")
-    .replace(/d\.w\.z\./gi, "dwz§")
-    .replace(/i\.v\.m\./gi, "ivm§")
-    .replace(/t\.o\.v\./gi, "tov§")
-    .replace(/m\.b\.t\./gi, "mbt§")
-    .replace(/o\.a\./gi, "oa§")
-    .replace(/bijv\./gi, "bijv§")
-    .replace(/nr\./gi, "nr§");
-}
-
-function restoreLogbookAbbreviations(text) {
-  return String(text || "")
-    .replace(/\bdwz§/gi, "d.w.z.")
-    .replace(/\bivm§/gi, "i.v.m.")
-    .replace(/\btov§/gi, "t.o.v.")
-    .replace(/\bmbt§/gi, "m.b.t.")
-    .replace(/\boa§/gi, "o.a.")
-    .replace(/\bbijv§/gi, "bijv.")
-    .replace(/\bnr§/gi, "nr.");
-}
-
-function addLogbookSentenceBreaks(text) {
-  return String(text || "")
-    .replace(/\s+(daarna|vervolgens|hierna)\s+/gi, ". $1 ");
-}
-
-function addLogbookCommas(text) {
-  return String(text || "")
-    .replace(/\s+(maar|want|dus|terwijl)\s+/gi, ", $1 ")
-    .replace(/^(als|wanneer|omdat|doordat|terwijl)\b([^,.!?]{8,80})\s+(dan|blijft|wordt|is|kan|moet|rijdt|reed|kijkt|remt|stuurt)\b/i, (match, opener, middle, verb) => {
-      return `${opener}${middle}, ${verb}`;
-    })
-    .replace(/,\s*,+/g, ",")
-    .replace(/\s+([,.!?;:])/g, "$1")
-    .replace(/([,.!?;:])(?=\S)/g, "$1 ");
-}
-
-function hasSentenceVerb(sentence) {
-  return /\b(is|zijn|was|waren|heeft|hebben|had|rijdt|reed|kijkt|keek|remt|remde|stuurt|stuurde|neemt|nam|laat|liet|toont|toonde|kan|moet|blijft|werd|wordt|gaat|ging|komt|kwam|pakt|pakte|maakt|maakte)\b/i.test(sentence);
 }
 
 function getChecklistMentorSummary() {
@@ -3857,7 +3758,7 @@ function bindEvents() {
     loadRatingDayNote(dayKey);
   });
   document.getElementById("ratingDayNote")?.addEventListener("input", () => saveCurrentRatingDayNote({ silent: true }));
-  document.getElementById("improveRatingLogBtn")?.addEventListener("click", improveCurrentRatingLogText);
+  document.getElementById("spellcheckRatingLogBtn")?.addEventListener("click", improveCurrentLogbookSpelling);
   document.getElementById("saveRatingLogBtn")?.addEventListener("click", saveCurrentRatingDayNote);
   document.getElementById("deleteRatingLogBtn")?.addEventListener("click", () => deleteRatingDayNote());
   document.getElementById("ratingDayLog")?.addEventListener("click", (event) => {
