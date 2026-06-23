@@ -1202,6 +1202,16 @@ body.signature-editing::after {
   background: #ffffff;
 }
 
+.logbook-action-btn {
+  min-height: 2rem;
+  padding-inline: 0.55rem;
+  font-weight: 800;
+}
+
+.logbook-action-btn .btn-icon {
+  flex: 0 0 auto;
+}
+
 .rating-dictation-status {
   min-height: 1.25rem;
   margin-top: 0.35rem;
@@ -2127,6 +2137,13 @@ body.signature-editing::after {
   .logbook-date-tools .form-check {
     text-align: left;
     font-size: 0.76rem;
+  }
+
+  .logbook-action-btn {
+    flex: 1 1 calc(50% - 0.5rem);
+    justify-content: center;
+    padding-inline: 0.45rem;
+    font-size: 0.78rem;
   }
 
   .rating-dictation-status {

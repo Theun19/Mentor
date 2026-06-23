@@ -1406,7 +1406,7 @@ function setupRatingDictation() {
   const SpeechRecognition = getSpeechRecognitionConstructor();
   if (!SpeechRecognition) {
     button.disabled = true;
-    button.textContent = "Microfoon niet beschikbaar";
+    setButtonLabel(button, "Niet beschikbaar");
     showRatingDictationStatus("Dicteren wordt niet ondersteund door deze browser. Typen blijft mogelijk.");
     return;
   }
@@ -1423,7 +1423,7 @@ function setupRatingDictation() {
     finalTranscriptParts = [];
     button.classList.remove("btn-outline-success");
     button.classList.add("btn-success");
-    button.textContent = "Stop microfoon";
+    setButtonLabel(button, "Stop");
     button.setAttribute("aria-pressed", "true");
     showRatingDictationStatus("Luisteren...");
   });
@@ -1458,7 +1458,7 @@ function setupRatingDictation() {
     ratingRecognitionActive = false;
     button.classList.add("btn-outline-success");
     button.classList.remove("btn-success");
-    button.textContent = "Microfoon";
+    setButtonLabel(button, "Microfoon");
     button.setAttribute("aria-pressed", "false");
     document.getElementById("ratingDayNote")?.removeAttribute("data-dictation-base");
     saveCurrentRatingDayNote();
@@ -1469,6 +1469,15 @@ function setupRatingDictation() {
       ? "Microfoon geweigerd. Geef de browser toestemming voor de microfoon."
       : "Dicteren is gestopt. Probeer het opnieuw.");
   });
+}
+
+function setButtonLabel(button, label) {
+  const labelElement = button?.querySelector("span");
+  if (labelElement) {
+    labelElement.textContent = label;
+  } else if (button) {
+    button.textContent = label;
+  }
 }
 
 function toggleRatingDictation() {
@@ -2247,7 +2256,8 @@ function polishLogbookText(text) {
     .trim();
   if (!cleanText) return "";
 
-  const sentences = cleanText
+  const sentenceSource = completeShortLogbookText(cleanText);
+  const sentences = sentenceSource
     .split(/(?<=[.!?])\s+/)
     .map((sentence) => sentence.trim())
     .filter(Boolean)
@@ -2257,6 +2267,22 @@ function polishLogbookText(text) {
     });
 
   return sentences.join(" ");
+}
+
+function completeShortLogbookText(text) {
+  const words = text.split(/\s+/).filter(Boolean);
+  if (/[.!?]$/.test(text) || words.length >= 7) return text;
+
+  const lowerText = text.toLowerCase();
+  if (/^(goed|beter|rustig|netjes|voldoende|stabiel|onzeker|lichtzinnig|roekeloos|angstvallig)\b/.test(lowerText)) {
+    return `De chauffeur reed ${lowerText}`;
+  }
+
+  if (!/\b(chauffeur|rijdt|reed|heeft|is|kan|moet|laat|toont|kijkt|remt|stuurt)\b/i.test(text)) {
+    return `De chauffeur laat verbetering zien bij ${lowerText}`;
+  }
+
+  return text;
 }
 
 function getChecklistMentorSummary() {
