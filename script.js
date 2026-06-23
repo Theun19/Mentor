@@ -1319,14 +1319,10 @@ function getSelectedLogbookDayKey() {
 function loadRatingDayNote(dayKey = getSelectedLogbookDayKey()) {
   const textarea = document.getElementById("ratingDayNote");
   const dateLabel = document.getElementById("ratingLogbookDate");
-  const includeInput = document.getElementById("includeCurrentRatingLog");
   if (!textarea) return;
 
   const notes = getRatingDayNotes();
   textarea.value = dayKey ? notes[dayKey] || "" : "";
-  if (includeInput) {
-    includeInput.checked = dayKey ? getIncludedRatingLogKeys().includes(dayKey) : false;
-  }
   if (dateLabel) {
     dateLabel.textContent = dayKey ? `Rijdag: ${formatDayLabel(dayKey)}` : "Kies eerst een geldige datum";
   }
@@ -1334,7 +1330,6 @@ function loadRatingDayNote(dayKey = getSelectedLogbookDayKey()) {
 
 function saveCurrentRatingDayNote(options = {}) {
   const textarea = document.getElementById("ratingDayNote");
-  const includeInput = document.getElementById("includeCurrentRatingLog");
   const dayKey = getSelectedLogbookDayKey();
   if (!textarea || !dayKey) {
     if (!options.silent) showRatingDictationStatus("Kies eerst een geldige datum.");
@@ -1349,7 +1344,6 @@ function saveCurrentRatingDayNote(options = {}) {
     delete notes[dayKey];
   }
   saveRatingDayNotes(notes);
-  setRatingLogIncluded(dayKey, Boolean(text && includeInput?.checked));
   addSavedRatingDay(dayKey);
   renderRatingDayLog();
   renderRatingProgressTable();
@@ -1377,8 +1371,6 @@ function deleteRatingDayNote(dayKey = getSelectedLogbookDayKey(), options = {}) 
   if (cleanDayKey === getSelectedLogbookDayKey()) {
     const textarea = document.getElementById("ratingDayNote");
     if (textarea) textarea.value = "";
-    const includeInput = document.getElementById("includeCurrentRatingLog");
-    if (includeInput) includeInput.checked = false;
   }
 
   renderRatingDayLog();
@@ -1386,6 +1378,21 @@ function deleteRatingDayNote(dayKey = getSelectedLogbookDayKey(), options = {}) 
   refreshMentorGeneratedText();
   if (!options.silent) showRatingDictationStatus(`Logboek verwijderd voor ${formatDayLabel(cleanDayKey)}.`);
   return true;
+}
+
+function improveCurrentRatingLogText() {
+  const textarea = document.getElementById("ratingDayNote");
+  if (!textarea) return;
+
+  const improvedText = polishLogbookText(textarea.value);
+  if (!improvedText) {
+    showRatingDictationStatus("Er staat nog geen tekst om te verbeteren.");
+    return;
+  }
+
+  textarea.value = improvedText;
+  saveCurrentRatingDayNote({ silent: true });
+  showRatingDictationStatus("Spelling en zinsopbouw verbeterd.");
 }
 
 function getSpeechRecognitionConstructor() {
@@ -2222,9 +2229,21 @@ function getIncludedRatingLogs() {
 }
 
 function improveRatingLogText(text) {
+  const improvedText = polishLogbookText(text);
+  if (!improvedText) return "";
+
+  return `Tijdens deze rijdag is genoteerd dat ${improvedText.charAt(0).toLowerCase()}${improvedText.slice(1)}`;
+}
+
+function polishLogbookText(text) {
   const cleanText = String(text || "")
     .replace(/\s+/g, " ")
     .replace(/\s+([,.!?;:])/g, "$1")
+    .replace(/\bik\b/gi, "de chauffeur")
+    .replace(/\bhij\b/gi, "de chauffeur")
+    .replace(/\bzij\b/gi, "de chauffeur")
+    .replace(/\bzn\b/gi, "zijn")
+    .replace(/\bze\b/gi, "de chauffeur")
     .trim();
   if (!cleanText) return "";
 
@@ -2237,8 +2256,7 @@ function improveRatingLogText(text) {
       return /[.!?]$/.test(withCapital) ? withCapital : `${withCapital}.`;
     });
 
-  const improvedText = sentences.join(" ");
-  return `Tijdens deze rijdag is genoteerd dat ${improvedText.charAt(0).toLowerCase()}${improvedText.slice(1)}`;
+  return sentences.join(" ");
 }
 
 function getChecklistMentorSummary() {
@@ -3691,13 +3709,8 @@ function bindEvents() {
     if (dayKey && ratingInput) ratingInput.value = formatDateInputValue(dayKey);
     loadRatingDayNote(dayKey);
   });
-  document.getElementById("includeCurrentRatingLog")?.addEventListener("change", (event) => {
-    const dayKey = getSelectedLogbookDayKey();
-    setRatingLogIncluded(dayKey, event.target.checked && Boolean(document.getElementById("ratingDayNote")?.value.trim()));
-    renderRatingDayLog();
-    refreshMentorGeneratedText();
-  });
   document.getElementById("ratingDayNote")?.addEventListener("input", () => saveCurrentRatingDayNote({ silent: true }));
+  document.getElementById("improveRatingLogBtn")?.addEventListener("click", improveCurrentRatingLogText);
   document.getElementById("saveRatingLogBtn")?.addEventListener("click", saveCurrentRatingDayNote);
   document.getElementById("deleteRatingLogBtn")?.addEventListener("click", () => deleteRatingDayNote());
   document.getElementById("ratingDayLog")?.addEventListener("click", (event) => {
@@ -3709,10 +3722,6 @@ function bindEvents() {
     const input = event.target.closest(".rating-log-include-input");
     if (!input) return;
     setRatingLogIncluded(input.dataset.dayKey, input.checked);
-    if (input.dataset.dayKey === getSelectedLogbookDayKey()) {
-      const currentInput = document.getElementById("includeCurrentRatingLog");
-      if (currentInput) currentInput.checked = input.checked;
-    }
     refreshMentorGeneratedText();
   });
   document.getElementById("ratingDictationBtn")?.addEventListener("click", toggleRatingDictation);
