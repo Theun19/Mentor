@@ -1394,27 +1394,35 @@ async function improveCurrentRatingLogText() {
   if (button) button.disabled = true;
   showRatingDictationStatus("Tekst wordt verbeterd...");
 
-  const improvedText = await improveLogbookTextWithOpenAI(originalText) || polishLogbookText(originalText);
-  if (!improvedText) {
-    showRatingDictationStatus("Er staat nog geen tekst om te verbeteren.");
-    if (button) button.disabled = false;
-    return;
-  }
+  try {
+    const openAiText = await improveLogbookTextWithOpenAI(originalText);
+    const improvedText = openAiText || polishLogbookText(originalText);
+    if (!improvedText) {
+      showRatingDictationStatus("Er staat nog geen tekst om te verbeteren.");
+      return;
+    }
 
-  textarea.value = improvedText;
-  saveCurrentRatingDayNote({ silent: true });
-  showRatingDictationStatus("Spelling en zinsopbouw verbeterd.");
-  if (button) button.disabled = false;
+    textarea.value = improvedText;
+    saveCurrentRatingDayNote({ silent: true });
+    showRatingDictationStatus(openAiText
+      ? "Tekst verbeterd met OpenAI."
+      : "Tekst lokaal verbeterd. Start de OpenAI-server voor betere zinsbouw.");
+  } finally {
+    if (button) button.disabled = false;
+  }
 }
 
 async function improveLogbookTextWithOpenAI(text) {
   if (!text.trim() || window.location.protocol === "file:") return "";
 
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 12000);
   try {
     const response = await fetch("/api/improve-logbook", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
+      signal: controller.signal,
     });
     if (!response.ok) return "";
 
@@ -1422,6 +1430,8 @@ async function improveLogbookTextWithOpenAI(text) {
     return typeof data.text === "string" ? data.text.trim() : "";
   } catch (error) {
     return "";
+  } finally {
+    window.clearTimeout(timeout);
   }
 }
 
@@ -2288,12 +2298,13 @@ function polishLogbookText(text) {
     .trim();
   if (!cleanText) return "";
 
-  const textWithAbbreviations = normalizeLogbookAbbreviations(cleanText);
-  const sentences = textWithAbbreviations
+  const textWithAbbreviations = protectLogbookAbbreviations(normalizeLogbookAbbreviations(cleanText));
+  const sentenceReadyText = addLogbookSentenceBreaks(textWithAbbreviations);
+  const sentences = sentenceReadyText
     .split(/(?<=[.!?])\s+/)
     .map((sentence) => sentence.trim())
     .filter(Boolean)
-    .map(formatLogbookSentence);
+    .map((sentence) => restoreLogbookAbbreviations(formatLogbookSentence(sentence)));
 
   return sentences.join(" ");
 }
@@ -2336,6 +2347,33 @@ function normalizeLogbookAbbreviations(text) {
     .replace(/\bbv\.?\b/gi, "bijv.")
     .replace(/\bbijv(?=\s|$)/gi, "bijv.")
     .replace(/\bnr\.?\b/gi, "nr.");
+}
+
+function protectLogbookAbbreviations(text) {
+  return String(text || "")
+    .replace(/d\.w\.z\./gi, "dwz§")
+    .replace(/i\.v\.m\./gi, "ivm§")
+    .replace(/t\.o\.v\./gi, "tov§")
+    .replace(/m\.b\.t\./gi, "mbt§")
+    .replace(/o\.a\./gi, "oa§")
+    .replace(/bijv\./gi, "bijv§")
+    .replace(/nr\./gi, "nr§");
+}
+
+function restoreLogbookAbbreviations(text) {
+  return String(text || "")
+    .replace(/\bdwz§/gi, "d.w.z.")
+    .replace(/\bivm§/gi, "i.v.m.")
+    .replace(/\btov§/gi, "t.o.v.")
+    .replace(/\bmbt§/gi, "m.b.t.")
+    .replace(/\boa§/gi, "o.a.")
+    .replace(/\bbijv§/gi, "bijv.")
+    .replace(/\bnr§/gi, "nr.");
+}
+
+function addLogbookSentenceBreaks(text) {
+  return String(text || "")
+    .replace(/\s+(daarna|vervolgens|verder|ook|daarbij|hierdoor|hierna)\s+/gi, ". $1 ");
 }
 
 function addLogbookCommas(text) {
