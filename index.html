@@ -281,16 +281,16 @@
                   <h2 class="h5 fw-bold mb-1">Logboek rijdag</h2>
                   <p class="text-secondary mb-0">Beschrijf per rijdag wat er is opgevallen en vink aan wat in de tekst over de chauffeur moet komen.</p>
                 </div>
-                <div class="d-flex flex-wrap align-items-center gap-2">
+                <div class="logbook-date-tools">
                   <input class="form-control form-control-sm rating-date-input" id="logbookDateInput" type="text" inputmode="numeric" placeholder="dd-mm-jjjj" aria-label="Datum logboek" />
                   <span class="text-secondary small" id="ratingLogbookDate">Vandaag</span>
+                  <label class="form-check mb-0">
+                    <input class="form-check-input" id="includeCurrentRatingLog" type="checkbox" />
+                    <span class="form-check-label">Verbeteren en meenemen in tekst over chauffeur</span>
+                  </label>
                 </div>
               </div>
               <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                <label class="form-check mb-0">
-                  <input class="form-check-input" id="includeCurrentRatingLog" type="checkbox" />
-                  <span class="form-check-label">Verbeteren en meenemen in tekst over chauffeur</span>
-                </label>
                 <div class="d-flex flex-wrap gap-2">
                   <button class="btn btn-outline-success btn-sm" id="ratingDictationBtn" type="button" aria-pressed="false">Microfoon</button>
                   <button class="btn btn-success btn-sm" id="saveRatingLogBtn" type="button">Logboek opslaan</button>

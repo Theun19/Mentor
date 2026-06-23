@@ -1166,6 +1166,22 @@ body.signature-editing::after {
   resize: vertical;
 }
 
+.logbook-date-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.logbook-date-tools .form-check {
+  flex-basis: 100%;
+  text-align: right;
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--brand-dark);
+}
+
 .rating-dictation-status {
   min-height: 1.25rem;
   margin-top: 0.35rem;
@@ -2079,6 +2095,16 @@ body.signature-editing::after {
   .rating-logbook textarea {
     min-height: 5.5rem;
     font-size: 0.85rem;
+  }
+
+  .logbook-date-tools {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .logbook-date-tools .form-check {
+    text-align: left;
+    font-size: 0.76rem;
   }
 
   .rating-dictation-status {
