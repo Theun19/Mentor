@@ -1380,19 +1380,49 @@ function deleteRatingDayNote(dayKey = getSelectedLogbookDayKey(), options = {}) 
   return true;
 }
 
-function improveCurrentRatingLogText() {
+async function improveCurrentRatingLogText() {
   const textarea = document.getElementById("ratingDayNote");
   if (!textarea) return;
 
-  const improvedText = polishLogbookText(textarea.value);
+  const originalText = textarea.value.trim();
+  if (!originalText) {
+    showRatingDictationStatus("Er staat nog geen tekst om te verbeteren.");
+    return;
+  }
+
+  const button = document.getElementById("improveRatingLogBtn");
+  if (button) button.disabled = true;
+  showRatingDictationStatus("Tekst wordt verbeterd...");
+
+  const improvedText = await improveLogbookTextWithOpenAI(originalText) || polishLogbookText(originalText);
   if (!improvedText) {
     showRatingDictationStatus("Er staat nog geen tekst om te verbeteren.");
+    if (button) button.disabled = false;
     return;
   }
 
   textarea.value = improvedText;
   saveCurrentRatingDayNote({ silent: true });
   showRatingDictationStatus("Spelling en zinsopbouw verbeterd.");
+  if (button) button.disabled = false;
+}
+
+async function improveLogbookTextWithOpenAI(text) {
+  if (!text.trim() || window.location.protocol === "file:") return "";
+
+  try {
+    const response = await fetch("/api/improve-logbook", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    if (!response.ok) return "";
+
+    const data = await response.json();
+    return typeof data.text === "string" ? data.text.trim() : "";
+  } catch (error) {
+    return "";
+  }
 }
 
 function getSpeechRecognitionConstructor() {
