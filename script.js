@@ -1261,7 +1261,7 @@ function renderRatingDayLog() {
             <div class="rating-day-note-wrap">
               <label class="form-check rating-log-include">
                 <input class="form-check-input rating-log-include-input" type="checkbox" data-day-key="${escapeHtml(dayKey)}" ${checked} />
-                <span class="form-check-label">Meenemen in tekst</span>
+                <span class="form-check-label">Verbeteren en meenemen in tekst</span>
               </label>
               <p class="rating-day-note">${escapeHtml(note)}</p>
               <button class="btn btn-outline-danger btn-sm rating-log-delete" type="button" data-day-key="${escapeHtml(dayKey)}">Verwijder log</button>
@@ -1409,10 +1409,11 @@ function setupRatingDictation() {
   ratingRecognition.continuous = true;
   ratingRecognition.interimResults = true;
 
-  let finalTranscript = "";
+  let finalTranscriptParts = [];
+  const normalizeTranscript = (text) => String(text || "").trim().replace(/\s+/g, " ").toLowerCase();
   ratingRecognition.addEventListener("start", () => {
     ratingRecognitionActive = true;
-    finalTranscript = "";
+    finalTranscriptParts = [];
     button.classList.remove("btn-outline-success");
     button.classList.add("btn-success");
     button.textContent = "Stop microfoon";
@@ -1423,18 +1424,24 @@ function setupRatingDictation() {
   ratingRecognition.addEventListener("result", (event) => {
     let interimTranscript = "";
     for (let index = event.resultIndex; index < event.results.length; index += 1) {
-      const transcript = event.results[index][0]?.transcript || "";
+      const transcript = String(event.results[index][0]?.transcript || "").trim();
+      if (!transcript) continue;
       if (event.results[index].isFinal) {
-        finalTranscript += `${transcript.trim()} `;
+        const normalizedTranscript = normalizeTranscript(transcript);
+        const alreadyAdded = finalTranscriptParts.some((part) => normalizeTranscript(part) === normalizedTranscript);
+        const repeatsPrevious = normalizeTranscript(finalTranscriptParts[finalTranscriptParts.length - 1]) === normalizedTranscript;
+        if (!alreadyAdded && !repeatsPrevious) {
+          finalTranscriptParts.push(transcript);
+        }
       } else {
-        interimTranscript += transcript;
+        interimTranscript = transcript;
       }
     }
 
     const textarea = document.getElementById("ratingDayNote");
     if (!textarea) return;
-    const baseText = textarea.dataset.dictationBase || textarea.value;
-    textarea.value = [baseText, finalTranscript, interimTranscript]
+    const baseText = textarea.dataset.dictationBase || "";
+    textarea.value = [baseText, finalTranscriptParts.join(" "), interimTranscript]
       .map((part) => String(part || "").trim())
       .filter(Boolean)
       .join(" ");
@@ -2210,8 +2217,28 @@ function getIncludedRatingLogs() {
     .slice(-5)
     .map((dayKey) => ({
       dayKey,
-      text: notes[dayKey].trim(),
+      text: improveRatingLogText(notes[dayKey]),
     }));
+}
+
+function improveRatingLogText(text) {
+  const cleanText = String(text || "")
+    .replace(/\s+/g, " ")
+    .replace(/\s+([,.!?;:])/g, "$1")
+    .trim();
+  if (!cleanText) return "";
+
+  const sentences = cleanText
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean)
+    .map((sentence) => {
+      const withCapital = sentence.charAt(0).toUpperCase() + sentence.slice(1);
+      return /[.!?]$/.test(withCapital) ? withCapital : `${withCapital}.`;
+    });
+
+  const improvedText = sentences.join(" ");
+  return `Tijdens deze rijdag is genoteerd dat ${improvedText.charAt(0).toLowerCase()}${improvedText.slice(1)}`;
 }
 
 function getChecklistMentorSummary() {
