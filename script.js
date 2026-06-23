@@ -2258,7 +2258,8 @@ function polishLogbookText(text) {
     .trim();
   if (!cleanText) return "";
 
-  const sentences = cleanText
+  const textWithAbbreviations = normalizeLogbookAbbreviations(cleanText);
+  const sentences = textWithAbbreviations
     .split(/(?<=[.!?])\s+/)
     .map((sentence) => sentence.trim())
     .filter(Boolean)
@@ -2287,11 +2288,35 @@ function formatLogbookSentence(sentence) {
     .replace(/\bRustig\b/g, "rustig")
     .trim();
   const lowerCased = corrected === corrected.toUpperCase() ? corrected.toLowerCase() : corrected;
-  const sentenceCased = lowerCased.charAt(0).toUpperCase() + lowerCased.slice(1);
+  const punctuated = addLogbookCommas(lowerCased);
+  const sentenceCased = punctuated.charAt(0).toUpperCase() + punctuated.slice(1);
   const completed = hasSentenceVerb(sentenceCased) || sentenceCased.split(/\s+/).length > 6
     ? sentenceCased
     : `Observatie: ${sentenceCased.charAt(0).toLowerCase()}${sentenceCased.slice(1)}`;
   return /[.!?]$/.test(completed) ? completed : `${completed}.`;
+}
+
+function normalizeLogbookAbbreviations(text) {
+  return String(text || "")
+    .replace(/\bdwz\.?\b/gi, "d.w.z.")
+    .replace(/\bi\.?v\.?m\.?\b/gi, "i.v.m.")
+    .replace(/\bt\.?o\.?v\.?\b/gi, "t.o.v.")
+    .replace(/\bm\.?b\.?t\.?\b/gi, "m.b.t.")
+    .replace(/\bo\.?a\.?\b/gi, "o.a.")
+    .replace(/\bbv\.?\b/gi, "bijv.")
+    .replace(/\bbijv(?=\s|$)/gi, "bijv.")
+    .replace(/\bnr\.?\b/gi, "nr.");
+}
+
+function addLogbookCommas(text) {
+  return String(text || "")
+    .replace(/\s+(maar|want|dus|terwijl)\s+/gi, ", $1 ")
+    .replace(/^(als|wanneer|omdat|doordat|terwijl)\b([^,.!?]{8,80})\s+(dan|blijft|wordt|is|kan|moet|rijdt|reed|kijkt|remt|stuurt)\b/i, (match, opener, middle, verb) => {
+      return `${opener}${middle}, ${verb}`;
+    })
+    .replace(/,\s*,+/g, ",")
+    .replace(/\s+([,.!?;:])/g, "$1")
+    .replace(/([,.!?;:])(?=\S)/g, "$1 ");
 }
 
 function hasSentenceVerb(sentence) {
