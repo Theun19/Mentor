@@ -1230,6 +1230,22 @@ body.signature-editing::after {
   white-space: pre-wrap;
 }
 
+.rating-day-note-wrap {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.rating-log-include {
+  justify-self: start;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--brand-dark);
+}
+
+.rating-log-delete {
+  justify-self: end;
+}
+
 .rating-progress-table-wrap {
   border-top: 1px solid var(--line);
   padding-top: 0.85rem;
