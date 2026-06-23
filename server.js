@@ -65,10 +65,11 @@ async function handleImproveLogbook(request, response) {
               type: "input_text",
               text: [
                 "Je verbetert Nederlands logboektekst voor een formele mentormap.",
-                "Verbeter spelling, grammatica, interpunctie en zinsbouw.",
+                "Prioriteit: spelling, grammatica en interpunctie 100% corrigeren.",
+                "Zinsconstructie maximaal 60% verbeteren: maak kromme zinnen leesbaarder, maar herschrijf niet onnodig.",
                 "Behoud alle concrete informatie exact: routes, lijnen, namen, fouten, observaties, tijden en volgorde.",
                 "Laat geen inhoud weg, vat niets samen en voeg geen feiten, oordeel of details toe.",
-                "Maak kromme dicteerzinnen wel leesbaar met correcte punten en komma's.",
+                "Behoud zoveel mogelijk de eigen woordkeuze van de mentor.",
                 "Schrijf zakelijk, kort en rapportwaardig, zonder literaire stijl.",
                 "Geef alleen de verbeterde tekst terug.",
               ].join(" "),

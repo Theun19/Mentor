@@ -1406,7 +1406,7 @@ async function improveCurrentRatingLogText() {
     saveCurrentRatingDayNote({ silent: true });
     showRatingDictationStatus(openAiText
       ? "Tekst verbeterd met OpenAI."
-      : "Tekst lokaal verbeterd. Start de OpenAI-server voor betere zinsbouw.");
+      : "Spelling en interpunctie lokaal verbeterd. Start de OpenAI-server voor betere zinsbouw.");
   } finally {
     if (button) button.disabled = false;
   }
@@ -2331,9 +2331,7 @@ function formatLogbookSentence(sentence) {
   const lowerCased = corrected === corrected.toUpperCase() ? corrected.toLowerCase() : corrected;
   const punctuated = addLogbookCommas(lowerCased);
   const sentenceCased = punctuated.charAt(0).toUpperCase() + punctuated.slice(1);
-  const completed = hasSentenceVerb(sentenceCased) || sentenceCased.split(/\s+/).length > 6
-    ? sentenceCased
-    : `Observatie: ${sentenceCased.charAt(0).toLowerCase()}${sentenceCased.slice(1)}`;
+  const completed = sentenceCased;
   return /[.!?]$/.test(completed) ? completed : `${completed}.`;
 }
 
@@ -2373,7 +2371,7 @@ function restoreLogbookAbbreviations(text) {
 
 function addLogbookSentenceBreaks(text) {
   return String(text || "")
-    .replace(/\s+(daarna|vervolgens|verder|ook|daarbij|hierdoor|hierna)\s+/gi, ". $1 ");
+    .replace(/\s+(daarna|vervolgens|hierna)\s+/gi, ". $1 ");
 }
 
 function addLogbookCommas(text) {
