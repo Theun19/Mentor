@@ -1172,6 +1172,23 @@ body.signature-editing::after {
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
+  max-width: 25rem;
+  padding: 0.65rem;
+  border: 1px solid rgba(84, 133, 31, 0.24);
+  border-radius: 8px;
+  background: #f4f9f1;
+}
+
+.logbook-date-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.9rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--brand-dark);
+  font-size: 0.82rem;
+  font-weight: 900;
 }
 
 .logbook-date-tools .form-check {
@@ -1180,6 +1197,9 @@ body.signature-editing::after {
   font-size: 0.84rem;
   font-weight: 800;
   color: var(--brand-dark);
+  padding: 0.35rem 0.45rem 0.35rem 1.9rem;
+  border-radius: 8px;
+  background: #ffffff;
 }
 
 .rating-dictation-status {
@@ -2099,7 +2119,9 @@ body.signature-editing::after {
 
   .logbook-date-tools {
     width: 100%;
+    max-width: none;
     justify-content: flex-start;
+    padding: 0.5rem;
   }
 
   .logbook-date-tools .form-check {
