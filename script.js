@@ -872,7 +872,9 @@ function updateProgress() {
   const checklistTargetProgress = checklistTarget.target
     ? Math.round((checklistDone / checklistTarget.target) * 100)
     : checklistPercentage;
-  const checklistTone = checklistTarget.hasActiveDays
+  const checklistTone = !checklistDone
+    ? "donut-tone-empty"
+    : checklistTarget.hasActiveDays
     ? getChecklistDonutToneClass(checklistTargetProgress)
     : checklistDone
     ? getChecklistDonutToneClass(checklistPercentage)
@@ -884,7 +886,7 @@ function updateProgress() {
   dashboardDonutState.checklist = {
     score: checklistTarget.hasActiveDays ? Math.min(100, checklistTargetProgress) : checklistPercentage,
     tone: checklistTone,
-    hasData: checklistDone > 0 || checklistTarget.hasActiveDays,
+    hasData: checklistDone > 0,
   };
   setDonutProgress("checklistDonut", checklistPercentage, dashboardDonutState.checklist.tone);
   updateTotalDonutHeart(percentage);

@@ -433,15 +433,15 @@ body {
 }
 
 .donut-center.donut-tone-gold {
-  border-color: rgb(132, 83, 0);
+  border-color: rgb(18, 91, 168);
   background:
     radial-gradient(circle at 28% 18%, rgb(255, 255, 255) 0 7%, rgba(255, 255, 255, 0) 18%),
-    linear-gradient(115deg, rgb(98, 61, 0) 0%, rgb(214, 151, 0) 20%, rgb(255, 240, 128) 38%, rgb(184, 118, 0) 56%, rgb(255, 216, 55) 76%, rgb(120, 75, 0) 100%);
+    linear-gradient(135deg, rgb(13, 72, 143) 0%, rgb(38, 126, 222) 42%, rgb(126, 190, 255) 100%);
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.62),
-    inset 0 -0.35rem 0.9rem rgba(84, 48, 0, 0.24),
-    0 0 0.55rem rgba(255, 205, 45, 0.7),
-    0 8px 20px rgba(132, 83, 0, 0.38);
+    inset 0 -0.35rem 0.9rem rgba(10, 62, 130, 0.24),
+    0 0 0.55rem rgba(60, 150, 255, 0.52),
+    0 8px 20px rgba(18, 91, 168, 0.34);
 }
 
 .donut-center.donut-tone-red strong,
@@ -2780,8 +2780,8 @@ body.signature-editing::after {
   }
 
   .print-donut-svg.donut-tone-gold .print-donut-heart {
-    fill: rgb(214, 151, 0);
-    stroke: rgb(132, 83, 0);
+    fill: rgb(38, 126, 222);
+    stroke: rgb(18, 91, 168);
     stroke-width: 3;
   }
 
