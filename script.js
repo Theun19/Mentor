@@ -2266,7 +2266,52 @@ function polishLogbookText(text) {
       return /[.!?]$/.test(withCapital) ? withCapital : `${withCapital}.`;
     });
 
-  return sentences.join(" ");
+  return beautifyLogbookText(sentences.join(" "));
+}
+
+function beautifyLogbookText(text) {
+  const cleanText = String(text || "").trim();
+  const lowerText = cleanText.toLowerCase();
+
+  const observations = [
+    {
+      pattern: /\b(rustig|rustiger|ontspannen|kalm)\b/,
+      text: "Er is een rustiger rijbeeld geconstateerd. De handelingen worden beheerster uitgevoerd.",
+    },
+    {
+      pattern: /\b(kijk|kijken|vooruit|spiegels|verkeersinzicht)\b/,
+      text: "Het verkeersinzicht laat verbetering zien. De chauffeur kijkt verder vooruit en herkent situaties tijdiger.",
+    },
+    {
+      pattern: /\b(bocht|bochten|sturen|stuur)\b/,
+      text: "De stuurbeheersing en het nemen van bochten zijn verbeterd. De uitvoering is gecontroleerder.",
+    },
+    {
+      pattern: /\b(rem|remmen|remt|stop|stoppen)\b/,
+      text: "Het remgedrag is beheerster. De chauffeur doseert beter bij haltes en verkeerssituaties.",
+    },
+    {
+      pattern: /\b(halte|haltes|instap|uitstap|klant|klantvriendelijk)\b/,
+      text: "De klantgerichtheid is positief beoordeeld. Bij haltes is meer aandacht voor reizigers zichtbaar.",
+    },
+    {
+      pattern: /\b(onzeker|twijfel|angstvallig)\b/,
+      text: "Er is nog onzekerheid zichtbaar. Verdere begeleiding blijft gewenst om het vertrouwen en de zelfstandigheid te vergroten.",
+    },
+    {
+      pattern: /\b(lichtzinnig|roekeloos|snel|haast)\b/,
+      text: "Er is een aandachtspunt geconstateerd in dosering en snelheid. Een rustiger en voorspelbaarder rijstijl blijft noodzakelijk.",
+    },
+  ];
+
+  const matchingObservation = observations.find((item) => item.pattern.test(lowerText));
+  if (matchingObservation) return matchingObservation.text;
+
+  if (cleanText.length < 90) {
+    return `Tijdens deze rijdag is het volgende vastgesteld: ${cleanText.charAt(0).toLowerCase()}${cleanText.slice(1)}`;
+  }
+
+  return cleanText;
 }
 
 function completeShortLogbookText(text) {
