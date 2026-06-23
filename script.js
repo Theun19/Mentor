@@ -2248,6 +2248,8 @@ function polishLogbookText(text) {
   const cleanText = String(text || "")
     .replace(/\s+/g, " ")
     .replace(/\s+([,.!?;:])/g, "$1")
+    .replace(/([,.!?;:])(?=\S)/g, "$1 ")
+    .replace(/\s+([,.!?;:])/g, "$1")
     .replace(/\bzn\b/gi, "zijn")
     .replace(/\bme\b/gi, "mijn")
     .replace(/\bgebeurd\b/gi, "gebeurt")
@@ -2260,12 +2262,40 @@ function polishLogbookText(text) {
     .split(/(?<=[.!?])\s+/)
     .map((sentence) => sentence.trim())
     .filter(Boolean)
-    .map((sentence) => {
-      const withCapital = sentence.charAt(0).toUpperCase() + sentence.slice(1);
-      return /[.!?]$/.test(withCapital) ? withCapital : `${withCapital}.`;
-    });
+    .map(formatLogbookSentence);
 
   return sentences.join(" ");
+}
+
+function formatLogbookSentence(sentence) {
+  const preserveUppercaseWords = new Set(["MAT", "ROV", "RRR", "AFAS", "OV"]);
+  const corrected = sentence
+    .replace(/\b[A-ZÁÉÍÓÚÜÄËÏÖ]{2,}\b/g, (word) => (preserveUppercaseWords.has(word) ? word : word.toLowerCase()))
+    .replace(/\bEn\b/g, "en")
+    .replace(/\bMaar\b/g, "maar")
+    .replace(/\bWant\b/g, "want")
+    .replace(/\bOmdat\b/g, "omdat")
+    .replace(/\bDus\b/g, "dus")
+    .replace(/\bOok\b/g, "ook")
+    .replace(/\bRijdt\b/g, "rijdt")
+    .replace(/\bReed\b/g, "reed")
+    .replace(/\bKijkt\b/g, "kijkt")
+    .replace(/\bRemt\b/g, "remt")
+    .replace(/\bStuurt\b/g, "stuurt")
+    .replace(/\bGoed\b/g, "goed")
+    .replace(/\bBeter\b/g, "beter")
+    .replace(/\bRustig\b/g, "rustig")
+    .trim();
+  const lowerCased = corrected === corrected.toUpperCase() ? corrected.toLowerCase() : corrected;
+  const sentenceCased = lowerCased.charAt(0).toUpperCase() + lowerCased.slice(1);
+  const completed = hasSentenceVerb(sentenceCased) || sentenceCased.split(/\s+/).length > 6
+    ? sentenceCased
+    : `Observatie: ${sentenceCased.charAt(0).toLowerCase()}${sentenceCased.slice(1)}`;
+  return /[.!?]$/.test(completed) ? completed : `${completed}.`;
+}
+
+function hasSentenceVerb(sentence) {
+  return /\b(is|zijn|was|waren|heeft|hebben|had|rijdt|reed|kijkt|keek|remt|remde|stuurt|stuurde|neemt|nam|laat|liet|toont|toonde|kan|moet|blijft|werd|wordt|gaat|ging|komt|kwam|pakt|pakte|maakt|maakte)\b/i.test(sentence);
 }
 
 function getChecklistMentorSummary() {
