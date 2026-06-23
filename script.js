@@ -2248,16 +2248,15 @@ function polishLogbookText(text) {
   const cleanText = String(text || "")
     .replace(/\s+/g, " ")
     .replace(/\s+([,.!?;:])/g, "$1")
-    .replace(/\bik\b/gi, "de chauffeur")
-    .replace(/\bhij\b/gi, "de chauffeur")
-    .replace(/\bzij\b/gi, "de chauffeur")
     .replace(/\bzn\b/gi, "zijn")
-    .replace(/\bze\b/gi, "de chauffeur")
+    .replace(/\bme\b/gi, "mijn")
+    .replace(/\bgebeurd\b/gi, "gebeurt")
+    .replace(/\bverkeers inzicht\b/gi, "verkeersinzicht")
+    .replace(/\bklant vriendelijk\b/gi, "klantvriendelijk")
     .trim();
   if (!cleanText) return "";
 
-  const sentenceSource = completeShortLogbookText(cleanText);
-  const sentences = sentenceSource
+  const sentences = cleanText
     .split(/(?<=[.!?])\s+/)
     .map((sentence) => sentence.trim())
     .filter(Boolean)
@@ -2266,68 +2265,7 @@ function polishLogbookText(text) {
       return /[.!?]$/.test(withCapital) ? withCapital : `${withCapital}.`;
     });
 
-  return beautifyLogbookText(sentences.join(" "));
-}
-
-function beautifyLogbookText(text) {
-  const cleanText = String(text || "").trim();
-  const lowerText = cleanText.toLowerCase();
-
-  const observations = [
-    {
-      pattern: /\b(rustig|rustiger|ontspannen|kalm)\b/,
-      text: "Er is een rustiger rijbeeld geconstateerd. De handelingen worden beheerster uitgevoerd.",
-    },
-    {
-      pattern: /\b(kijk|kijken|vooruit|spiegels|verkeersinzicht)\b/,
-      text: "Het verkeersinzicht laat verbetering zien. De chauffeur kijkt verder vooruit en herkent situaties tijdiger.",
-    },
-    {
-      pattern: /\b(bocht|bochten|sturen|stuur)\b/,
-      text: "De stuurbeheersing en het nemen van bochten zijn verbeterd. De uitvoering is gecontroleerder.",
-    },
-    {
-      pattern: /\b(rem|remmen|remt|stop|stoppen)\b/,
-      text: "Het remgedrag is beheerster. De chauffeur doseert beter bij haltes en verkeerssituaties.",
-    },
-    {
-      pattern: /\b(halte|haltes|instap|uitstap|klant|klantvriendelijk)\b/,
-      text: "De klantgerichtheid is positief beoordeeld. Bij haltes is meer aandacht voor reizigers zichtbaar.",
-    },
-    {
-      pattern: /\b(onzeker|twijfel|angstvallig)\b/,
-      text: "Er is nog onzekerheid zichtbaar. Verdere begeleiding blijft gewenst om het vertrouwen en de zelfstandigheid te vergroten.",
-    },
-    {
-      pattern: /\b(lichtzinnig|roekeloos|snel|haast)\b/,
-      text: "Er is een aandachtspunt geconstateerd in dosering en snelheid. Een rustiger en voorspelbaarder rijstijl blijft noodzakelijk.",
-    },
-  ];
-
-  const matchingObservation = observations.find((item) => item.pattern.test(lowerText));
-  if (matchingObservation) return matchingObservation.text;
-
-  if (cleanText.length < 90) {
-    return `Tijdens deze rijdag is het volgende vastgesteld: ${cleanText.charAt(0).toLowerCase()}${cleanText.slice(1)}`;
-  }
-
-  return cleanText;
-}
-
-function completeShortLogbookText(text) {
-  const words = text.split(/\s+/).filter(Boolean);
-  if (/[.!?]$/.test(text) || words.length >= 7) return text;
-
-  const lowerText = text.toLowerCase();
-  if (/^(goed|beter|rustig|netjes|voldoende|stabiel|onzeker|lichtzinnig|roekeloos|angstvallig)\b/.test(lowerText)) {
-    return `De chauffeur reed ${lowerText}`;
-  }
-
-  if (!/\b(chauffeur|rijdt|reed|heeft|is|kan|moet|laat|toont|kijkt|remt|stuurt)\b/i.test(text)) {
-    return `De chauffeur laat verbetering zien bij ${lowerText}`;
-  }
-
-  return text;
+  return sentences.join(" ");
 }
 
 function getChecklistMentorSummary() {
