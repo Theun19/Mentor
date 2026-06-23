@@ -3781,7 +3781,9 @@ function bindEvents() {
   document.getElementById("chartZoom").addEventListener("click", (event) => {
     if (event.target.id === "chartZoom") closeChartZoom();
   });
-  document.getElementById("lineSummaryBtn").addEventListener("click", openLineSummary);
+  document.querySelectorAll("[data-dashboard-section]").forEach((button) => {
+    button.addEventListener("click", () => showSection(button.dataset.dashboardSection));
+  });
   document.getElementById("lineSummaryClose").addEventListener("click", closeLineSummary);
   document.getElementById("lineSummaryModal").addEventListener("click", (event) => {
     if (event.target.id === "lineSummaryModal") closeLineSummary();
