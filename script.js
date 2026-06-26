@@ -1393,11 +1393,8 @@ async function improveCurrentLogbookSpelling() {
     return;
   }
 
-  let improvedText = "";
-  if (window.confirm("Deze spellingcontrole stuurt de logboektekst naar een online spellingdienst. Doorgaan?")) {
-    showRatingDictationStatus("Online spellingcontrole bezig...");
-    improvedText = await improveLogbookTextOnline(originalText);
-  }
+  showRatingDictationStatus("Online spellingcontrole bezig...");
+  let improvedText = await improveLogbookTextOnline(originalText);
 
   if (!improvedText) {
     improvedText = improveLogbookSpellingAndSentences(originalText);
