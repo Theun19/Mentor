@@ -1394,8 +1394,15 @@ function improveCurrentLogbookSpelling() {
   }
 
   const improvedText = improveLogbookSpellingAndSentences(originalText);
+  if (improvedText === originalText) {
+    showRatingDictationStatus("Geen duidelijke spelling- of zinsbouwfouten gevonden.");
+    return;
+  }
+
   textarea.value = improvedText;
   saveCurrentRatingDayNote({ silent: true });
+  renderRatingDayLog();
+  refreshMentorGeneratedText();
   showRatingDictationStatus("Spelling en zinsopbouw verbeterd.");
 }
 
@@ -1404,11 +1411,45 @@ function improveLogbookSpellingAndSentences(text) {
     .replace(/\s+/g, " ")
     .replace(/\s+([,.!?;:])/g, "$1")
     .replace(/([,.!?;:])(?=\S)/g, "$1 ")
+    .replace(/\bchauffeuren\b/gi, "chauffeurs")
+    .replace(/\bchauffuer\b/gi, "chauffeur")
+    .replace(/\bchauf(?:f)?eur\b/gi, "chauffeur")
+    .replace(/\bmentoor\b/gi, "mentor")
+    .replace(/\brijlesdag\b/gi, "rijdag")
+    .replace(/\brij dag\b/gi, "rijdag")
+    .replace(/\bverkeers inzicht\b/gi, "verkeersinzicht")
+    .replace(/\bverkeersinsicht\b/gi, "verkeersinzicht")
+    .replace(/\bklant vriendelijk\b/gi, "klantvriendelijk")
+    .replace(/\bklantvriendelijkheid\b/gi, "klantvriendelijkheid")
+    .replace(/\bzelfverzeker[dt]\b/gi, "zelfverzekerd")
+    .replace(/\bzelfverekerd\b/gi, "zelfverzekerd")
+    .replace(/\bangstvali+g\b/gi, "angstvallig")
+    .replace(/\blichtzinnig\b/gi, "lichtzinnig")
+    .replace(/\broekeloos\b/gi, "roekeloos")
+    .replace(/\bovermoedig\b/gi, "lichtzinnig")
+    .replace(/\bveder\b/gi, "slider")
+    .replace(/\bveders\b/gi, "sliders")
+    .replace(/\bcolom\b/gi, "kolom")
+    .replace(/\bkollom\b/gi, "kolom")
+    .replace(/\bkollomen\b/gi, "kolommen")
+    .replace(/\bgeev\b/gi, "geen")
+    .replace(/\bgeevn\b/gi, "geven")
+    .replace(/\bgevenss\b/gi, "gegevens")
+    .replace(/\bgegens\b/gi, "gegevens")
+    .replace(/\bopgeslagen\b/gi, "opgeslagen")
+    .replace(/\bopgelsagen\b/gi, "opgeslagen")
+    .replace(/\bafgevinkt\b/gi, "afgevinkt")
+    .replace(/\bafgevingt\b/gi, "afgevinkt")
+    .replace(/\bverbeteren\b/gi, "verbeteren")
+    .replace(/\bverbeeren\b/gi, "verbeteren")
     .replace(/\bzn\b/gi, "zijn")
     .replace(/\bme\b/gi, "mijn")
+    .replace(/\bhij heb\b/gi, "hij heeft")
+    .replace(/\bhij kan\b/gi, "hij kan")
+    .replace(/\bde chauffeur heb\b/gi, "de chauffeur heeft")
     .replace(/\bgebeurd\b/gi, "gebeurt")
-    .replace(/\bverkeers inzicht\b/gi, "verkeersinzicht")
-    .replace(/\bklant vriendelijk\b/gi, "klantvriendelijk")
+    .replace(/\bword\b/gi, "wordt")
+    .replace(/\bwerdt\b/gi, "werd")
     .replace(/\bi\.?v\.?m\.?\b/gi, "i.v.m.")
     .replace(/\bt\.?o\.?v\.?\b/gi, "t.o.v.")
     .replace(/\bm\.?b\.?t\.?\b/gi, "m.b.t.")
@@ -1426,7 +1467,8 @@ function improveLogbookSpellingAndSentences(text) {
 
   const sentenceText = protectedText
     .replace(/\s+(daarna|vervolgens|hierna)\s+/gi, ". $1 ")
-    .replace(/\s+(maar|want|dus|terwijl)\s+/gi, ", $1 ");
+    .replace(/\s+(maar|want|dus|terwijl)\s+/gi, ", $1 ")
+    .replace(/\s+(omdat)\s+/gi, ", $1 ");
 
   return sentenceText
     .split(/(?<=[.!?])\s+/)
@@ -1440,6 +1482,8 @@ function improveLogbookSpellingAndSentences(text) {
     .replace(/\boa§/gi, "o.a.")
     .replace(/\bbijv§/gi, "bijv.");
 }
+
+window.improveCurrentLogbookSpelling = improveCurrentLogbookSpelling;
 
 function formatImprovedLogbookSentence(sentence) {
   const keepUppercase = new Set(["MAT", "ROV", "RRR", "AFAS", "OV"]);
