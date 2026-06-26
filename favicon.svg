@@ -1,8 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#54851f"/>
-  <path fill="#ffffff" d="M120 172c0-38 31-69 69-69h134c38 0 69 31 69 69v145c0 22-18 40-40 40h-10v31c0 12-10 22-22 22s-22-10-22-22v-31h-84v31c0 12-10 22-22 22s-22-10-22-22v-31h-10c-22 0-40-18-40-40V172Z"/>
-  <path fill="#54851f" d="M166 181c0-18 14-32 32-32h116c18 0 32 14 32 32v58H166v-58Z"/>
-  <circle cx="188" cy="300" r="24" fill="#54851f"/>
-  <circle cx="324" cy="300" r="24" fill="#54851f"/>
-  <path fill="none" stroke="#b82f2f" stroke-linecap="round" stroke-linejoin="round" stroke-width="34" d="m180 122 45-44 53 47 82-83"/>
+  <rect width="512" height="512" rx="96" fill="#009CDE"/>
+  <path fill="#7FBA24" d="M83 405c99-61 213-69 346-25-106-7-205 5-317 86l-29-61Z"/>
+  <text x="256" y="302" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="168" font-weight="900" letter-spacing="-12" fill="#fff">FNV</text>
 </svg>

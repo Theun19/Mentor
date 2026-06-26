@@ -3,8 +3,8 @@
   "short_name": "Mentormap",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f5f7f4",
-  "theme_color": "#54851f",
+  "background_color": "#eef6fb",
+  "theme_color": "#009CDE",
   "icons": [
     {
       "src": "./favicon.svg",

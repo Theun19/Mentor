@@ -1,16 +1,17 @@
 :root {
-  --app-bg: #f3f6f1;
+  --app-bg: #eef6fb;
   --panel: #ffffff;
-  --ink: #18241c;
-  --muted: #647066;
-  --line: #dce5dc;
-  --brand: #54851f;
-  --brand-dark: #385f15;
-  --brand-soft: #eef6e8;
+  --ink: #172536;
+  --muted: #5c6d7b;
+  --line: #d8e6ee;
+  --brand: #009cde;
+  --brand-dark: #006c9e;
+  --brand-soft: #e5f5fc;
+  --brand-accent: #7fba24;
   --warning-soft: #fff8e6;
-  --accent: #b82f2f;
-  --shadow-sm: 0 6px 16px rgba(33, 47, 35, 0.06);
-  --shadow-md: 0 14px 32px rgba(33, 47, 35, 0.09);
+  --accent: #7fba24;
+  --shadow-sm: 0 6px 16px rgba(23, 37, 54, 0.06);
+  --shadow-md: 0 14px 32px rgba(23, 37, 54, 0.09);
 }
 
 * {
@@ -63,17 +64,17 @@ body.auth-locked .auth-screen {
   border-radius: 8px;
   background: #ffffff;
   padding: 1.35rem;
-  box-shadow: 0 24px 60px rgba(33, 47, 35, 0.16);
+  box-shadow: 0 24px 60px rgba(23, 37, 54, 0.16);
 }
 
 .app-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid rgba(220, 229, 220, 0.85);
+  border-bottom: 1px solid rgba(216, 230, 238, 0.85);
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(14px);
-  box-shadow: 0 8px 26px rgba(33, 47, 35, 0.06);
+  box-shadow: 0 8px 26px rgba(23, 37, 54, 0.06);
 }
 
 .app-topbar {
@@ -133,7 +134,7 @@ body.auth-locked .auth-screen {
 }
 
 .translate-select {
-  border-color: rgba(84, 133, 31, 0.35);
+  border-color: rgba(0, 156, 222, 0.35);
   color: var(--ink);
   font-weight: 700;
 }
@@ -141,6 +142,14 @@ body.auth-locked .auth-screen {
 .btn {
   border-radius: 7px;
   font-weight: 700;
+}
+
+.text-success {
+  color: var(--brand) !important;
+}
+
+.bg-success {
+  background-color: var(--brand) !important;
 }
 
 .btn-success {
@@ -155,7 +164,7 @@ body.auth-locked .auth-screen {
 }
 
 .btn-outline-success {
-  border-color: #8eb96f;
+  border-color: rgba(0, 156, 222, 0.42);
   color: var(--brand-dark);
 }
 
@@ -168,14 +177,14 @@ body.auth-locked .auth-screen {
 
 .form-control,
 .form-select {
-  border-color: #cfdacf;
+  border-color: #d8e6ee;
   border-radius: 7px;
 }
 
 .form-control:focus,
 .form-select:focus {
-  border-color: #8eb96f;
-  box-shadow: 0 0 0 0.18rem rgba(84, 133, 31, 0.16);
+  border-color: #009CDE;
+  box-shadow: 0 0 0 0.18rem rgba(0, 156, 222, 0.16);
 }
 
 .google-translate-element,
@@ -245,7 +254,7 @@ body {
   border-radius: 999px;
   color: var(--brand-dark);
   background: var(--brand-soft);
-  border: 1px solid #cfe2c1;
+  border: 1px solid #b9dff0;
   font-weight: 700;
   font-size: 0.88rem;
 }
@@ -253,7 +262,7 @@ body {
 .checklist-progress {
   height: 0.8rem;
   border-radius: 999px;
-  background: #e5ece2;
+  background: #d8e6ee;
 }
 
 .dashboard-panel {
@@ -269,7 +278,7 @@ body {
   position: absolute;
   inset: 0 0 auto;
   height: 0.35rem;
-  background: linear-gradient(90deg, var(--brand), #87a94b, #b82f2f);
+  background: linear-gradient(90deg, var(--brand), #7FBA24, #7FBA24);
 }
 
 .dashboard-panel > * {
@@ -293,7 +302,7 @@ body {
 
 .chart-card {
   height: 100%;
-  border: 1px solid rgba(84, 133, 31, 0.2);
+  border: 1px solid rgba(0, 156, 222, 0.2);
   border-radius: 8px;
   padding: 1rem;
   background: rgba(255, 255, 255, 0.88);
@@ -327,15 +336,15 @@ body {
   width: 100%;
   color: inherit;
   font: inherit;
-  border-color: rgba(84, 133, 31, 0.2);
+  border-color: rgba(0, 156, 222, 0.2);
   cursor: pointer;
   transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
 }
 
 .dashboard-donut-button:hover,
 .dashboard-donut-button:focus-visible {
-  border-color: #b7d3a5;
-  background: #f4f9ef;
+  border-color: #9ed9f2;
+  background: #e5f5fc;
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
   outline: none;
@@ -365,8 +374,8 @@ body {
   aspect-ratio: 1;
   margin-inline: auto;
   border-radius: 50%;
-  background: conic-gradient(var(--brand) 0deg, var(--brand) 0deg, #e5ece2 0deg);
-  box-shadow: inset 0 0 0 1px rgba(84, 133, 31, 0.14), 0 14px 30px rgba(56, 95, 21, 0.12);
+  background: conic-gradient(var(--brand) 0deg, var(--brand) 0deg, #d8e6ee 0deg);
+  box-shadow: inset 0 0 0 1px rgba(0, 156, 222, 0.14), 0 14px 30px rgba(0, 108, 158, 0.12);
 }
 
 .donut-center {
@@ -375,10 +384,10 @@ body {
   width: 68%;
   aspect-ratio: 1;
   border-radius: 50%;
-  background: linear-gradient(180deg, #ffffff, #f7faf5);
+  background: linear-gradient(180deg, #ffffff, #f4fbff);
   border: 3px solid rgba(24, 36, 28, 0.08);
   text-align: center;
-  box-shadow: 0 6px 18px rgba(33, 47, 35, 0.1);
+  box-shadow: 0 6px 18px rgba(23, 37, 54, 0.1);
   transition: background 0.18s ease, color 0.18s ease;
 }
 
@@ -395,8 +404,8 @@ body {
 }
 
 .donut-center.donut-tone-empty {
-  border-color: rgb(220, 229, 220);
-  background: linear-gradient(180deg, rgb(255, 255, 255), rgb(247, 250, 245));
+  border-color: rgb(216, 230, 238);
+  background: linear-gradient(180deg, rgb(255, 255, 255), rgb(244, 251, 255));
 }
 
 .donut-center.donut-tone-red {
@@ -482,14 +491,14 @@ body {
   height: 0.72rem;
   border-radius: 999px;
   background: #e8eee5;
-  box-shadow: inset 0 1px 2px rgba(33, 47, 35, 0.08);
+  box-shadow: inset 0 1px 2px rgba(23, 37, 54, 0.08);
   overflow: hidden;
 }
 
 .chart-bar-fill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--brand), #7aa13e);
+  background: linear-gradient(90deg, var(--brand), var(--brand-accent));
 }
 
 .rating-chart {
@@ -515,7 +524,7 @@ body {
 }
 
 .line-chart-item:focus-visible {
-  outline: 3px solid #b7d3a5;
+  outline: 3px solid #9ed9f2;
   outline-offset: 3px;
 }
 
@@ -542,11 +551,11 @@ body {
 
 .balance-legend summary {
   list-style: none;
-  border: 1px solid #cfe2c1;
+  border: 1px solid #b9dff0;
   border-radius: 999px;
   padding: 0.12rem 0.45rem;
   color: var(--brand-dark);
-  background: #eef6e8;
+  background: #e5f5fc;
   font-size: 0.66rem;
   font-weight: 900;
   cursor: pointer;
@@ -569,7 +578,7 @@ body {
   padding: 0.5rem;
   color: var(--ink);
   background: #ffffff;
-  box-shadow: 0 10px 24px rgba(33, 47, 35, 0.14);
+  box-shadow: 0 10px 24px rgba(23, 37, 54, 0.14);
   font-size: 0.72rem;
   text-align: left;
 }
@@ -582,9 +591,9 @@ body {
 
 .line-chart-frame {
   height: 6rem;
-  border: 1px solid rgba(84, 133, 31, 0.18);
+  border: 1px solid rgba(0, 156, 222, 0.18);
   border-radius: 8px;
-  background: linear-gradient(180deg, #ffffff, #f8fbf6);
+  background: linear-gradient(180deg, #ffffff, #f4fbff);
   overflow: hidden;
 }
 
@@ -595,7 +604,7 @@ body {
 }
 
 .line-chart-grid {
-  stroke: #dfe8db;
+  stroke: #d8e6ee;
   stroke-width: 1;
 }
 
@@ -677,10 +686,10 @@ body {
   align-items: center;
   gap: 0.2rem;
   padding: 0.14rem 0.38rem;
-  border: 1px solid #cfe2c1;
+  border: 1px solid #b9dff0;
   border-radius: 999px;
   color: var(--brand-dark);
-  background: #eef6e8;
+  background: #e5f5fc;
   font-size: 0.66rem;
   font-weight: 800;
 }
@@ -763,7 +772,7 @@ body {
   display: block;
   width: 100%;
   min-height: 5rem;
-  border: 1px solid rgba(84, 133, 31, 0.18);
+  border: 1px solid rgba(0, 156, 222, 0.18);
   border-radius: 8px;
   padding: 0.85rem;
   background: linear-gradient(180deg, #ffffff, #f6faf4);
@@ -787,8 +796,8 @@ body {
 
 .metric-button:hover,
 .metric-button:focus-visible {
-  border-color: #b7d3a5;
-  background: #f4f9ef;
+  border-color: #9ed9f2;
+  background: #e5f5fc;
   transform: translateY(-2px);
   outline: none;
 }
@@ -846,9 +855,9 @@ body {
 }
 
 .line-state.done {
-  border-color: #cfe2c1;
+  border-color: #b9dff0;
   color: var(--brand-dark);
-  background: #eef6e8;
+  background: #e5f5fc;
 }
 
 .signature-box {
@@ -856,7 +865,7 @@ body {
   border-radius: 8px;
   padding: 0.75rem;
   background: #fbfcfa;
-  box-shadow: 0 3px 10px rgba(33, 47, 35, 0.035);
+  box-shadow: 0 3px 10px rgba(23, 37, 54, 0.035);
 }
 
 .signature-section {
@@ -870,10 +879,10 @@ body {
 }
 
 .signature-meta div {
-  border: 1px solid #cfe2c1;
+  border: 1px solid #b9dff0;
   border-radius: 8px;
   padding: 0.55rem 0.7rem;
-  background: #eef6e8;
+  background: #e5f5fc;
 }
 
 .signature-meta span {
@@ -979,7 +988,7 @@ body.signature-editing::after {
 
 .checklist-panel .panel-heading {
   border-bottom: 1px solid var(--line);
-  background: linear-gradient(180deg, #ffffff, #f7faf5);
+  background: linear-gradient(180deg, #ffffff, #f4fbff);
 }
 
 .form-check-input:checked {
@@ -1017,7 +1026,7 @@ body.signature-editing::after {
 .task-note:focus {
   max-width: 34rem;
   flex-basis: 34rem;
-  box-shadow: 0 0 0 0.18rem rgba(84, 133, 31, 0.12);
+  box-shadow: 0 0 0 0.18rem rgba(0, 156, 222, 0.12);
 }
 
 .rating-row {
@@ -1025,7 +1034,7 @@ body.signature-editing::after {
   border-radius: 8px;
   padding: 1rem;
   background: linear-gradient(180deg, #ffffff, #fbfdf9);
-  box-shadow: 0 3px 10px rgba(33, 47, 35, 0.035);
+  box-shadow: 0 3px 10px rgba(23, 37, 54, 0.035);
 }
 
 .rating-label {
@@ -1176,9 +1185,9 @@ body.signature-editing::after {
   gap: 0.5rem;
   max-width: 25rem;
   padding: 0.65rem;
-  border: 1px solid rgba(84, 133, 31, 0.24);
+  border: 1px solid rgba(0, 156, 222, 0.24);
   border-radius: 8px;
-  background: #f4f9f1;
+  background: #e5f5fc;
 }
 
 .logbook-date-label {
@@ -1339,7 +1348,7 @@ body.signature-editing::after {
   width: 13rem;
   min-width: 13rem;
   color: var(--ink);
-  background: #eef6e8;
+  background: #e5f5fc;
   text-align: left;
   white-space: normal;
 }
@@ -1378,7 +1387,7 @@ body.signature-editing::after {
 }
 
 .rating-table-date-cell.date-picker-open {
-  box-shadow: inset 0 0 0 2px #ffffff, inset 0 0 0 4px rgba(84, 133, 31, 0.5);
+  box-shadow: inset 0 0 0 2px #ffffff, inset 0 0 0 4px rgba(0, 156, 222, 0.5);
 }
 
 .rating-date-close {
@@ -1393,7 +1402,7 @@ body.signature-editing::after {
   border: 1px solid rgba(255, 255, 255, 0.75);
   border-radius: 999px;
   color: #ffffff;
-  background: rgba(33, 47, 35, 0.34);
+  background: rgba(23, 37, 54, 0.34);
   font-size: 0.78rem;
   font-weight: 900;
   line-height: 1;
@@ -1594,7 +1603,7 @@ body.signature-editing::after {
   border-radius: 8px;
   padding: 0.55rem 0.7rem;
   background: linear-gradient(180deg, #ffffff, #fbfdf9);
-  box-shadow: 0 3px 10px rgba(33, 47, 35, 0.035);
+  box-shadow: 0 3px 10px rgba(23, 37, 54, 0.035);
 }
 
 .line-status-card.done {
@@ -1644,7 +1653,7 @@ body.signature-editing::after {
   border-radius: 999px;
   padding: 0.1rem 0.5rem;
   color: var(--brand-dark);
-  background: #eef6e8;
+  background: #e5f5fc;
   font-size: 0.78rem;
   font-weight: 900;
 }
@@ -1672,7 +1681,7 @@ body.signature-editing::after {
   border-radius: 8px;
   padding: 0.75rem;
   background: #ffffff;
-  box-shadow: 0 6px 14px rgba(33, 47, 35, 0.04);
+  box-shadow: 0 6px 14px rgba(23, 37, 54, 0.04);
   transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
 }
 
@@ -1757,7 +1766,7 @@ body.signature-editing::after {
 
 .line-toggle:hover,
 .line-check:focus-visible + .line-toggle {
-  border-color: #b7d3a5;
+  border-color: #9ed9f2;
   color: var(--brand-dark);
   transform: translateY(-1px);
 }
@@ -1786,9 +1795,9 @@ body.signature-editing::after {
 }
 
 .website-link:hover {
-  border-color: #b7d3a5;
+  border-color: #9ed9f2;
   color: var(--brand-dark);
-  background: #f4f9ef;
+  background: #e5f5fc;
   transform: translateY(-1px);
 }
 
@@ -1876,7 +1885,7 @@ body.signature-editing::after {
   .section-panel,
   .checklist-panel {
     border-radius: 7px;
-    box-shadow: 0 4px 12px rgba(33, 47, 35, 0.05);
+    box-shadow: 0 4px 12px rgba(23, 37, 54, 0.05);
   }
 
   .overview-panel,
@@ -1890,7 +1899,7 @@ body.signature-editing::after {
 
   .chart-card {
     padding: 0.7rem;
-    box-shadow: 0 4px 12px rgba(33, 47, 35, 0.05);
+    box-shadow: 0 4px 12px rgba(23, 37, 54, 0.05);
   }
 
   .chart-title {
@@ -1933,7 +1942,7 @@ body.signature-editing::after {
   .metric-box {
     min-height: 3.65rem;
     padding: 0.55rem 0.55rem 0.55rem 0.75rem;
-    box-shadow: 0 4px 12px rgba(33, 47, 35, 0.05);
+    box-shadow: 0 4px 12px rgba(23, 37, 54, 0.05);
   }
 
   .metric-value {
@@ -2297,14 +2306,14 @@ body.signature-editing::after {
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
-    border-bottom: 2px solid #54851f;
+    border-bottom: 2px solid #009CDE;
     padding-bottom: 0.35rem;
     margin-bottom: 0.4rem;
   }
 
   .print-summary-header p {
     margin: 0 0 0.1rem;
-    color: #54851f;
+    color: #009CDE;
     font-size: 8pt;
     font-weight: 700;
     text-transform: uppercase;
@@ -2339,7 +2348,7 @@ body.signature-editing::after {
 
   .print-panel h2 {
     margin: 0 0 0.25rem;
-    color: #385f15;
+    color: #006C9E;
     font-size: 10pt;
     font-weight: 800;
   }
@@ -2381,7 +2390,7 @@ body.signature-editing::after {
   }
 
   .print-progress strong {
-    color: #385f15;
+    color: #006C9E;
     font-size: 20pt;
     line-height: 1;
   }
@@ -2410,7 +2419,7 @@ body.signature-editing::after {
   }
 
   .print-metrics strong {
-    color: #385f15;
+    color: #006C9E;
     font-size: 13pt;
     line-height: 1;
   }
@@ -2425,7 +2434,7 @@ body.signature-editing::after {
   .print-bar {
     height: 0.35rem;
     border-radius: 999px;
-    background: #e5ece2;
+    background: #d8e6ee;
     overflow: hidden;
   }
 
@@ -2433,7 +2442,7 @@ body.signature-editing::after {
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: #54851f;
+    background: #009CDE;
   }
 
   .print-row {
@@ -2451,7 +2460,7 @@ body.signature-editing::after {
   }
 
   .print-score strong {
-    color: #385f15;
+    color: #006C9E;
     text-align: right;
   }
 
@@ -2472,7 +2481,7 @@ body.signature-editing::after {
 
   .print-table th {
     color: #ffffff;
-    background: #54851f;
+    background: #009CDE;
     font-weight: 800;
   }
 
@@ -2505,7 +2514,7 @@ body.signature-editing::after {
 
   .print-ai-text h3 {
     margin: 0.26rem 0 0.1rem;
-    color: #385f15;
+    color: #006C9E;
     font-size: 9.2pt;
     font-weight: 900;
     text-transform: none;
@@ -2560,7 +2569,7 @@ body.signature-editing::after {
 
   .print-graph h3 {
     margin: 0 0 0.08rem;
-    color: #385f15;
+    color: #006C9E;
     font-size: 6.8pt;
     font-weight: 800;
     text-align: center;
@@ -2633,7 +2642,7 @@ body.signature-editing::after {
 
   .print-web-dashboard .dashboard-panel::before {
     height: 0.12rem;
-    background: #54851f;
+    background: #009CDE;
   }
 
   .print-web-dashboard .dashboard-panel > * {
@@ -2704,7 +2713,7 @@ body.signature-editing::after {
 
   .print-web-dashboard .metric-box::before {
     width: 0.08rem;
-    background: #54851f;
+    background: #009CDE;
   }
 
   .print-web-dashboard .donut-chart {
@@ -2737,7 +2746,7 @@ body.signature-editing::after {
 
   .print-donut-fill {
     fill: none;
-    stroke: #54851f;
+    stroke: #009CDE;
     stroke-width: 12;
     stroke-linecap: round;
     transform: rotate(-90deg);
@@ -2863,7 +2872,7 @@ body.signature-editing::after {
   }
 
   .print-balance-legend strong {
-    color: #385f15;
+    color: #006C9E;
     font-weight: 900;
   }
 
@@ -2930,7 +2939,7 @@ body.signature-editing::after {
 
   .print-signature-date {
     margin: -0.08rem 0 0.18rem;
-    color: #385f15;
+    color: #006C9E;
     font-size: 9pt;
     font-weight: 800;
   }

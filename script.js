@@ -135,27 +135,28 @@ const contacts = [
   ["Ass. rayonmanager", "Noortje Verriet", "06-41131561"],
   ["Planning Bemmel", "", "088-6255965", "06-14311034"],
   ["Stationschef", "Marco Stellaard", "06-43403987"],
-  ["RRR app", "Nick Spijker", "", "06-18093468"],
   ["ROV Utrecht", "Ziekmelden buiten kantoortijden", "030-2849494"],
 ];
 
 const websites = [
+  ["Webcomm", "diensten.connexxion.nl", "https://diensten.connexxion.nl"],
+  ["Transdev chauffeursapp", "Google Play", "https://play.google.com/store/apps/details?id=com.transdev.teamtransdev&hl=nl"],
   ["Mijn HRM", "mijnhrm.connexxion.nl", "https://mijnhrm.connexxion.nl"],
   ["AFAS Pocket", "Officiële AFAS-apppagina", "https://www.afas.nl/software/pocket"],
-  ["Webcomm", "diensten.connexxion.nl", "https://diensten.connexxion.nl"],
+  ["Groenendijk-app", "app.corpwear.nl", "https://app.corpwear.nl"],
+  ["Mijn CBR", "mijn.cbr.nl", "https://mijn.cbr.nl"],
+  ["RRR app", "bus.nickspijker.nl", "https://bus.nickspijker.nl"],
+  ["Navik app", "navik.nl", "https://navik.nl"],
+  ["Diensteninfo", "ruilen.nu", "https://ruilen.nu"],
+  ["OVinfo Android", "Google Play", "https://play.google.com/store/apps/details?id=nl.skywave.ovinfo&hl=nl"],
+  ["OVinfo iPhone", "App Store", "https://apps.apple.com/nl/app/ovinfo/id1144468923"],
   ["@Transdev-app", "Officiële apppagina", "https://www.transdev.nl/nl/reisinformatie/%40transdev-app"],
-  ["Transdev chauffeursapp", "Google Play", "https://play.google.com/store/apps/details?id=com.transdev.teamtransdev&hl=nl"],
   ["Transdev chauffeursapp iPhone", "App Store", "https://apps.apple.com/nl/app/team-transdev-chauffeur-app/id6618151207"],
   ["Groenendijk Bedrijfskleding", "corpwear.nl", "https://www.corpwear.nl/login.aspx"],
-  ["Groenendijk-app", "app.corpwear.nl", "https://app.corpwear.nl"],
   ["CBR", "cbr.nl", "https://www.cbr.nl"],
-  ["Mijn CBR", "mijn.cbr.nl", "https://mijn.cbr.nl"],
   ["RRReis-app", "Officiële apppagina", "https://www.rrreis.nl/app/"],
   ["iLost Connexxion", "Gevonden voorwerpen", "https://www.connexxion.nl/nl/klantenservice/gevonden-voorwerpen"],
   ["iLost", "ilost.co/nl", "https://ilost.co/nl"],
-  ["OVinfo Android", "Google Play", "https://play.google.com/store/apps/details?id=nl.skywave.ovinfo&hl=nl"],
-  ["OVinfo iPhone", "App Store", "https://apps.apple.com/nl/app/ovinfo/id1144468923"],
-  ["Diensteninfo", "ruilen.nu", "https://ruilen.nu"],
 ];
 
 function baseKey(name) {
