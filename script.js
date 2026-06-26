@@ -1383,7 +1383,7 @@ function deleteRatingDayNote(dayKey = getSelectedLogbookDayKey(), options = {}) 
   return true;
 }
 
-function improveCurrentLogbookSpelling() {
+async function improveCurrentLogbookSpelling() {
   const textarea = document.getElementById("ratingDayNote");
   if (!textarea) return;
 
@@ -1393,7 +1393,16 @@ function improveCurrentLogbookSpelling() {
     return;
   }
 
-  const improvedText = improveLogbookSpellingAndSentences(originalText);
+  let improvedText = "";
+  if (window.confirm("Deze spellingcontrole stuurt de logboektekst naar een online spellingdienst. Doorgaan?")) {
+    showRatingDictationStatus("Online spellingcontrole bezig...");
+    improvedText = await improveLogbookTextOnline(originalText);
+  }
+
+  if (!improvedText) {
+    improvedText = improveLogbookSpellingAndSentences(originalText);
+  }
+
   if (improvedText === originalText) {
     showRatingDictationStatus("Geen duidelijke spelling- of zinsbouwfouten gevonden.");
     return;
@@ -1404,6 +1413,47 @@ function improveCurrentLogbookSpelling() {
   renderRatingDayLog();
   refreshMentorGeneratedText();
   showRatingDictationStatus("Spelling en zinsopbouw verbeterd.");
+}
+
+async function improveLogbookTextOnline(text) {
+  try {
+    const response = await fetch("https://api.languagetool.org/v2/check", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        text,
+        language: "nl-NL",
+      }),
+    });
+
+    if (!response.ok) throw new Error(`LanguageTool status ${response.status}`);
+    const result = await response.json();
+    return applyLanguageToolMatches(text, result.matches || "");
+  } catch (error) {
+    showRatingDictationStatus("Online spellingcontrole niet bereikbaar. Lokale controle gebruikt.");
+    return "";
+  }
+}
+
+function applyLanguageToolMatches(text, matches) {
+  if (!Array.isArray(matches) || !matches.length) return text;
+
+  let improvedText = text;
+  const usableMatches = matches
+    .filter((match) => match && Number.isFinite(Number(match.offset)) && Number.isFinite(Number(match.length)) && match.replacements?.length)
+    .sort((first, second) => Number(second.offset) - Number(first.offset));
+
+  usableMatches.forEach((match) => {
+    const replacement = match.replacements[0]?.value;
+    if (!replacement) return;
+    const offset = Number(match.offset);
+    const length = Number(match.length);
+    improvedText = `${improvedText.slice(0, offset)}${replacement}${improvedText.slice(offset + length)}`;
+  });
+
+  return improveLogbookSpellingAndSentences(improvedText);
 }
 
 function improveLogbookSpellingAndSentences(text) {
