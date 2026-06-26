@@ -1597,20 +1597,11 @@ function renderRatingProgressTable() {
       <tr>
         <th scope="row">Dag</th>
         ${dayKeys.map((dayKey, index) => `
-          <td class="rating-table-date-cell ${dayKey && dayKey === activeDayKey ? "active-rating-day" : ""}" data-day-key="${escapeHtml(dayKey)}" data-column-index="${index}">
-            ${
-              dayKey
-                ? `
-              <button
-                class="rating-column-drag"
-                type="button"
-                data-day-key="${escapeHtml(dayKey)}"
-                data-column-index="${index}"
-                aria-label="Kolom verslepen"
-                title="Versleep kolom">☰</button>
-                `
-                : `<span class="rating-column-drag-placeholder" aria-hidden="true"></span>`
-            }
+          <td
+            class="rating-table-date-cell ${dayKey && dayKey === activeDayKey ? "active-rating-day" : ""}"
+            data-day-key="${escapeHtml(dayKey)}"
+            data-column-index="${index}"
+            ${dayKey ? `tabindex="0" title="Klik om te selecteren, sleep om te verplaatsen, Delete om te verwijderen"` : ""}>
             <input
               class="rating-table-input rating-table-date-input"
               type="date"
@@ -1635,13 +1626,21 @@ function renderRatingProgressTable() {
             const balanceLabel = entry && isBalance ? getBalanceEntryLabel(entry) : "";
             if (isBalance) {
               return `
-                <td class="${dayKey && dayKey === activeDayKey ? "active-rating-day" : ""}" data-column-index="${index}">
+                <td
+                  class="${dayKey && dayKey === activeDayKey ? "active-rating-day" : ""}"
+                  data-day-key="${escapeHtml(dayKey)}"
+                  data-column-index="${index}"
+                  ${dayKey ? `tabindex="0"` : ""}>
                   <div class="rating-table-balance-label">${entry ? escapeHtml(balanceLabel) : "-"}</div>
                 </td>
               `;
             }
             return `
-              <td class="${dayKey && dayKey === activeDayKey ? "active-rating-day" : ""}" data-column-index="${index}">
+              <td
+                class="${dayKey && dayKey === activeDayKey ? "active-rating-day" : ""}"
+                data-day-key="${escapeHtml(dayKey)}"
+                data-column-index="${index}"
+                ${dayKey ? `tabindex="-1"` : ""}>
                 <input
                   class="rating-table-input rating-table-score-input"
                   type="number"
@@ -1669,8 +1668,8 @@ function renderRatingProgressTable() {
           const values = ratings
             .map((rating) => rating.history.find((entry) => getDayKey(entry.time) === dayKey)?.value)
             .filter((value) => Number.isFinite(Number(value)));
-          if (!values.length) return `<td class="${activeClass}" data-column-index="${index}"></td>`;
-          return `<td class="${activeClass}" data-column-index="${index}">${Math.round(values.reduce((sum, value) => sum + Number(value), 0) / values.length)}%</td>`;
+          if (!values.length) return `<td class="${activeClass}" data-day-key="${escapeHtml(dayKey)}" data-column-index="${index}" tabindex="0"></td>`;
+          return `<td class="${activeClass}" data-day-key="${escapeHtml(dayKey)}" data-column-index="${index}" tabindex="0">${Math.round(values.reduce((sum, value) => sum + Number(value), 0) / values.length)}%</td>`;
         }).join("")}
       </tr>
     </tbody>
@@ -1707,7 +1706,44 @@ function activateRatingDayColumn(dayKey) {
   applyRatingDayToSliders(dayKey);
   loadRatingDayNote(dayKey);
   renderRatingProgressTable();
+  focusRatingDayColumn(dayKey);
   showRatingSaveStatus(timestampFromDayKey(dayKey), `Actieve dag voor schuiven: ${formatDayLabel(timestampFromDayKey(dayKey))}`);
+}
+
+function focusRatingDayColumn(dayKey) {
+  window.requestAnimationFrame(() => {
+    const cell = document.querySelector(`.rating-table-date-cell[data-day-key="${CSS.escape(dayKey)}"]`);
+    if (cell instanceof HTMLElement) {
+      try {
+        cell.focus({ preventScroll: true });
+      } catch {
+        cell.focus();
+      }
+    }
+  });
+}
+
+function selectRatingDayColumnForEditing(dayKey) {
+  if (!dayKey) return;
+
+  const input = document.getElementById("ratingDateInput");
+  if (input) input.value = formatDateInputValue(dayKey);
+  const logbookInput = document.getElementById("logbookDateInput");
+  if (logbookInput) logbookInput.value = formatDateInputValue(dayKey);
+  applyRatingDayToSliders(dayKey);
+  loadRatingDayNote(dayKey);
+  markRatingDayColumn(dayKey);
+  showRatingSaveStatus(timestampFromDayKey(dayKey), `Actieve dag voor schuiven: ${formatDayLabel(timestampFromDayKey(dayKey))}`);
+}
+
+function markRatingDayColumn(dayKey) {
+  const table = document.getElementById("ratingProgressTable");
+  if (!table) return;
+
+  table.querySelectorAll(".active-rating-day").forEach((item) => item.classList.remove("active-rating-day"));
+  table.querySelectorAll(`[data-day-key="${CSS.escape(dayKey)}"]`).forEach((item) => {
+    if (item instanceof HTMLTableCellElement) item.classList.add("active-rating-day");
+  });
 }
 
 function applyRatingDayToSliders(dayKey) {
@@ -1858,24 +1894,58 @@ function moveRatingTableColumnTo(dayKey, targetDayKey) {
   updateRatingAverage();
 }
 
+function deleteRatingDayColumn(dayKey) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey || "")) return false;
+
+  saveRatingDays(getSavedRatingDays().filter((savedDayKey) => savedDayKey !== dayKey));
+  getRatingRowsForProgress().forEach((rating) => {
+    const history = rating.history.filter((entry) => getDayKey(entry.time) !== dayKey);
+    setRatingHistoryById(rating.id, history);
+  });
+
+  const notes = getRatingDayNotes();
+  delete notes[dayKey];
+  saveRatingDayNotes(notes);
+  saveIncludedRatingLogKeys(getIncludedRatingLogKeys().filter((savedDayKey) => savedDayKey !== dayKey));
+
+  if (getActiveRatingDayKey() === dayKey) {
+    setDefaultRatingDate();
+    loadRatingDayNote();
+  }
+
+  updateRatingAverage();
+  renderRatingDayLog();
+  renderRatingProgressTable();
+  refreshMentorGeneratedText();
+  showRatingSaveStatus(timestampFromDayKey(dayKey), `Kolom verwijderd: ${formatDayLabel(timestampFromDayKey(dayKey))}`);
+  return true;
+}
+
 let draggedRatingDayKey = "";
+let ratingColumnPointerStart = null;
 let activeRatingDateInput = null;
 let ratingRecognition = null;
 let ratingRecognitionActive = false;
 
 function handleRatingProgressTablePointerDown(event) {
-  const handle = event.target.closest(".rating-column-drag");
-  if (!handle || !handle.dataset.dayKey) return;
+  if (event.target.closest(".rating-table-input, .rating-date-close, button, textarea, select")) return;
 
-  draggedRatingDayKey = handle.dataset.dayKey;
-  handle.setPointerCapture?.(event.pointerId);
+  const cell = event.target.closest("[data-day-key]");
+  if (!cell?.dataset.dayKey) return;
+
+  draggedRatingDayKey = cell.dataset.dayKey;
+  ratingColumnPointerStart = {
+    x: event.clientX,
+    y: event.clientY,
+  };
+  cell.setPointerCapture?.(event.pointerId);
   document.getElementById("ratingProgressTable")?.classList.add("is-dragging-column");
-  event.preventDefault();
 }
 
 function handleRatingProgressTableDatePointerDown(event) {
   if (!shouldUseRatingDateModal()) return;
-  if (event.target.closest(".rating-column-drag") || event.target.closest(".rating-date-close")) return;
+  if (event.target.closest(".rating-date-close")) return;
+  if (!event.target.closest(".rating-table-date-input")) return;
 
   const cell = event.target.closest(".rating-table-date-cell");
   if (!cell) return;
@@ -1897,20 +1967,32 @@ function getRatingDateInputByDay(dayKey) {
 function handleRatingProgressTablePointerUp(event) {
   if (!draggedRatingDayKey) return;
 
-  const targetCell = document.elementFromPoint(event.clientX, event.clientY)?.closest(".rating-table-date-cell");
+  const start = ratingColumnPointerStart;
+  const moved = start
+    ? Math.abs(event.clientX - start.x) > 8 || Math.abs(event.clientY - start.y) > 8
+    : false;
+  const targetCell = document.elementFromPoint(event.clientX, event.clientY)?.closest("[data-day-key]");
   const targetDayKey = targetCell?.dataset.dayKey || "";
   document.getElementById("ratingProgressTable")?.classList.remove("is-dragging-column");
-  moveRatingTableColumnTo(draggedRatingDayKey, targetDayKey);
+  if (moved) {
+    moveRatingTableColumnTo(draggedRatingDayKey, targetDayKey);
+  }
   draggedRatingDayKey = "";
+  ratingColumnPointerStart = null;
 }
 
 function handleRatingProgressTableClick(event) {
   if (draggedRatingDayKey) return;
-  if (event.target.closest(".rating-column-drag")) return;
 
   const closeButton = event.target.closest(".rating-date-close");
   if (closeButton) {
     closeRatingDatePicker(closeButton.closest(".rating-table-date-cell")?.querySelector(".rating-table-date-input"));
+    return;
+  }
+
+  const clickedScoreInput = event.target.closest(".rating-table-score-input");
+  if (clickedScoreInput?.dataset.dayKey) {
+    selectRatingDayColumnForEditing(clickedScoreInput.dataset.dayKey);
     return;
   }
 
@@ -1923,10 +2005,10 @@ function handleRatingProgressTableClick(event) {
   }
 
   const cell = event.target.closest(".rating-table-date-cell");
-  if (!cell?.dataset.dayKey) return;
-  const dayKey = cell.dataset.dayKey;
+  const tableCell = event.target.closest("[data-day-key]");
+  const dayKey = tableCell?.dataset.dayKey || cell?.dataset.dayKey || "";
+  if (!dayKey) return;
   activateRatingDayColumn(dayKey);
-  openRatingDatePicker(getRatingDateInputByDay(dayKey) || cell.querySelector(".rating-table-date-input"), event);
 }
 
 function handleRatingProgressTableHover(event) {
@@ -2096,6 +2178,15 @@ function handleRatingProgressTableInput(event) {
 }
 
 function handleRatingProgressTableKeydown(event) {
+  if ((event.key === "Delete" || event.key === "Backspace") && !(event.target instanceof HTMLInputElement)) {
+    const dayKey = event.target?.closest?.("[data-day-key]")?.dataset.dayKey || getActiveRatingDayKey();
+    if (dayKey) {
+      event.preventDefault();
+      deleteRatingDayColumn(dayKey);
+    }
+    return;
+  }
+
   if (event.key !== "Enter") return;
   if (!(event.target instanceof HTMLInputElement)) return;
   if (!event.target.classList.contains("rating-table-input")) return;
