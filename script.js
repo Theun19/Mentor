@@ -2180,40 +2180,6 @@ function renderBalanceLegend() {
   `;
 }
 
-function renderRatingTrend(history) {
-  const realHistory = history.filter((entry) => entry && Number.isFinite(Number(entry.value)));
-  if (realHistory.length < 2) {
-    return `<div class="line-chart-trend muted">Meetpunten: ${realHistory.length}. Sla een tweede datum op voor progressie.</div>`;
-  }
-
-  const previous = realHistory[realHistory.length - 2];
-  const current = realHistory[realHistory.length - 1];
-  const difference = current.value - previous.value;
-  const tone = difference > 0 ? "up" : difference < 0 ? "down" : "same";
-  const sign = difference > 0 ? "+" : "";
-
-  return `
-    <div class="line-chart-trend ${tone}">
-      <span>${formatDayLabel(previous.time)}: ${previous.value}%</span>
-      <strong>${formatDayLabel(current.time)}: ${current.value}%</strong>
-      <em>${sign}${difference}%</em>
-    </div>
-  `;
-}
-
-function renderRatingPointList(history) {
-  const realHistory = history.filter((entry) => entry && Number.isFinite(Number(entry.value)));
-  if (!realHistory.length) return "";
-
-  return `
-    <div class="line-chart-points-list" aria-label="Datums instructie">
-      ${realHistory.map((entry) => `
-        <span>${formatDayLabel(entry.time)}</span>
-      `).join("")}
-    </div>
-  `;
-}
-
 function getBalanceChartTitle(input, history = []) {
   const realHistory = history.filter((entry) => Number.isFinite(Number(entry?.value)));
   const latestEntry = realHistory[realHistory.length - 1];
@@ -2534,67 +2500,6 @@ function getSortedLineSummary() {
   });
 }
 
-function openLineSummary() {
-  const modal = document.getElementById("lineSummaryModal");
-  const content = document.getElementById("lineSummaryContent");
-  const summary = getSortedLineSummary();
-  const doneLines = summary.filter((item) => item.done);
-  const todoLines = summary.filter((item) => !item.done);
-
-  content.innerHTML = `
-    <div class="row g-3">
-      ${renderLineSummaryColumn("Nog te doen", todoLines, "warning")}
-      ${renderLineSummaryColumn("Afgevinkt", doneLines, "success")}
-    </div>
-  `;
-
-  modal.classList.add("show");
-  modal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("zoom-open");
-  document.getElementById("lineSummaryClose").focus();
-}
-
-function renderLineSummaryColumn(title, items, tone) {
-  const emptyText = tone === "success" ? "Nog geen lijnen afgevinkt." : "Alle lijnen zijn afgevinkt.";
-  return `
-    <div class="col-12 col-lg-6">
-      <div class="line-summary-card">
-        <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
-          <h3 class="h6 fw-bold mb-0">${title}</h3>
-          <span class="status-pill">${items.length}</span>
-        </div>
-        ${
-          items.length
-            ? `<div class="vstack gap-2">
-                ${items.map(renderLineSummaryItem).join("")}
-              </div>`
-            : `<p class="text-secondary mb-0">${emptyText}</p>`
-        }
-      </div>
-    </div>
-  `;
-}
-
-function renderLineSummaryItem(item) {
-  const stateLabels = item.states.map((state) => `
-    <span class="line-state ${state.done ? "done" : ""}">${lineTaskLabel(state.type)}</span>
-  `).join("");
-
-  return `
-    <div class="line-summary-item">
-      <strong>${item.line}</strong>
-      <div class="line-states">${stateLabels}</div>
-    </div>
-  `;
-}
-
-function closeLineSummary() {
-  const modal = document.getElementById("lineSummaryModal");
-  modal.classList.remove("show");
-  modal.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("zoom-open");
-}
-
 function getRatingHistory(input) {
   const history = getStoredRatingHistory(input);
   if (history.length) {
@@ -2653,24 +2558,6 @@ function saveRatingHistory(input, force = false, timestamp = Date.now()) {
     .sort((first, second) => first.time - second.time)
     .slice(-30);
   setSavedJson(`${input.dataset.id}-history`, sortedHistory);
-}
-
-function saveAllRatingHistories() {
-  const timestamp = getSelectedRatingTimestamp();
-  if (!timestamp) {
-    showRatingSaveStatus(null, "Vul een geldige datum in.");
-    return;
-  }
-
-  saveCurrentRatingDayNote();
-  addSavedRatingDay(getDayKey(timestamp));
-  document.querySelectorAll(".rating-range").forEach((input) => {
-    saveRatingHistory(input, true, timestamp);
-  });
-  showRatingSaveStatus(timestamp, `Rijlesdag opgeslagen: ${formatDayLabel(timestamp)}`);
-  updateRatingAverage();
-  renderRatingDayLog();
-  renderRatingProgressTable();
 }
 
 function showRatingSaveStatus(timestamp, text) {
@@ -2849,11 +2736,6 @@ function showSection(targetSelector) {
     behavior: "smooth",
     block: "start",
   });
-}
-
-function setPrintText(id, value) {
-  const element = document.getElementById(id);
-  if (element) element.textContent = value || "-";
 }
 
 function buildPrintSummary(target = "dashboard") {
@@ -3141,17 +3023,6 @@ function formatMentorTextForPrint(text) {
     .join("");
 }
 
-function getCompactPrintAiText() {
-  const text = getSaved("mentorGeneratedText") || document.getElementById("mentorGeneratedText")?.value || buildMentorGeneratedText();
-  const compact = text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .join(" ");
-
-  return compact.length > 620 ? `${compact.slice(0, 617)}...` : compact;
-}
-
 function buildPrintInfoHtml(title = "Informatie", compact = false, includeSignatures = false) {
   const contactRows = contacts.map(([role, name, phone, whatsapp]) => `
     <tr>
@@ -3219,378 +3090,6 @@ function renderPrintLineOverviewColumn(title, items) {
   `;
 }
 
-function getDashboardPdfFileName() {
-  const driverName = (getSaved("driverName") || getActiveDriverProfile()?.name || "chauffeur")
-    .replace(/[^a-z0-9]+/gi, "-")
-    .replace(/^-+|-+$/g, "")
-    .toLowerCase();
-  return `mentormap-dashboard-${driverName || "chauffeur"}.pdf`;
-}
-
-async function createDashboardPdfFile() {
-  buildPrintSummary();
-  if (window.html2canvas && window.jspdf?.jsPDF) {
-    return createDashboardScreenshotPdfFile();
-  }
-
-  return new File([createDashboardPdfBlob()], getDashboardPdfFileName(), {
-    type: "application/pdf",
-  });
-}
-
-async function createDashboardScreenshotPdfFile() {
-  const dashboard = document.querySelector(".dashboard-panel");
-  if (!dashboard) {
-    throw new Error("Dashboard not found.");
-  }
-
-  const canvas = await window.html2canvas(dashboard, {
-    scale: 2,
-    backgroundColor: "#ffffff",
-    useCORS: true,
-    scrollX: 0,
-    scrollY: -window.scrollY,
-  });
-  const pdf = new window.jspdf.jsPDF({
-    orientation: "portrait",
-    unit: "pt",
-    format: "a4",
-  });
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const margin = 24;
-  const titleHeight = 34;
-  const imageWidth = pageWidth - margin * 2;
-  const imageHeight = Math.min(
-    pageHeight - margin * 2 - titleHeight,
-    (canvas.height / canvas.width) * imageWidth
-  );
-
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(14);
-  pdf.text("Mentormap dashboard", margin, margin + 12);
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(9);
-  pdf.text(new Date().toLocaleDateString("nl-NL"), pageWidth - margin, margin + 12, { align: "right" });
-  pdf.addImage(
-    canvas.toDataURL("image/jpeg", 0.95),
-    "JPEG",
-    margin,
-    margin + titleHeight,
-    imageWidth,
-    imageHeight
-  );
-
-  return new File([pdf.output("blob")], getDashboardPdfFileName(), {
-    type: "application/pdf",
-  });
-}
-
-function createDashboardPdfBlob() {
-  const lines = buildDashboardPdfLines();
-  const content = buildPdfContent(lines);
-  const objects = [
-    "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
-  ];
-  let pdf = "%PDF-1.4\n";
-  const offsets = [0];
-
-  objects.forEach((object, index) => {
-    offsets.push(pdf.length);
-    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
-  });
-
-  const xrefOffset = pdf.length;
-  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
-  offsets.slice(1).forEach((offset) => {
-    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
-  });
-  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
-
-  return new Blob([pdf], { type: "application/pdf" });
-}
-
-function buildDashboardPdfLines() {
-  const checks = [...document.querySelectorAll(".task-check")];
-  const done = checks.filter((input) => input.checked).length;
-  const percentage = checks.length ? Math.round((done / checks.length) * 100) : 0;
-  const lineSummary = getLineSummary();
-  const openLines = lineSummary.filter((item) => !item.done).length;
-  const checklistRows = checklists.map((list, listIndex) => {
-    const listChecks = [...document.querySelectorAll(`[data-id^="list-${listIndex}-item-"]`)];
-    const listDone = listChecks.filter((input) => input.checked).length;
-    return `${list.title}: ${listDone}/${list.items.length}`;
-  });
-  const ratingRows = [...document.querySelectorAll(".rating-range")].map((input) => {
-    const label = input.closest(".rating-row").querySelector(".rating-label").textContent;
-    return `${label}: ${getRatingScore(input)}%`;
-  });
-
-  return [
-    "Mentormap nieuwe chauffeurs Nijmegen",
-    "Dashboard en chauffeursgegevens",
-    `Datum: ${new Date().toLocaleDateString("nl-NL")}`,
-    "",
-    "Chauffeur",
-    `Naam: ${getSaved("driverName") || getActiveDriverProfile()?.name || "-"}`,
-    `Personeelsnummer: ${getSaved("personnelNumber") || "-"}`,
-    `Startdatum: ${getSaved("startDate") || "-"}`,
-    `Einddatum: ${getSaved("endDate") || "-"}`,
-    `Mentor: ${getSaved("mentorName") || "-"}`,
-    "",
-    "Voortgang",
-    `Totaal afgerond: ${percentage}%`,
-    `Taken open: ${checks.length - done}`,
-    `Taken klaar: ${done}`,
-    `Lijnen open: ${openLines}`,
-    "",
-    "Aftekenlijsten",
-    ...checklistRows,
-    "",
-    "Beoordeling",
-    ...ratingRows,
-  ];
-}
-
-function buildPdfContent(lines) {
-  const wrappedLines = lines.flatMap((line) => wrapPdfLine(line, 78));
-  const commands = ["BT", "/F1 11 Tf", "50 792 Td", "14 TL"];
-  wrappedLines.slice(0, 52).forEach((line, index) => {
-    if (index > 0) commands.push("T*");
-    commands.push(`(${escapePdfText(line)}) Tj`);
-  });
-  commands.push("ET");
-  return commands.join("\n");
-}
-
-function wrapPdfLine(line, maxLength) {
-  if (!line) return [""];
-  const words = String(line).split(/\s+/);
-  const lines = [];
-  let current = "";
-
-  words.forEach((word) => {
-    const next = current ? `${current} ${word}` : word;
-    if (next.length > maxLength && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = next;
-    }
-  });
-
-  if (current) lines.push(current);
-  return lines;
-}
-
-function escapePdfText(text) {
-  return String(text)
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^\x20-\x7E]/g, "")
-    .replace(/\\/g, "\\\\")
-    .replace(/\(/g, "\\(")
-    .replace(/\)/g, "\\)");
-}
-
-function downloadFile(file) {
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(file);
-  link.download = file.name;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-}
-
-function canShareFile(file) {
-  return Boolean(navigator.canShare?.({ files: [file] }) && navigator.share);
-}
-
-async function shareDashboardPdf(target) {
-  let file;
-  try {
-    file = await createDashboardPdfFile();
-  } catch (error) {
-    window.alert("De PDF kon niet worden gemaakt. Controleer of je internetverbinding actief is en probeer het opnieuw.");
-    return;
-  }
-
-  const driverName = getSaved("driverName") || getActiveDriverProfile()?.name || "de chauffeur";
-  const text = `Dashboard mentormap voor ${driverName}. De PDF staat als bijlage.`;
-
-  if (canShareFile(file)) {
-    try {
-      await navigator.share({
-        title: "Mentormap dashboard",
-        text,
-        files: [file],
-      });
-      return;
-    } catch (error) {
-      if (error.name === "AbortError") return;
-    }
-  }
-
-  downloadFile(file);
-  if (target === "email") {
-    const subject = encodeURIComponent("Mentormap dashboard PDF");
-    const body = encodeURIComponent(
-      `Hallo,\n\nIk heb de PDF ${file.name} gedownload. Voeg deze PDF toe als bijlage.\n\n${text}\n\nGroet,`
-    );
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-    return;
-  }
-
-  openWhatsappText(`${text}\n\nDe PDF ${file.name} is gedownload. Voeg deze toe via de paperclip / Document in WhatsApp.`);
-}
-
-async function shareDashboardPdfByWhatsapp() {
-  const driverName = getSaved("driverName") || getActiveDriverProfile()?.name || "de chauffeur";
-  const fileName = getDashboardPdfFileName();
-  const text = `Dashboard mentormap voor ${driverName}.\n\nDe PDF ${fileName} wordt gedownload. Voeg deze toe via de paperclip / Document in WhatsApp.`;
-
-  openWhatsappText(text);
-
-  try {
-    const file = await createDashboardPdfFile();
-    downloadFile(file);
-  } catch (error) {
-    window.setTimeout(() => {
-      window.alert("WhatsApp is geopend, maar de PDF kon niet worden gemaakt. Probeer het opnieuw.");
-    }, 500);
-  }
-}
-
-function setPrintSignature(id, source) {
-  const image = document.getElementById(id);
-  if (source) {
-    image.src = source;
-    image.style.visibility = "visible";
-  } else {
-    image.removeAttribute("src");
-    image.style.visibility = "hidden";
-  }
-}
-
-function buildInfoShareText() {
-  const phoneRows = contacts.map(([role, name, phone, whatsapp]) => {
-    const lines = [
-      role,
-      name ? `Naam: ${name}` : "",
-      phone ? `Telefoon: ${phone} (${makePhoneLink(phone)})` : "",
-      whatsapp ? `WhatsApp: ${whatsapp}\nOpen WhatsApp: ${makeWhatsappLink(whatsapp)}` : "",
-    ].filter(Boolean);
-    return lines.join("\n");
-  });
-
-  const websiteRows = websites.map(([label, text, url]) => {
-    return `${label}\n${text}${url ? `\n${url}` : ""}`;
-  });
-
-  return [
-    "Mentormap Nijmegen - info",
-    "",
-    "BELANGRIJKE TELEFOONNUMMERS",
-    "",
-    phoneRows.join("\n\n"),
-    "",
-    "BELANGRIJKE EN HANDIGE WEBSITES",
-    "",
-    websiteRows.join("\n\n"),
-    "",
-    "Tip: tik op een tel:-link om te bellen, op een wa.me-link om WhatsApp te openen, of op een website-link om de pagina te openen.",
-  ].join("\n");
-}
-
-function buildInfoWhatsappText() {
-  const phoneRows = contacts.map(([role, name, phone, whatsapp]) => {
-    const lines = [
-      role,
-      name ? `Naam: ${name}` : "",
-      phone ? `Telefoon: ${phone} / +${normalizePhoneNumber(phone)}` : "",
-      whatsapp ? `WhatsApp: ${whatsapp} / ${makeWhatsappLink(whatsapp)}` : "",
-    ].filter(Boolean);
-    return lines.join("\n");
-  });
-
-  const websiteRows = websites.map(([label, text, url]) => (
-    `${label}\n${url || text}`
-  ));
-
-  return [
-    "Mentormap Nijmegen - info",
-    "",
-    "TELEFOONNUMMERS",
-    "",
-    phoneRows.join("\n\n"),
-    "",
-    "WEBSITES EN APPS",
-    "",
-    websiteRows.join("\n\n"),
-  ].join("\n");
-}
-
-function buildInfoShareHtml() {
-  const contactRows = contacts.map(([role, name, phone, whatsapp]) => `
-    <tr>
-      <td>${escapeHtml(role)}</td>
-      <td>${escapeHtml(name || "-")}</td>
-      <td>${phone ? `<a href="${makePhoneLink(phone)}">${escapeHtml(phone)}</a>` : "-"}</td>
-      <td>${whatsapp ? `<a href="${makeWhatsappLink(whatsapp)}">${escapeHtml(whatsapp)}</a>` : "-"}</td>
-    </tr>
-  `).join("");
-
-  const websiteRows = websites.map(([label, text, url]) => `
-    <tr>
-      <td>${escapeHtml(label)}</td>
-      <td>${escapeHtml(text)}</td>
-      <td>${url ? `<a href="${url}">${escapeHtml(url)}</a>` : "-"}</td>
-    </tr>
-  `).join("");
-
-  return `<!doctype html>
-<html lang="nl">
-<head>
-  <meta charset="utf-8" />
-  <title>Mentormap Nijmegen - info</title>
-  <style>
-    body { font-family: Arial, sans-serif; color: #18241c; margin: 24px; }
-    h1 { color: #385f15; margin-bottom: 8px; }
-    h2 { margin-top: 28px; color: #385f15; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #dce5dc; padding: 8px 10px; text-align: left; vertical-align: top; }
-    th { background: #54851f; color: #ffffff; }
-    a { color: #0b5ed7; }
-  </style>
-</head>
-<body>
-  <h1>Mentormap Nijmegen - info</h1>
-  <p>Belangrijke telefoonnummers en handige websites.</p>
-
-  <h2>Belangrijke telefoonnummers</h2>
-  <table>
-    <thead>
-      <tr><th>Functie</th><th>Naam</th><th>Telefoon</th><th>WhatsApp</th></tr>
-    </thead>
-    <tbody>${contactRows}</tbody>
-  </table>
-
-  <h2>Websites en apps</h2>
-  <table>
-    <thead>
-      <tr><th>Naam</th><th>Omschrijving</th><th>Link</th></tr>
-    </thead>
-    <tbody>${websiteRows}</tbody>
-  </table>
-</body>
-</html>`;
-}
-
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (character) => ({
     "&": "&amp;",
@@ -3599,46 +3098,6 @@ function escapeHtml(value) {
     '"': "&quot;",
     "'": "&#039;",
   }[character]));
-}
-
-function downloadInfoAttachment(file) {
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(file);
-  link.download = file.name;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-}
-
-async function shareInfoByEmail() {
-  const file = createInfoAttachment();
-
-  if (navigator.canShare?.({ files: [file] })) {
-    try {
-      await navigator.share({
-        title: "Mentormap Nijmegen - info",
-        text: "Bijgevoegd staat de info uit de mentormap in een tabel.",
-        files: [file],
-      });
-      return;
-    } catch (error) {
-      if (error.name === "AbortError") return;
-    }
-  }
-
-  downloadInfoAttachment(file);
-  const subject = encodeURIComponent("Mentormap Nijmegen - belangrijke info");
-  const body = encodeURIComponent(
-    "Hallo,\n\nIk heb het bestand mentormap-nijmegen-info.html gedownload. Voeg dit bestand toe als bijlage; daarin staan de telefoonnummers en websites netjes in tabellen.\n\nGroet,"
-  );
-  window.location.href = `mailto:?subject=${subject}&body=${body}`;
-}
-
-function createInfoAttachment() {
-  return new File([buildInfoShareHtml()], "mentormap-nijmegen-info.html", {
-    type: "text/html",
-  });
 }
 
 function normalizePhoneNumber(number) {
@@ -3654,31 +3113,6 @@ function makePhoneLink(number) {
 
 function makeWhatsappLink(number) {
   return `https://wa.me/${normalizePhoneNumber(number)}`;
-}
-
-async function shareInfoByWhatsapp() {
-  const text = buildInfoWhatsappText();
-  openWhatsappText(text);
-}
-
-function openWhatsappText(text) {
-  const appUrl = `whatsapp://send?text=${encodeURIComponent(text)}`;
-  const webUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  let fallbackTimer;
-
-  const cancelFallback = () => window.clearTimeout(fallbackTimer);
-  window.addEventListener("pagehide", cancelFallback, { once: true });
-  window.addEventListener("blur", cancelFallback, { once: true });
-
-  fallbackTimer = window.setTimeout(() => {
-    window.open(webUrl, "_blank", "noopener,noreferrer");
-  }, 1200);
-
-  window.location.href = appUrl;
-}
-
-function isInfoSectionActive() {
-  return document.getElementById("tab-info")?.classList.contains("active");
 }
 
 function bindEvents() {
@@ -3785,10 +3219,6 @@ function bindEvents() {
   document.querySelectorAll("[data-dashboard-section]").forEach((button) => {
     button.addEventListener("click", () => showSection(button.dataset.dashboardSection));
   });
-  document.getElementById("lineSummaryClose").addEventListener("click", closeLineSummary);
-  document.getElementById("lineSummaryModal").addEventListener("click", (event) => {
-    if (event.target.id === "lineSummaryModal") closeLineSummary();
-  });
   document.getElementById("ratingProgressTable")?.addEventListener("change", handleRatingProgressTableChange);
   document.getElementById("ratingProgressTable")?.addEventListener("click", handleRatingProgressTableClick);
   document.getElementById("ratingProgressTable")?.addEventListener("focusout", handleRatingProgressTableChange);
@@ -3810,7 +3240,6 @@ function bindEvents() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
       closeChartZoom();
-      closeLineSummary();
     }
   });
 
@@ -3832,10 +3261,6 @@ function bindEvents() {
     });
   });
   window.addEventListener("beforeprint", () => buildPrintSummary(currentPrintTarget));
-
-  document.getElementById("infoEmailShareBtn")?.addEventListener("click", shareInfoByEmail);
-
-  document.getElementById("infoWhatsappBtn")?.addEventListener("click", shareInfoByWhatsapp);
 
   document.getElementById("resetBtn").addEventListener("click", () => {
     if (!window.confirm("Alle afgevinkte onderdelen en notities wissen?")) return;

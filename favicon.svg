@@ -1,5 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#009CDE"/>
-  <path fill="#7FBA24" d="M83 405c99-61 213-69 346-25-106-7-205 5-317 86l-29-61Z"/>
-  <text x="256" y="302" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="168" font-weight="900" letter-spacing="-12" fill="#fff">FNV</text>
+  <rect width="512" height="512" rx="104" fill="#4f287b"/>
+  <path fill="#0086d6" d="M0 330c78-50 150-70 226-57 70 12 127 48 192 54 35 4 66-3 94-18v203H0z"/>
+  <path fill="#00965e" d="M0 390c86-58 165-76 244-55 65 17 114 52 181 54 34 1 63-7 87-22v145H0z"/>
+  <text x="256" y="286" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="154" font-weight="900" letter-spacing="-10" fill="#ffffff">RRR</text>
+  <circle cx="392" cy="154" r="34" fill="#00965e"/>
 </svg>
