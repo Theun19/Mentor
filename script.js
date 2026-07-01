@@ -92,37 +92,40 @@ const checklists = [
 ];
 
 const lines = [
-  "2 NMG PNZ",
-  "2 NMG STM",
-  "5 naar BWK",
-  "5 HOR KRK",
-  "5 BEU TIB",
-  "5 BEU AAL",
-  "6 NMG DUK",
-  "6 NMG NBO",
-  "8 NMG HAT",
-  "8 B&D HAM",
-  "9 GRV BST",
-  "10 Heijendaal",
-  "11 BEU AAL",
-  "12 DRU BST",
-  "13 WYC B25",
-  "14 NMG BRK",
-  "15 WYCRN N",
-  "15 Lent Th",
-  "42 Tiel NS",
-  "3 OSH",
-  "80 MLG Gre",
-  "82 MGK (snel)",
-  "83 GNP Bst",
-  "83 VNL Bst",
-  "83 VNL (weekend)",
-  "85 Dru BUS",
-  "89 Dru BUS",
-  "99 UdenBus",
-  "76 B&D HAM",
-  "300 RES P&R",
-  "331 P44/ALD",
+  "1 Millingen a/d Rijn - Nijmegen Station NS",
+  "1 Nijmegen Station NS - Nijmegen Aldenhof",
+  "2 Sint Maartenskliniek - Nijmegen Station NS",
+  "2 Nijmegen Station NS - Dukenburg",
+  "3 Oosterhout - Nijmegen Station NS",
+  "3 Park 15 - Nijmegen Station NS",
+  "3 Nijmegen Station NS - Weezenhof",
+  "4 Lent - Nijmegen Station NS",
+  "5 Groesbeek - Nijmegen Station NS",
+  "5 Nijmegen Station NS - Beuningen",
+  "6 Dukenburg - Nijmegen Station NS",
+  "6 Nijmegen Station NS - Neerbosch Oost",
+  "7 Ooij - Nijmegen Station NS",
+  "8 Nijmegen Hatert - Nijmegen Station NS",
+  "8 Nijmegen Station NS - Berg en Dal",
+  "9 Nijmegen Station NS - Grave",
+  "11 Beuningen - Nijmegen Dukenburg Station NS",
+  "11 Dukenburg Station NS - Bijsterhuizen",
+  "11 Nijmegen Dukenburg Station NS - Wijchen Bijsterhuizen",
+  "12 P+R West - Heyendaal",
+  "12 Heyendaal - Nijmegen Station NS",
+  "15 Nijmegen Station NS - Wijchen",
+  "33 Nijmegen Brakkenstein - Nijmegen Station NS",
+  "33 Nijmegen Station NS - Arnhem Station NS",
+  "85 Druten - Nijmegen Station NS",
+  "220 Nijmegen Heyendaal - Nijmegen Station NS",
+  "220 Nijmegen Station NS - Wageningen Campus",
+  "221 Druten - Nijmegen Station NS",
+  "221 Nijmegen Station NS - Nijmegen Heyendaal",
+  "300 Nijmegen Heyendaal - Nijmegen Station NS",
+  "300 Nijmegen Station NS - Arnhem Centraal Station",
+  "383 Nijmegen Station NS - Gennep",
+  "383 Gennep - Venlo",
+  "410 Nijmegen Station NS - Heyendaal",
 ];
 
 const contacts = [
@@ -155,6 +158,7 @@ const websites = [
   ["Groenendijk Bedrijfskleding", "corpwear.nl", "https://www.corpwear.nl/login.aspx"],
   ["CBR", "cbr.nl", "https://www.cbr.nl"],
   ["RRReis-app", "Officiële apppagina", "https://www.rrreis.nl/app/"],
+  ["Lijnverkenning video's", "YouTube playlist", "https://www.youtube.com/watch?v=86sc6Ppefrc&list=PLts0AJoOH8P1d9Jl962bUlWDB_koimIik"],
   ["iLost Connexxion", "Gevonden voorwerpen", "https://www.connexxion.nl/nl/klantenservice/gevonden-voorwerpen"],
   ["iLost", "ilost.co/nl", "https://ilost.co/nl"],
 ];
@@ -1381,182 +1385,6 @@ function deleteRatingDayNote(dayKey = getSelectedLogbookDayKey(), options = {}) 
   refreshMentorGeneratedText();
   if (!options.silent) showRatingDictationStatus(`Logboek verwijderd voor ${formatDayLabel(cleanDayKey)}.`);
   return true;
-}
-
-async function improveCurrentLogbookSpelling() {
-  const textarea = document.getElementById("ratingDayNote");
-  if (!textarea) return;
-
-  const originalText = textarea.value.trim();
-  if (!originalText) {
-    showRatingDictationStatus("Er staat nog geen tekst om te verbeteren.");
-    return;
-  }
-
-  showRatingDictationStatus("Online spellingcontrole bezig...");
-  let improvedText = await improveLogbookTextOnline(originalText);
-
-  if (!improvedText) {
-    improvedText = improveLogbookSpellingAndSentences(originalText);
-  }
-
-  if (improvedText === originalText) {
-    showRatingDictationStatus("Geen duidelijke spelling- of zinsbouwfouten gevonden.");
-    return;
-  }
-
-  textarea.value = improvedText;
-  saveCurrentRatingDayNote({ silent: true });
-  renderRatingDayLog();
-  refreshMentorGeneratedText();
-  showRatingDictationStatus("Spelling en zinsopbouw verbeterd.");
-}
-
-async function improveLogbookTextOnline(text) {
-  try {
-    const response = await fetch("https://api.languagetool.org/v2/check", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({
-        text,
-        language: "nl-NL",
-      }),
-    });
-
-    if (!response.ok) throw new Error(`LanguageTool status ${response.status}`);
-    const result = await response.json();
-    return applyLanguageToolMatches(text, result.matches || "");
-  } catch (error) {
-    showRatingDictationStatus("Online spellingcontrole niet bereikbaar. Lokale controle gebruikt.");
-    return "";
-  }
-}
-
-function applyLanguageToolMatches(text, matches) {
-  if (!Array.isArray(matches) || !matches.length) return text;
-
-  let improvedText = text;
-  const usableMatches = matches
-    .filter((match) => match && Number.isFinite(Number(match.offset)) && Number.isFinite(Number(match.length)) && match.replacements?.length)
-    .sort((first, second) => Number(second.offset) - Number(first.offset));
-
-  usableMatches.forEach((match) => {
-    const replacement = match.replacements[0]?.value;
-    if (!replacement) return;
-    const offset = Number(match.offset);
-    const length = Number(match.length);
-    improvedText = `${improvedText.slice(0, offset)}${replacement}${improvedText.slice(offset + length)}`;
-  });
-
-  return improveLogbookSpellingAndSentences(improvedText);
-}
-
-function improveLogbookSpellingAndSentences(text) {
-  const normalizedText = String(text || "")
-    .replace(/\s+/g, " ")
-    .replace(/\s+([,.!?;:])/g, "$1")
-    .replace(/([,.!?;:])(?=\S)/g, "$1 ")
-    .replace(/\bchauffeuren\b/gi, "chauffeurs")
-    .replace(/\bchauffuer\b/gi, "chauffeur")
-    .replace(/\bchauf(?:f)?eur\b/gi, "chauffeur")
-    .replace(/\bmentoor\b/gi, "mentor")
-    .replace(/\brijlesdag\b/gi, "rijdag")
-    .replace(/\brij dag\b/gi, "rijdag")
-    .replace(/\bverkeers inzicht\b/gi, "verkeersinzicht")
-    .replace(/\bverkeersinsicht\b/gi, "verkeersinzicht")
-    .replace(/\bklant vriendelijk\b/gi, "klantvriendelijk")
-    .replace(/\bklantvriendelijkheid\b/gi, "klantvriendelijkheid")
-    .replace(/\bzelfverzeker[dt]\b/gi, "zelfverzekerd")
-    .replace(/\bzelfverekerd\b/gi, "zelfverzekerd")
-    .replace(/\bangstvali+g\b/gi, "angstvallig")
-    .replace(/\blichtzinnig\b/gi, "lichtzinnig")
-    .replace(/\broekeloos\b/gi, "roekeloos")
-    .replace(/\bovermoedig\b/gi, "lichtzinnig")
-    .replace(/\bveder\b/gi, "slider")
-    .replace(/\bveders\b/gi, "sliders")
-    .replace(/\bcolom\b/gi, "kolom")
-    .replace(/\bkollom\b/gi, "kolom")
-    .replace(/\bkollomen\b/gi, "kolommen")
-    .replace(/\bgeev\b/gi, "geen")
-    .replace(/\bgeevn\b/gi, "geven")
-    .replace(/\bgevenss\b/gi, "gegevens")
-    .replace(/\bgegens\b/gi, "gegevens")
-    .replace(/\bopgeslagen\b/gi, "opgeslagen")
-    .replace(/\bopgelsagen\b/gi, "opgeslagen")
-    .replace(/\bafgevinkt\b/gi, "afgevinkt")
-    .replace(/\bafgevingt\b/gi, "afgevinkt")
-    .replace(/\bverbeteren\b/gi, "verbeteren")
-    .replace(/\bverbeeren\b/gi, "verbeteren")
-    .replace(/\bzn\b/gi, "zijn")
-    .replace(/\bme\b/gi, "mijn")
-    .replace(/\bhij heb\b/gi, "hij heeft")
-    .replace(/\bhij kan\b/gi, "hij kan")
-    .replace(/\bde chauffeur heb\b/gi, "de chauffeur heeft")
-    .replace(/\bgebeurd\b/gi, "gebeurt")
-    .replace(/\bword\b/gi, "wordt")
-    .replace(/\bwerdt\b/gi, "werd")
-    .replace(/\bi\.?v\.?m\.?\b/gi, "i.v.m.")
-    .replace(/\bt\.?o\.?v\.?\b/gi, "t.o.v.")
-    .replace(/\bm\.?b\.?t\.?\b/gi, "m.b.t.")
-    .replace(/\bo\.?a\.?\b/gi, "o.a.")
-    .replace(/\bbv\.?\b/gi, "bijv.")
-    .trim();
-  if (!normalizedText) return "";
-
-  const protectedText = normalizedText
-    .replace(/i\.v\.m\./gi, "ivm§")
-    .replace(/t\.o\.v\./gi, "tov§")
-    .replace(/m\.b\.t\./gi, "mbt§")
-    .replace(/o\.a\./gi, "oa§")
-    .replace(/bijv\./gi, "bijv§");
-
-  const sentenceText = protectedText
-    .replace(/\s+(daarna|vervolgens|hierna)\s+/gi, ". $1 ")
-    .replace(/\s+(maar|want|dus|terwijl)\s+/gi, ", $1 ")
-    .replace(/\s+(omdat)\s+/gi, ", $1 ");
-
-  return sentenceText
-    .split(/(?<=[.!?])\s+/)
-    .map((sentence) => sentence.trim())
-    .filter(Boolean)
-    .map(formatImprovedLogbookSentence)
-    .join(" ")
-    .replace(/\bivm§/gi, "i.v.m.")
-    .replace(/\btov§/gi, "t.o.v.")
-    .replace(/\bmbt§/gi, "m.b.t.")
-    .replace(/\boa§/gi, "o.a.")
-    .replace(/\bbijv§/gi, "bijv.");
-}
-
-window.improveCurrentLogbookSpelling = improveCurrentLogbookSpelling;
-
-function formatImprovedLogbookSentence(sentence) {
-  const keepUppercase = new Set(["MAT", "ROV", "RRR", "AFAS", "OV"]);
-  const corrected = sentence
-    .replace(/\b[A-ZÁÉÍÓÚÜÄËÏÖ]{2,}\b/g, (word) => (keepUppercase.has(word) ? word : word.toLowerCase()))
-    .replace(/\bEn\b/g, "en")
-    .replace(/\bMaar\b/g, "maar")
-    .replace(/\bWant\b/g, "want")
-    .replace(/\bOmdat\b/g, "omdat")
-    .replace(/\bDus\b/g, "dus")
-    .replace(/\bOok\b/g, "ook")
-    .replace(/\bRijdt\b/g, "rijdt")
-    .replace(/\bReed\b/g, "reed")
-    .replace(/\bKijkt\b/g, "kijkt")
-    .replace(/\bRemt\b/g, "remt")
-    .replace(/\bStuurt\b/g, "stuurt")
-    .replace(/\bGoed\b/g, "goed")
-    .replace(/\bBeter\b/g, "beter")
-    .replace(/\bRustig\b/g, "rustig")
-    .replace(/\bbochten beter, want hij stuurt rustiger\b/gi, "het nemen van bochten is beter, omdat de chauffeur rustiger stuurt")
-    .replace(/\bremmen beter, want hij remt rustiger\b/gi, "het remmen is beter, omdat de chauffeur rustiger remt")
-    .replace(/\bkijken beter, want hij kijkt verder vooruit\b/gi, "het kijkgedrag is beter, omdat de chauffeur verder vooruit kijkt")
-    .replace(/\bverkeersinzicht is beter ook\b/gi, "verkeersinzicht is beter. Ook")
-    .trim();
-  const formattedSentence = corrected.charAt(0).toUpperCase() + corrected.slice(1);
-  return /[.!?]$/.test(formattedSentence) ? formattedSentence : `${formattedSentence}.`;
 }
 
 function getSpeechRecognitionConstructor() {
@@ -3377,7 +3205,6 @@ function bindEvents() {
     loadRatingDayNote(dayKey);
   });
   document.getElementById("ratingDayNote")?.addEventListener("input", () => saveCurrentRatingDayNote({ silent: true }));
-  document.getElementById("spellcheckRatingLogBtn")?.addEventListener("click", improveCurrentLogbookSpelling);
   document.getElementById("saveRatingLogBtn")?.addEventListener("click", saveCurrentRatingDayNote);
   document.getElementById("deleteRatingLogBtn")?.addEventListener("click", () => deleteRatingDayNote());
   document.getElementById("ratingDayLog")?.addEventListener("click", (event) => {
