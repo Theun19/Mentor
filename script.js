@@ -143,6 +143,7 @@ const contacts = [
 
 const websites = [
   ["Webcomm", "diensten.connexxion.nl", "https://diensten.connexxion.nl"],
+  ["Rijwijzer", "xfm.sycada.com", "https://xfm.sycada.com/#/"],
   ["Transdev chauffeursapp", "Google Play", "https://play.google.com/store/apps/details?id=com.transdev.teamtransdev&hl=nl"],
   ["Mijn HRM", "mijnhrm.connexxion.nl", "https://mijnhrm.connexxion.nl"],
   ["AFAS Pocket", "Officiële AFAS-apppagina", "https://www.afas.nl/software/pocket"],
