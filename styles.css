@@ -1236,6 +1236,16 @@ body.signature-editing::after {
   border-radius: 8px;
   padding: 0.65rem;
   background: #faf8fd;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.rating-day-card:hover,
+.rating-day-card:focus-visible {
+  border-color: var(--brand-accent);
+  box-shadow: 0 8px 20px rgba(0, 134, 214, 0.14);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .rating-day-date {

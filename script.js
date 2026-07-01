@@ -1261,7 +1261,7 @@ function renderRatingDayLog() {
     const checked = includedLogKeys.includes(dayKey) ? "checked" : "";
 
     return `
-      <article class="rating-day-card">
+      <article class="rating-day-card" data-log-day-key="${escapeHtml(dayKey)}" tabindex="0" role="button" aria-label="Logboek van ${formatDayLabel(dayKey)} bewerken">
         <div class="rating-day-date">${formatDayLabel(dayKey)}</div>
         <div>
           <div class="rating-day-scores">${scores}</div>
@@ -1279,6 +1279,26 @@ function renderRatingDayLog() {
       </article>
     `;
   }).join("");
+}
+
+function selectRatingDayLog(dayKey) {
+  const cleanDayKey = /^\d{4}-\d{2}-\d{2}$/.test(dayKey || "") ? dayKey : "";
+  if (!cleanDayKey) return false;
+
+  const logbookInput = document.getElementById("logbookDateInput");
+  const ratingInput = document.getElementById("ratingDateInput");
+  const textarea = document.getElementById("ratingDayNote");
+
+  if (logbookInput) logbookInput.value = formatDateInputValue(cleanDayKey);
+  if (ratingInput) ratingInput.value = formatDateInputValue(cleanDayKey);
+  loadRatingDayNote(cleanDayKey);
+  renderRatingProgressTable();
+  if (textarea) {
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+  }
+  showRatingDictationStatus(`Logboek geopend voor ${formatDayLabel(cleanDayKey)}. Je kunt de tekst nu aanpassen.`);
+  return true;
 }
 
 function getRatingDayNotes() {
@@ -3210,8 +3230,23 @@ function bindEvents() {
   document.getElementById("deleteRatingLogBtn")?.addEventListener("click", () => deleteRatingDayNote());
   document.getElementById("ratingDayLog")?.addEventListener("click", (event) => {
     const button = event.target.closest(".rating-log-delete");
-    if (!button) return;
-    deleteRatingDayNote(button.dataset.dayKey);
+    if (button) {
+      deleteRatingDayNote(button.dataset.dayKey);
+      return;
+    }
+
+    if (event.target.closest(".rating-log-include-input")) return;
+    const card = event.target.closest(".rating-day-card");
+    if (!card) return;
+    selectRatingDayLog(card.dataset.logDayKey);
+  });
+  document.getElementById("ratingDayLog")?.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    if (event.target.closest(".rating-log-include-input, .rating-log-delete")) return;
+    const card = event.target.closest(".rating-day-card");
+    if (!card) return;
+    event.preventDefault();
+    selectRatingDayLog(card.dataset.logDayKey);
   });
   document.getElementById("ratingDayLog")?.addEventListener("change", (event) => {
     const input = event.target.closest(".rating-log-include-input");
