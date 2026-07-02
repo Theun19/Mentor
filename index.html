@@ -14,7 +14,7 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="styles.css?v=rating-column-reorder-2" />
+    <link rel="stylesheet" href="styles.css?v=rating-calendar" />
   </head>
   <body class="auth-locked">
     <section class="auth-screen" aria-labelledby="mainLoginTitle">
@@ -453,13 +453,30 @@
     </div>
 
     <div class="date-picker-modal" id="ratingDateModal" aria-hidden="true">
-      <div class="date-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="ratingDateModalTitle">
+      <div class="date-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="ratingDateModalTitle" tabindex="-1">
         <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
           <h2 class="h6 fw-bold mb-0" id="ratingDateModalTitle">Datum kiezen</h2>
           <button class="btn btn-outline-secondary btn-sm" id="ratingDateModalClose" type="button">Sluiten</button>
         </div>
         <label class="form-label fw-bold" for="ratingDateModalInput">Datum</label>
         <input class="form-control form-control-lg" id="ratingDateModalInput" type="date" />
+        <div class="date-picker-calendar mt-3" id="ratingDateCalendar" aria-label="Kalender">
+          <div class="date-picker-calendar-head">
+            <button class="btn btn-outline-secondary btn-sm" id="ratingDateCalendarPrev" type="button" aria-label="Vorige maand">‹</button>
+            <strong id="ratingDateCalendarMonth">Maand</strong>
+            <button class="btn btn-outline-secondary btn-sm" id="ratingDateCalendarNext" type="button" aria-label="Volgende maand">›</button>
+          </div>
+          <div class="date-picker-weekdays" aria-hidden="true">
+            <span>Ma</span>
+            <span>Di</span>
+            <span>Wo</span>
+            <span>Do</span>
+            <span>Vr</span>
+            <span>Za</span>
+            <span>Zo</span>
+          </div>
+          <div class="date-picker-days" id="ratingDateCalendarDays"></div>
+        </div>
         <div class="d-flex gap-2 mt-3">
           <button class="btn btn-success flex-fill" id="ratingDateModalSave" type="button">Opslaan</button>
           <button class="btn btn-outline-secondary flex-fill" id="ratingDateModalCancel" type="button">Annuleren</button>
@@ -529,7 +546,7 @@
     <div id="google_translate_element" class="google-translate-element" aria-hidden="true"></div>
     <script src="translate.js"></script>
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <script src="script.js?v=rating-column-reorder-2"></script>
+    <script src="script.js?v=rating-calendar"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"

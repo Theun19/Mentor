@@ -1960,6 +1960,7 @@ let ratingColumnPointerStart = null;
 let activeRatingMoveDayKey = "";
 let suppressRatingTableClickUntil = 0;
 let activeRatingDateInput = null;
+let activeRatingCalendarMonth = null;
 let ratingRecognition = null;
 let ratingRecognitionActive = false;
 
@@ -2116,31 +2117,14 @@ function clearRatingProgressTableHover() {
 }
 
 function shouldUseRatingDateModal() {
-  return window.matchMedia?.("(max-width: 767.98px), (pointer: coarse)")?.matches;
+  return true;
 }
 
 function openRatingDatePicker(input, event) {
   if (!(input instanceof HTMLInputElement)) return;
 
-  if (shouldUseRatingDateModal()) {
-    event?.preventDefault();
-    openRatingDateModal(input);
-    return;
-  }
-
-  try {
-    input.focus({ preventScroll: true });
-  } catch {
-    input.focus();
-  }
-  input.closest(".rating-table-date-cell")?.classList.add("date-picker-open");
-  if (typeof input.showPicker === "function") {
-    try {
-      input.showPicker();
-    } catch {
-      // Sommige browsers laten de native kalender alleen direct via het datumveld zelf openen.
-    }
-  }
+  event?.preventDefault();
+  openRatingDateModal(input);
 }
 
 function openRatingDateModal(sourceInput) {
@@ -2150,22 +2134,66 @@ function openRatingDateModal(sourceInput) {
 
   activeRatingDateInput = sourceInput;
   modalInput.value = sourceInput.value;
+  const timestamp = parseRatingDateValue(modalInput.value) || Date.now();
+  const date = new Date(timestamp);
+  activeRatingCalendarMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+  renderRatingDateCalendar();
   sourceInput.closest(".rating-table-date-cell")?.classList.add("date-picker-open");
   modal.classList.add("show");
   modal.setAttribute("aria-hidden", "false");
   document.body.classList.add("date-picker-open-body");
+  const dialog = modal.querySelector(".date-picker-dialog");
   try {
-    modalInput.focus({ preventScroll: true });
+    dialog?.focus({ preventScroll: true });
   } catch {
-    modalInput.focus();
+    dialog?.focus();
   }
-  if (typeof modalInput.showPicker === "function") {
-    try {
-      modalInput.showPicker();
-    } catch {
-      // De grote pop-up blijft bruikbaar als de browser de native picker niet automatisch opent.
-    }
+}
+
+function renderRatingDateCalendar() {
+  const monthLabel = document.getElementById("ratingDateCalendarMonth");
+  const daysContainer = document.getElementById("ratingDateCalendarDays");
+  const modalInput = document.getElementById("ratingDateModalInput");
+  if (!monthLabel || !daysContainer || !(modalInput instanceof HTMLInputElement)) return;
+
+  const baseDate = activeRatingCalendarMonth instanceof Date && Number.isFinite(activeRatingCalendarMonth.getTime())
+    ? activeRatingCalendarMonth
+    : new Date();
+  const year = baseDate.getFullYear();
+  const month = baseDate.getMonth();
+  const selectedDayKey = modalInput.value || "";
+  const todayKey = getDayKey(Date.now());
+  const firstDay = new Date(year, month, 1);
+  const startOffset = (firstDay.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  monthLabel.textContent = firstDay.toLocaleDateString("nl-NL", { month: "long", year: "numeric" });
+  const cells = [];
+  for (let index = 0; index < startOffset; index += 1) {
+    cells.push(`<span class="date-picker-day-placeholder"></span>`);
   }
+  for (let day = 1; day <= daysInMonth; day += 1) {
+    const dayKey = getDayKey(new Date(year, month, day, 12).getTime());
+    const classes = [
+      "date-picker-day",
+      dayKey === selectedDayKey ? "selected" : "",
+      dayKey === todayKey ? "today" : "",
+    ].filter(Boolean).join(" ");
+    cells.push(`
+      <button class="${classes}" type="button" data-calendar-day="${dayKey}" aria-label="${formatDayLabel(dayKey)}">
+        ${day}
+      </button>
+    `);
+  }
+  daysContainer.innerHTML = cells.join("");
+}
+
+function shiftRatingDateCalendarMonth(direction) {
+  const baseDate = activeRatingCalendarMonth instanceof Date && Number.isFinite(activeRatingCalendarMonth.getTime())
+    ? activeRatingCalendarMonth
+    : new Date();
+  activeRatingCalendarMonth = new Date(baseDate.getFullYear(), baseDate.getMonth() + direction, 1);
+  renderRatingDateCalendar();
 }
 
 function closeRatingDateModal(save = false) {
@@ -3420,6 +3448,24 @@ function bindEvents() {
   document.getElementById("ratingDateModalSave")?.addEventListener("click", () => closeRatingDateModal(true));
   document.getElementById("ratingDateModalClose")?.addEventListener("click", () => closeRatingDateModal(false));
   document.getElementById("ratingDateModalCancel")?.addEventListener("click", () => closeRatingDateModal(false));
+  document.getElementById("ratingDateCalendarPrev")?.addEventListener("click", () => shiftRatingDateCalendarMonth(-1));
+  document.getElementById("ratingDateCalendarNext")?.addEventListener("click", () => shiftRatingDateCalendarMonth(1));
+  document.getElementById("ratingDateModalInput")?.addEventListener("change", () => {
+    const timestamp = parseRatingDateValue(document.getElementById("ratingDateModalInput")?.value);
+    if (timestamp) {
+      const date = new Date(timestamp);
+      activeRatingCalendarMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+    }
+    renderRatingDateCalendar();
+  });
+  document.getElementById("ratingDateCalendarDays")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-calendar-day]");
+    if (!button) return;
+    const input = document.getElementById("ratingDateModalInput");
+    if (!(input instanceof HTMLInputElement)) return;
+    input.value = button.dataset.calendarDay || "";
+    renderRatingDateCalendar();
+  });
   document.getElementById("ratingDateModal")?.addEventListener("click", (event) => {
     if (event.target.id === "ratingDateModal") closeRatingDateModal(false);
   });

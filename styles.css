@@ -1435,10 +1435,11 @@ body.signature-editing::after {
   inset: 0;
   z-index: 1060;
   display: none;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   padding: 1rem;
   background: rgba(15, 23, 42, 0.42);
+  overflow: auto;
 }
 
 .date-picker-modal.show {
@@ -1447,8 +1448,10 @@ body.signature-editing::after {
 
 .date-picker-dialog {
   width: min(100%, 26rem);
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
   border: 1px solid var(--line);
-  border-radius: 14px 14px 10px 10px;
+  border-radius: 12px;
   padding: 1rem;
   background: #ffffff;
   box-shadow: 0 18px 48px rgba(15, 23, 42, 0.22);
@@ -1457,6 +1460,71 @@ body.signature-editing::after {
 .date-picker-dialog input[type="date"] {
   min-height: 3rem;
   font-size: 1rem;
+}
+
+.date-picker-calendar {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: #fafcff;
+}
+
+.date-picker-calendar-head {
+  display: grid;
+  grid-template-columns: 2.35rem 1fr 2.35rem;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+  text-align: center;
+}
+
+.date-picker-calendar-head strong {
+  color: var(--brand-dark);
+  text-transform: capitalize;
+}
+
+.date-picker-weekdays,
+.date-picker-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.25rem;
+}
+
+.date-picker-weekdays {
+  margin-bottom: 0.35rem;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.date-picker-day,
+.date-picker-day-placeholder {
+  min-height: 2.25rem;
+  border-radius: 8px;
+}
+
+.date-picker-day {
+  border: 1px solid transparent;
+  color: var(--ink);
+  background: #ffffff;
+  font-weight: 900;
+}
+
+.date-picker-day:hover,
+.date-picker-day:focus-visible {
+  border-color: var(--brand-accent);
+  color: var(--brand-dark);
+  outline: none;
+}
+
+.date-picker-day.today {
+  border-color: rgba(0, 150, 94, 0.5);
+}
+
+.date-picker-day.selected {
+  color: #ffffff;
+  background: var(--brand-accent);
 }
 
 .date-picker-open-body {
