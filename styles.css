@@ -1764,6 +1764,8 @@ body.signature-editing::after {
   background: linear-gradient(180deg, #ffffff, #faf8fd);
   text-decoration: none;
   transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .website-link:hover {
@@ -1771,6 +1773,20 @@ body.signature-editing::after {
   color: var(--brand-dark);
   background: #f1edf7;
   transform: translateY(-1px);
+}
+
+.website-link-move-active {
+  border-color: var(--brand-accent);
+  background: #edf8ff;
+  box-shadow: 0 8px 18px rgba(0, 134, 214, 0.14);
+  cursor: grab;
+  touch-action: none;
+}
+
+.website-link-dragging {
+  opacity: 0.88;
+  cursor: grabbing;
+  transform: scale(0.99);
 }
 
 .uncertain {

@@ -164,6 +164,11 @@ const websites = [
   ["iLost", "ilost.co/nl", "https://ilost.co/nl"],
 ];
 
+let activeWebsiteMoveId = "";
+let websiteDragState = null;
+let websiteOpenTimer = 0;
+let suppressWebsiteClickUntil = 0;
+
 function baseKey(name) {
   return `${storagePrefix}:${name}`;
 }
@@ -591,24 +596,112 @@ function renderBalanceParabola(id, item) {
 
 function renderWebsites() {
   const list = document.getElementById("websiteList");
-  list.innerHTML = websites
+  list.innerHTML = getOrderedWebsites()
     .map(([label, text, url]) => {
+      const websiteId = getWebsiteId([label, text, url]);
       if (!url) {
         return `
-          <div class="website-link">
+          <div class="website-link" data-website-id="${escapeHtml(websiteId)}" tabindex="0" role="button" aria-label="${escapeHtml(label)} verplaatsen">
             <strong>${label}</strong>
             <span class="text-secondary">${text}</span>
           </div>
         `;
       }
       return `
-        <a class="website-link" href="${url}" target="_blank" rel="noopener noreferrer">
+        <a class="website-link" href="${url}" target="_blank" rel="noopener noreferrer" data-website-id="${escapeHtml(websiteId)}" draggable="false">
           <strong>${label}</strong>
           <span>${text}</span>
         </a>
       `;
     })
     .join("");
+}
+
+function getWebsiteId(website) {
+  return `${website[0]}|${website[2] || website[1]}`;
+}
+
+function getOrderedWebsites() {
+  const savedOrder = getSavedJson("website-order", []);
+  const websiteMap = new Map(websites.map((website) => [getWebsiteId(website), website]));
+  const ordered = savedOrder
+    .map((id) => websiteMap.get(id))
+    .filter(Boolean);
+  const missing = websites.filter((website) => !savedOrder.includes(getWebsiteId(website)));
+  return [...ordered, ...missing];
+}
+
+function saveWebsiteOrderFromDom() {
+  const ids = [...document.querySelectorAll("#websiteList .website-link")]
+    .map((item) => item.dataset.websiteId)
+    .filter(Boolean);
+  setSavedJson("website-order", ids);
+}
+
+function setActiveWebsiteMoveItem(item) {
+  if (!item) return;
+  window.clearTimeout(websiteOpenTimer);
+  activeWebsiteMoveId = item.dataset.websiteId || "";
+  document.querySelectorAll("#websiteList .website-link").forEach((link) => {
+    const active = link.dataset.websiteId === activeWebsiteMoveId;
+    link.classList.toggle("website-link-move-active", active);
+    link.setAttribute("aria-grabbed", active ? "true" : "false");
+  });
+}
+
+function clearActiveWebsiteMoveItem() {
+  activeWebsiteMoveId = "";
+  document.querySelectorAll("#websiteList .website-link").forEach((link) => {
+    link.classList.remove("website-link-move-active", "website-link-dragging");
+    link.removeAttribute("aria-grabbed");
+  });
+}
+
+function getWebsiteInsertBefore(container, pointerY, draggedItem) {
+  return [...container.querySelectorAll(".website-link:not(.website-link-dragging)")]
+    .filter((item) => item !== draggedItem)
+    .find((item) => {
+      const box = item.getBoundingClientRect();
+      return pointerY < box.top + box.height / 2;
+    }) || null;
+}
+
+function handleWebsitePointerDown(event) {
+  const item = event.target.closest(".website-link");
+  if (!item || item.dataset.websiteId !== activeWebsiteMoveId) return;
+  if (event.button !== undefined && event.button !== 0) return;
+
+  event.preventDefault();
+  item.setPointerCapture?.(event.pointerId);
+  websiteDragState = {
+    item,
+    pointerId: event.pointerId,
+    startY: event.clientY,
+    moved: false,
+  };
+  item.classList.add("website-link-dragging");
+}
+
+function handleWebsitePointerMove(event) {
+  if (!websiteDragState || event.pointerId !== websiteDragState.pointerId) return;
+  const container = document.getElementById("websiteList");
+  if (!container) return;
+
+  websiteDragState.moved = true;
+  const beforeItem = getWebsiteInsertBefore(container, event.clientY, websiteDragState.item);
+  container.insertBefore(websiteDragState.item, beforeItem);
+}
+
+function finishWebsiteDrag(event) {
+  if (!websiteDragState || event.pointerId !== websiteDragState.pointerId) return;
+  websiteDragState.item.releasePointerCapture?.(event.pointerId);
+  websiteDragState.item.classList.remove("website-link-dragging");
+  if (websiteDragState.moved) {
+    saveWebsiteOrderFromDom();
+    suppressWebsiteClickUntil = Date.now() + 350;
+  }
+  websiteDragState = null;
+  if (event.type !== "pointercancel") clearActiveWebsiteMoveItem();
 }
 
 function restoreState() {
@@ -3063,7 +3156,7 @@ function buildPrintInfoHtml(title = "Informatie", compact = false, includeSignat
       <td>${escapeHtml(whatsapp || "-")}</td>
     </tr>
   `).join("");
-  const websiteRows = websites.map(([label, text, url]) => `
+  const websiteRows = getOrderedWebsites().map(([label, text, url]) => `
     <tr>
       <td>${escapeHtml(label)}</td>
       <td>${escapeHtml(text)}</td>
@@ -3294,6 +3387,31 @@ function bindEvents() {
       row.classList.toggle("line-hidden", query && !row.dataset.line.includes(query));
     });
   });
+
+  const websiteList = document.getElementById("websiteList");
+  websiteList?.addEventListener("dblclick", (event) => {
+    const item = event.target.closest(".website-link");
+    if (!item) return;
+    event.preventDefault();
+    setActiveWebsiteMoveItem(item);
+  });
+  websiteList?.addEventListener("click", (event) => {
+    const item = event.target.closest(".website-link");
+    if (!item) return;
+    event.preventDefault();
+    window.clearTimeout(websiteOpenTimer);
+    if (Date.now() < suppressWebsiteClickUntil || item.dataset.websiteId === activeWebsiteMoveId || websiteDragState?.moved) return;
+
+    const url = item.getAttribute("href");
+    if (!url) return;
+    websiteOpenTimer = window.setTimeout(() => {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }, 420);
+  });
+  websiteList?.addEventListener("pointerdown", handleWebsitePointerDown);
+  websiteList?.addEventListener("pointermove", handleWebsitePointerMove);
+  websiteList?.addEventListener("pointerup", finishWebsiteDrag);
+  websiteList?.addEventListener("pointercancel", finishWebsiteDrag);
 
   document.querySelectorAll("[data-print-target]").forEach((button) => {
     button.addEventListener("click", () => {
