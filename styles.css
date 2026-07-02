@@ -1363,7 +1363,7 @@ body.signature-editing::after {
 }
 
 .rating-progress-table .rating-table-date-cell[data-day-key]:not([data-day-key=""]) {
-  cursor: grab;
+  cursor: pointer;
 }
 
 .rating-table-date-cell:active,
@@ -1387,6 +1387,16 @@ body.signature-editing::after {
 
 .rating-progress-table .active-rating-day {
   box-shadow: inset 0 0 0 2px var(--brand);
+}
+
+.rating-progress-table .rating-move-active-day {
+  background: #edf8ff !important;
+  box-shadow: inset 0 0 0 2px var(--brand-accent);
+}
+
+.rating-progress-table .rating-table-date-cell.rating-move-active-day,
+.rating-progress-table .rating-move-active-day.rating-table-input {
+  cursor: grab;
 }
 
 .rating-table-date-cell.active-rating-day .rating-table-date-input {

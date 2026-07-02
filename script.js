@@ -1634,7 +1634,7 @@ function renderRatingProgressTable() {
             class="rating-table-date-cell ${dayKey && dayKey === activeDayKey ? "active-rating-day" : ""}"
             data-day-key="${escapeHtml(dayKey)}"
             data-column-index="${index}"
-            ${dayKey ? `tabindex="0" title="Klik om te selecteren, sleep om te verplaatsen, Delete om te verwijderen"` : ""}>
+            ${dayKey ? `tabindex="0" title="Klik om te selecteren, dubbelklik om te verplaatsen, Delete om te verwijderen"` : ""}>
             <input
               class="rating-table-input rating-table-date-input"
               type="date"
@@ -1707,6 +1707,7 @@ function renderRatingProgressTable() {
       </tr>
     </tbody>
   `;
+  if (activeRatingMoveDayKey) markRatingMoveColumn(activeRatingMoveDayKey);
 }
 
 function getRatingTableDayKeys(ratings, includePadding = true) {
@@ -1956,15 +1957,17 @@ function deleteRatingDayColumn(dayKey) {
 
 let draggedRatingDayKey = "";
 let ratingColumnPointerStart = null;
+let activeRatingMoveDayKey = "";
+let suppressRatingTableClickUntil = 0;
 let activeRatingDateInput = null;
 let ratingRecognition = null;
 let ratingRecognitionActive = false;
 
 function handleRatingProgressTablePointerDown(event) {
-  if (event.target.closest(".rating-table-input, .rating-date-close, button, textarea, select")) return;
-
   const cell = event.target.closest("[data-day-key]");
   if (!cell?.dataset.dayKey) return;
+  if (cell.dataset.dayKey !== activeRatingMoveDayKey) return;
+  if (event.target.closest(".rating-date-close, button, textarea, select")) return;
 
   draggedRatingDayKey = cell.dataset.dayKey;
   ratingColumnPointerStart = {
@@ -1973,6 +1976,41 @@ function handleRatingProgressTablePointerDown(event) {
   };
   cell.setPointerCapture?.(event.pointerId);
   document.getElementById("ratingProgressTable")?.classList.add("is-dragging-column");
+}
+
+function setActiveRatingMoveColumn(dayKey) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dayKey || "")) return;
+  activeRatingMoveDayKey = dayKey;
+  markRatingMoveColumn(dayKey);
+  showRatingSaveStatus(timestampFromDayKey(dayKey), `Kolom geselecteerd om te verplaatsen: ${formatDayLabel(timestampFromDayKey(dayKey))}`);
+}
+
+function clearActiveRatingMoveColumn() {
+  activeRatingMoveDayKey = "";
+  document.getElementById("ratingProgressTable")
+    ?.querySelectorAll(".rating-move-active-day")
+    .forEach((item) => item.classList.remove("rating-move-active-day"));
+}
+
+function markRatingMoveColumn(dayKey) {
+  const table = document.getElementById("ratingProgressTable");
+  if (!table) return;
+
+  table.querySelectorAll(".rating-move-active-day").forEach((item) => item.classList.remove("rating-move-active-day"));
+  table.querySelectorAll(`[data-day-key="${CSS.escape(dayKey)}"]`).forEach((item) => {
+    if (item instanceof HTMLTableCellElement || item instanceof HTMLInputElement) {
+      item.classList.add("rating-move-active-day");
+    }
+  });
+}
+
+function handleRatingProgressTableDoubleClick(event) {
+  const cell = event.target.closest("[data-day-key]");
+  const dayKey = cell?.dataset.dayKey || "";
+  if (!dayKey) return;
+
+  event.preventDefault();
+  setActiveRatingMoveColumn(dayKey);
 }
 
 function handleRatingProgressTableDatePointerDown(event) {
@@ -2009,12 +2047,22 @@ function handleRatingProgressTablePointerUp(event) {
   document.getElementById("ratingProgressTable")?.classList.remove("is-dragging-column");
   if (moved) {
     moveRatingTableColumnTo(draggedRatingDayKey, targetDayKey);
+    suppressRatingTableClickUntil = Date.now() + 350;
   }
   draggedRatingDayKey = "";
   ratingColumnPointerStart = null;
+  clearActiveRatingMoveColumn();
 }
 
 function handleRatingProgressTableClick(event) {
+  if (event.detail > 1) {
+    event.preventDefault();
+    return;
+  }
+  if (Date.now() < suppressRatingTableClickUntil) {
+    event.preventDefault();
+    return;
+  }
   if (draggedRatingDayKey) return;
 
   const closeButton = event.target.closest(".rating-date-close");
@@ -3358,6 +3406,7 @@ function bindEvents() {
     button.addEventListener("click", () => showSection(button.dataset.dashboardSection));
   });
   document.getElementById("ratingProgressTable")?.addEventListener("change", handleRatingProgressTableChange);
+  document.getElementById("ratingProgressTable")?.addEventListener("dblclick", handleRatingProgressTableDoubleClick);
   document.getElementById("ratingProgressTable")?.addEventListener("click", handleRatingProgressTableClick);
   document.getElementById("ratingProgressTable")?.addEventListener("focusout", handleRatingProgressTableChange);
   document.getElementById("ratingProgressTable")?.addEventListener("input", handleRatingProgressTableInput);
