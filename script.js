@@ -14,6 +14,7 @@ const dashboardDonutState = {
   checklist: { score: 0, tone: "donut-tone-empty", hasData: false },
   lines: { score: 0, tone: "donut-tone-empty", hasData: false },
   ratings: { score: 0, tone: "donut-tone-empty", hasData: false },
+  total: { score: 0, tone: "donut-tone-empty", hasData: false, reason: "Er is nog geen data." },
 };
 
 const ratingItems = [
@@ -162,6 +163,76 @@ const websites = [
   ["Lijnverkenning video's", "YouTube playlist", "https://www.youtube.com/watch?v=86sc6Ppefrc&list=PLts0AJoOH8P1d9Jl962bUlWDB_koimIik"],
   ["iLost Connexxion", "Gevonden voorwerpen", "https://www.connexxion.nl/nl/klantenservice/gevonden-voorwerpen"],
   ["iLost", "ilost.co/nl", "https://ilost.co/nl"],
+];
+
+const abbreviationRows = [
+  ["Agn Kam", "agnkam", "Angeren, Kamervoort"],
+  ["Ahm Buf", "ahmbbf", "Arnhem, Buffer"],
+  ["Ahm CS", "ahmstr", "Arnhem, Centraal Station"],
+  ["Ahm CS", "ahmbun", "Arnhem, Centraal Station"],
+  ["Ahm Els", "ahmels", "Arnhem, Elsweide/HAN"],
+  ["Ahm Kan", "ahmkan", "Arnhem CS, kantine"],
+  ["B&D Ham", "bdaham", "Berg en Dal, Hamerlaan"],
+  ["Beu Aal", "beunav", "Beuningen, Aalsterveld"],
+  ["Bml Dep", "hdrdep", "Bemmel, De Essenpas"],
+  ["Bml Gal", "bmlgal", "Bemmel, Garage"],
+  ["Bml Gar", "bmlgak", "Bemmel, Garage kantine"],
+  ["Bml Gar", "bmlgar", "Bemmel, Garage"],
+  ["Bml Klr", "bmlkro", "Bemmel, Klein Rome"],
+  ["Bml Oos", "bmloos", "Bemmel, Oostervelden"],
+  ["Bml Pap", "bmlpap", "Bemmel, Papenstraat"],
+  ["BngWilg", "beuwil", "Beuningen, Wilgenoord"],
+  ["Brw Krk", "bdwkrk", "Breedeweg, Kerkplein Breedeweg"],
+  ["Dru Bst", "drubus", "Druten, Busstation Druten"],
+  ["Els dGr", "elsdgr", "Elst, De Griend"],
+  ["Els NS", "elsns", "Elst, Station Elst"],
+  ["Els Wuu", "elswuu", "Elst, De Wuurde"],
+  ["Gnp Bst", "gnpbst", "Gennep, Busstation Gennep"],
+  ["Grb Cent", "gbkctm", "Groesbeek, Centrum"],
+  ["Grv Bst", "grvbst", "Grave, Busstation Grave"],
+  ["Hor Krk", "dhskrk", "De Horst, Kerk De Horst"],
+  ["Hsn Agr", "hsnagp", "Huissen, Agropark"],
+  ["Hsn Ber", "hsnber", "Huissen, Bergerden"],
+  ["Hsn Val", "hsnval", "Huissen, Valom"],
+  ["Hustinx", "nmgbuh", "Nijmegen, CS Buffer Hustinxstraat"],
+  ["Len The", "lenthm", "Lent, Thermion (Oost)"],
+  ["Mlg Gre", "mlgngk", "Millingen, Grenskantoor"],
+  ["Nmg Ald", "nmga53", "Nijmegen, Aldenhof 53/14 str."],
+  ["Nmg Bbm", "nmgbbm", "Nijmegen, Van Boetbergweg/Malvert"],
+  ["Nmg Brk", "nmgkam", "Nijmegen, Kan. Mijllinckstraat"],
+  ["Nmg CS", "nmgbus", "Nijmegen, Centraal Station"],
+  ["Nmg Duk", "nmgbbp", "Nijmegen, Station Dukenburg"],
+  ["Nmg Gar", "nmggak", "Nijmegen, Garage kantine"],
+  ["Nmg Gal", "nmggal", "Nijmegen, Garage"],
+  ["Nmg Gar", "nmggar", "Nijmegen, Garage"],
+  ["Nmg Gar", "nmggas", "Nijmegen, Garage"],
+  ["Nmg HAN", "nmghan", "Nijmegen, HAN"],
+  ["Nmg Hat", "nmghad", "Nijmegen, Delsenhof"],
+  ["Nmg Hgb", "nmguni", "Nijmegen, Huygensgebouw"],
+  ["Nmg Ind", "nmghn1", "Nijmegen, Industrieweg"],
+  ["Nmg Ind", "nmghn2", "Nijmegen, Industrieweg"],
+  ["Nmg Ind", "nmghno", "Nijmegen, Industrieweg"],
+  ["Nmg Kant", "nmgcan", "Nijmegen, CS Kantine"],
+  ["Nmg NbO", "nmgnbo", "Nijmegen, Polkastraat"],
+  ["Nmg PNz", "nmgpnz", "Nijmegen, P+R Nijmegen West"],
+  ["Nmg Pod", "nmgbus", "Nijmegen, CS Podbushalte"],
+  ["Nmg Rog", "nmgrog", "Bemmel, Expeditiedreef (voorlopig)"],
+  ["Nmg Rol", "nmgrol", "Nijmegen, Roggeweg (t.z.t.)"],
+  ["Nmg StM", "nmgsma", "Nijmegen, St Maartenskliniek"],
+  ["Nmg Wee", "nmgwee", "Nijmegen, Weezenhof"],
+  ["OoySpro", "ooydsp", "Ooij, De Sprong"],
+  ["Oth P15", "othlin", "Oosterhout, Linie"],
+  ["Oth Sta", "othsta", "Oosterhout, Stationsstraat"],
+  ["Oth Wks", "othwks", "Oosterhout, Van Woerkomstraat"],
+  ["Spoorstr", "nmgbuf", "Nijmegen, CS Buffer Spoorstraat"],
+  ["Tiel NS", "tiens", "Tiel, Station Tiel"],
+  ["Wgn Bus", "wgnbus", "Wageningen, Busstation"],
+  ["Wgn Cmo", "wgncma", "Wageningen, Campus/Omnia"],
+  ["Vnl NS", "vnlbst", "Venlo, Busstation"],
+  ["Wyc B25", "wcnb25", "Wijchen, Bijsterhuizen West"],
+  ["Wyc K79", "wcnkrb", "Wijchen, Kraaijenberg 79e straat"],
+  ["Wyc Zui", "wcnzui", "Wijchen, Zuiderpoort"],
+  ["Ztn Lbr", "ztnlbr", "Zetten, Lingebrug"],
 ];
 
 let activeWebsiteMoveId = "";
@@ -1016,21 +1087,41 @@ function getChecklistDonutToneClass(progress) {
 }
 
 function updateTotalDonutHeart(percentage) {
-  const parts = [dashboardDonutState.checklist, dashboardDonutState.lines, dashboardDonutState.ratings];
+  const parts = [
+    { ...dashboardDonutState.checklist, label: "Checklists" },
+    { ...dashboardDonutState.lines, label: "Lijnen" },
+    { ...dashboardDonutState.ratings, label: "Beoordelingen" },
+  ];
   const activeParts = parts.filter((part) => part.hasData);
   if (!activeParts.length) {
     document.getElementById("dashboardTotalDetail").textContent = `${percentage}% totaal · nog geen data`;
+    dashboardDonutState.total = {
+      score: 0,
+      tone: "donut-tone-empty",
+      hasData: false,
+      reason: "Het hart is wit omdat er nog geen data is voor checklists, lijnen of beoordelingen.",
+    };
     setDonutProgress("progressDonut", percentage, "donut-tone-empty");
     return;
   }
 
-  const redPart = activeParts.find((part) => part.tone === "donut-tone-red");
+  const lowestInsufficientPart = activeParts
+    .filter((part) => part.score < 60)
+    .sort((first, second) => first.score - second.score)[0] || null;
   const heartAverage = Math.round(activeParts.reduce((sum, part) => sum + part.score, 0) / activeParts.length);
-  const heartTone = redPart ? "donut-tone-red" : getDonutToneClass(heartAverage);
-  const detailText = redPart
-    ? `${percentage}% totaal · rood onderdeel ${redPart.score}%`
+  const heartTone = lowestInsufficientPart ? lowestInsufficientPart.tone : getDonutToneClass(heartAverage);
+  const detailText = lowestInsufficientPart
+    ? `${percentage}% totaal · laagste onvoldoende ${lowestInsufficientPart.score}%`
     : `${percentage}% totaal · gemiddeld hart ${heartAverage}%`;
   document.getElementById("dashboardTotalDetail").textContent = detailText;
+  dashboardDonutState.total = {
+    score: lowestInsufficientPart ? lowestInsufficientPart.score : heartAverage,
+    tone: heartTone,
+    hasData: true,
+    reason: lowestInsufficientPart
+      ? `Het hart volgt ${lowestInsufficientPart.label.toLowerCase()}, omdat dit onderdeel onvoldoende scoort (${lowestInsufficientPart.score}%). Bij Totaal krijgt de laagste onvoldoende kleur voorrang.`
+      : `Het hart krijgt deze kleur door het gemiddelde van de actieve harten: ${heartAverage}%.`,
+  };
   setDonutProgress("progressDonut", percentage, heartTone);
 }
 
@@ -1043,6 +1134,77 @@ function setDonutProgress(id, percentage, toneClass = "") {
   if (!center) return;
   center.classList.remove("donut-tone-empty", "donut-tone-red", "donut-tone-orange", "donut-tone-yellow", "donut-tone-light-green", "donut-tone-green", "donut-tone-greener", "donut-tone-strong", "donut-tone-gold");
   center.classList.add(toneClass || getDonutToneClass(value));
+}
+
+function getDonutToneName(toneClass) {
+  const names = {
+    "donut-tone-empty": "wit",
+    "donut-tone-red": "rood",
+    "donut-tone-orange": "oranje",
+    "donut-tone-yellow": "geel",
+    "donut-tone-light-green": "lichtgroen",
+    "donut-tone-green": "groen",
+    "donut-tone-greener": "groen",
+    "donut-tone-strong": "donkergroen",
+    "donut-tone-gold": "blauw",
+  };
+  return names[toneClass] || "onbekend";
+}
+
+function showTotalDonutExplanation() {
+  const totalState = dashboardDonutState.total;
+  const parts = [
+    { label: "Checklists", ...dashboardDonutState.checklist },
+    { label: "Lijnen", ...dashboardDonutState.lines },
+    { label: "Beoordelingen", ...dashboardDonutState.ratings },
+  ];
+  const activeParts = parts.filter((part) => part.hasData);
+  const totalPercent = document.getElementById("dashboardPercent")?.textContent || "0%";
+  const rows = parts.map((part) => `
+    <tr>
+      <td>${escapeHtml(part.label)}</td>
+      <td>${part.hasData ? `${Math.round(part.score)}%` : "geen data"}</td>
+      <td>${escapeHtml(getDonutToneName(part.tone))}</td>
+    </tr>
+  `).join("");
+  const ruleText = !activeParts.length
+    ? "Zodra er data is, kijkt Totaal naar checklists, lijnen en beoordelingen."
+    : activeParts.some((part) => part.score < 60)
+    ? "Omdat minstens één onderdeel onder de 60% zit, volgt Totaal de laagst scorende onvoldoende kleur."
+    : "Omdat er geen onderdeel onder de 60% zit, gebruikt Totaal het gemiddelde van de actieve harten.";
+
+  openInfoZoom("Uitleg totaalgrafiek", `
+    <div class="total-explanation">
+      <p><strong>Hartkleur:</strong> ${escapeHtml(getDonutToneName(totalState.tone))}</p>
+      <p><strong>Totaalpercentage:</strong> ${escapeHtml(totalPercent)}</p>
+      <p>${escapeHtml(totalState.reason)}</p>
+      <p>${escapeHtml(ruleText)}</p>
+      <table class="table table-sm total-explanation-table">
+        <thead>
+          <tr>
+            <th>Onderdeel</th>
+            <th>Score</th>
+            <th>Hartkleur</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `);
+}
+
+function openInfoZoom(title, html) {
+  const zoom = document.getElementById("chartZoom");
+  const zoomTitle = document.getElementById("chartZoomTitle");
+  const zoomContent = document.getElementById("chartZoomContent");
+  if (!zoom || !zoomTitle || !zoomContent) return;
+
+  zoomTitle.textContent = title;
+  zoomContent.innerHTML = html;
+  zoom.classList.add("show");
+  zoom.setAttribute("aria-hidden", "false");
+  document.body.classList.add("zoom-open");
+  document.getElementById("chartZoomClose")?.focus();
 }
 
 function getDonutToneClass(value) {
@@ -1343,10 +1505,15 @@ function renderRatingDayLog() {
   log.innerHTML = dayKeys.map((dayKey) => {
     const scores = ratings.map((rating) => {
       const entry = rating.history.find((historyEntry) => getDayKey(historyEntry.time) === dayKey);
+      const valueText = entry
+        ? rating.input.dataset.ratingType === "balance"
+          ? getBalanceEntryLabel(entry)
+          : `${entry.value}%`
+        : "-";
       return `
         <div class="rating-day-score">
           <span>${rating.label}</span>
-          <strong>${entry ? `${entry.value}%` : "-"}</strong>
+          <strong>${escapeHtml(valueText)}</strong>
         </div>
       `;
     }).join("");
@@ -2951,6 +3118,7 @@ function buildPrintSummary(target = "dashboard") {
     dashboard: buildPrintDashboardHtml,
     ai: buildPrintAiHtml,
     info: buildPrintInfoHtml,
+    abbreviations: buildPrintAbbreviationsHtml,
     lines: buildPrintLinesHtml,
   };
 
@@ -3262,6 +3430,46 @@ function buildPrintInfoHtml(title = "Informatie", compact = false, includeSignat
   `;
 }
 
+function buildPrintAbbreviationsHtml() {
+  const rows = abbreviationRows.map(([booklet, webcomm, description], index) => {
+    const currentCity = getAbbreviationCity(description);
+    const nextCity = getAbbreviationCity(abbreviationRows[index + 1]?.[2] || "");
+    const groupEndClass = currentCity && currentCity !== nextCity ? " class=\"abbreviation-group-end\"" : "";
+    return `
+    <tr${groupEndClass}>
+      <td>${escapeHtml(booklet)}</td>
+      <td>${escapeHtml(webcomm)}</td>
+      <td><a class="abbreviation-map-link" href="${getGoogleMapsSearchUrl(description)}" target="_blank" rel="noopener noreferrer">${escapeHtml(description)}</a></td>
+    </tr>
+  `;
+  }).join("");
+
+  return `
+    ${buildPrintHeader("Afkortingen dienstenboekje en Webcomm")}
+    <div class="print-panel print-abbreviations-panel print-abbreviations-single">
+      <table class="print-table print-abbreviation-table">
+      <thead>
+        <tr>
+          <th>Afkorting dienstenboekje</th>
+          <th>Afkorting Webcomm</th>
+          <th>Omschrijving</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+function getAbbreviationCity(description) {
+  return String(description || "").split(",")[0].trim();
+}
+
+function getGoogleMapsSearchUrl(description) {
+  const query = `Bushalte ${String(description || "").trim()}, Nederland`;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
 function buildPrintLinesHtml(title = "Chauffeursgegevens en lijnverkenning", includeSignatures = false) {
   const summary = getSortedLineSummary();
   const todoLines = summary.filter((item) => !item.done);
@@ -3430,6 +3638,7 @@ function bindEvents() {
   document.getElementById("chartZoom").addEventListener("click", (event) => {
     if (event.target.id === "chartZoom") closeChartZoom();
   });
+  document.getElementById("totalSummaryBtn")?.addEventListener("click", showTotalDonutExplanation);
   document.querySelectorAll("[data-dashboard-section]").forEach((button) => {
     button.addEventListener("click", () => showSection(button.dataset.dashboardSection));
   });

@@ -14,7 +14,7 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="styles.css?v=rating-calendar" />
+    <link rel="stylesheet" href="styles.css?v=abbreviations-map-pins" />
   </head>
   <body class="auth-locked">
     <section class="auth-screen" aria-labelledby="mainLoginTitle">
@@ -94,6 +94,7 @@
                 <button class="dropdown-item" data-print-target="dashboard" type="button">Print dashboard</button>
                 <button class="dropdown-item" data-print-target="ai" type="button">Print tekst over chauffeur</button>
                 <button class="dropdown-item" data-print-target="info" type="button">Print informatie</button>
+                <button class="dropdown-item" data-print-target="abbreviations" type="button">Print afkortingen</button>
                 <button class="dropdown-item" data-print-target="lines" type="button">Print lijnverkenning</button>
               </div>
             </div>
@@ -139,7 +140,7 @@
               </div>
 
               <div class="dashboard-donut-grid">
-                <div class="chart-card dashboard-donut-card">
+                <button class="chart-card dashboard-donut-card dashboard-donut-button" id="totalSummaryBtn" type="button" aria-label="Uitleg totaalgrafiek">
                   <div class="donut-chart" id="progressDonut">
                     <div class="donut-center">
                       <strong id="dashboardPercent">0%</strong>
@@ -150,7 +151,7 @@
                     <strong>Totaal</strong>
                     <span id="dashboardTotalDetail">0/0 afgerond</span>
                   </div>
-                </div>
+                </button>
                 <button class="chart-card dashboard-donut-card dashboard-donut-button" type="button" data-dashboard-section="#tab-checklists" aria-label="Ga naar checklists">
                   <div class="donut-chart donut-chart-checklists" id="checklistDonut">
                     <div class="donut-center">
@@ -546,7 +547,7 @@
     <div id="google_translate_element" class="google-translate-element" aria-hidden="true"></div>
     <script src="translate.js"></script>
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <script src="script.js?v=rating-calendar"></script>
+    <script src="script.js?v=abbreviations-map-pins"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
