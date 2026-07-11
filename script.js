@@ -3203,8 +3203,8 @@ function buildPrintChecklistHtml(title = "Checklist", compact = false) {
       if (compact) {
         return `
           <div class="closure-check-item ${done ? "done" : ""}">
-            <span>${done ? "V" : "-"}</span>
             <strong>${escapeHtml(item)}</strong>
+            <span>${done ? "V" : "-"}</span>
             ${note ? `<em>${escapeHtml(note)}</em>` : ""}
           </div>
         `;
