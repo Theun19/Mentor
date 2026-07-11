@@ -2368,6 +2368,10 @@ body.signature-editing::after {
 
   .print-summary {
     display: block;
+    width: 210mm;
+    min-height: 297mm;
+    box-sizing: border-box;
+    margin: 0 auto;
     color: #18241c;
     font-family: Arial, "Helvetica Neue", sans-serif;
     padding: 7mm;
@@ -3250,13 +3254,29 @@ body.signature-editing::after {
   }
 
   .closure-check-item strong {
+    min-width: 0;
     font-weight: 700;
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
 
   .closure-check-item em {
     grid-column: 2;
+    min-width: 0;
     color: #647066;
     font-style: normal;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 767.98px) {
+    .closure-check-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .closure-check-item {
+      font-size: 8pt;
+      line-height: 1.08;
+    }
   }
 
   .closure-print .print-section-signatures {
