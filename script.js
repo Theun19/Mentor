@@ -137,6 +137,7 @@ const contacts = [
   ["Ass. rayonmanager", "Gerrit Jan Weel", "06-41725701"],
   ["Ass. rayonmanager", "Cynthia Ebbers", "06-18905619"],
   ["Ass. rayonmanager", "Noortje Verriet", "06-41131561"],
+  ["Ass. rayonmanager", "Wilco Arnts", "+31 6 34709567"],
   ["Planning Bemmel", "", "088-6255965", "06-14311034"],
   ["Stationschef", "Marco Stellaard", "06-43403987"],
   ["ROV Utrecht", "Ziekmelden buiten kantoortijden", "030-2849494"],
@@ -1651,25 +1652,59 @@ function deleteRatingDayNote(dayKey = getSelectedLogbookDayKey(), options = {}) 
     return false;
   }
 
-  const notes = getRatingDayNotes();
-  delete notes[cleanDayKey];
-  saveRatingDayNotes(notes);
-  setRatingLogIncluded(cleanDayKey, false);
+  const wasSelected = cleanDayKey === getSelectedLogbookDayKey();
+  const deleted = deleteRatingDayColumn(cleanDayKey);
+  if (!deleted) return false;
 
-  if (cleanDayKey === getSelectedLogbookDayKey()) {
+  if (wasSelected) {
     const textarea = document.getElementById("ratingDayNote");
     if (textarea) textarea.value = "";
   }
 
-  renderRatingDayLog();
-  renderRatingProgressTable();
-  refreshMentorGeneratedText();
-  if (!options.silent) showRatingDictationStatus(`Logboek verwijderd voor ${formatDayLabel(cleanDayKey)}.`);
+  if (!options.silent) {
+    showRatingDictationStatus(`Volledige log verwijderd voor ${formatDayLabel(cleanDayKey)}.`);
+  }
   return true;
 }
 
 function getSpeechRecognitionConstructor() {
   return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+
+function getMicrophoneSettingsInstructions() {
+  const agent = navigator.userAgent || "";
+  if (/iPhone|iPad|iPod/i.test(agent)) {
+    return "Open Instellingen op je iPhone of iPad → Apps → Safari (of Chrome) → Microfoon en kies Toestaan. Open daarna deze website opnieuw.";
+  }
+  if (/Android/i.test(agent)) {
+    return "Open Instellingen op je telefoon → Apps → Chrome (of je huidige browser) → Machtigingen → Microfoon en kies Toestaan. Controleer daarna via het slotje naast het webadres dat Microfoon is toegestaan.";
+  }
+  return "Open de website-instellingen via het slotje naast het webadres, kies Microfoon → Toestaan en laad de pagina opnieuw.";
+}
+
+function showMicrophoneSettings() {
+  const help = document.getElementById("microphoneHelp");
+  const text = document.getElementById("microphoneHelpText");
+  if (!help || !text) return;
+  text.textContent = getMicrophoneSettingsInstructions();
+  help.hidden = false;
+  help.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function showMicrophoneAccessMessage(message) {
+  const status = document.getElementById("ratingDictationStatus");
+  if (!status) return;
+  status.replaceChildren();
+  status.append(document.createTextNode(`${message} `));
+  const settingsLink = document.createElement("a");
+  settingsLink.href = "#microphoneHelp";
+  settingsLink.className = "fw-semibold";
+  settingsLink.textContent = "Open microfooninstellingen";
+  settingsLink.addEventListener("click", (event) => {
+    event.preventDefault();
+    showMicrophoneSettings();
+  });
+  status.append(settingsLink);
 }
 
 function setupRatingDictation() {
@@ -1680,7 +1715,7 @@ function setupRatingDictation() {
   if (!SpeechRecognition) {
     button.disabled = true;
     setButtonLabel(button, "Niet beschikbaar");
-    showRatingDictationStatus("Dicteren wordt niet ondersteund door deze browser. Typen blijft mogelijk.");
+    showMicrophoneAccessMessage("Dicteren wordt niet ondersteund of de microfoon is niet beschikbaar. Typen blijft mogelijk.");
     return;
   }
 
@@ -1738,9 +1773,11 @@ function setupRatingDictation() {
   });
 
   ratingRecognition.addEventListener("error", (event) => {
-    showRatingDictationStatus(event.error === "not-allowed"
-      ? "Microfoon geweigerd. Geef de browser toestemming voor de microfoon."
-      : "Dicteren is gestopt. Probeer het opnieuw.");
+    if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+      showMicrophoneAccessMessage("Microfoontoegang is geweigerd.");
+      return;
+    }
+    showRatingDictationStatus("Dicteren is gestopt. Probeer het opnieuw.");
   });
 }
 
@@ -3632,6 +3669,10 @@ function bindEvents() {
     refreshMentorGeneratedText();
   });
   document.getElementById("ratingDictationBtn")?.addEventListener("click", toggleRatingDictation);
+  document.getElementById("closeMicrophoneHelpBtn")?.addEventListener("click", () => {
+    const help = document.getElementById("microphoneHelp");
+    if (help) help.hidden = true;
+  });
   setupRatingDictation();
 
   document.getElementById("chartZoomClose").addEventListener("click", closeChartZoom);

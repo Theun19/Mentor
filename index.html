@@ -330,6 +330,11 @@
                 rows="6"
                 placeholder="Beschrijf deze rijdag. Je kunt typen of de microfoon gebruiken om te dicteren."></textarea>
               <div class="rating-dictation-status" id="ratingDictationStatus" aria-live="polite"></div>
+              <div class="microphone-help alert alert-warning mt-2 mb-0" id="microphoneHelp" hidden>
+                <strong>Microfoon inschakelen</strong>
+                <p class="small mb-2" id="microphoneHelpText"></p>
+                <button class="btn btn-sm btn-outline-secondary" id="closeMicrophoneHelpBtn" type="button">Sluiten</button>
+              </div>
               <div class="rating-day-log mt-3" id="ratingDayLog"></div>
             </div>
           </div>
@@ -396,7 +401,14 @@
                         <th>WhatsApp</th>
                       </tr>
                     </thead>
-                    <tbody id="contactsTableBody"></tbody>
+                    <tbody id="contactsTableBody">
+                      <tr>
+                        <td>Ass. rayonmanager</td>
+                        <td>Wilco Arnts</td>
+                        <td>+31 6 34709567</td>
+                        <td>-</td>
+                      </tr>
+                    </tbody>
                   </table>
                 </div>
               </div>
@@ -547,7 +559,7 @@
     <div id="google_translate_element" class="google-translate-element" aria-hidden="true"></div>
     <script src="translate.js"></script>
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <script src="script.js?v=print-checklist-v-right"></script>
+    <script src="script.js?v=contacts-wilco-arnts"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
