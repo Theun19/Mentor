@@ -93,8 +93,8 @@
                 <button class="dropdown-item" data-print-target="driver" type="button">Print chauffeursinformatie</button>
                 <button class="dropdown-item" data-print-target="dashboard" type="button">Print dashboard</button>
                 <button class="dropdown-item" data-print-target="ai" type="button">Print tekst over chauffeur</button>
-                <button class="dropdown-item" data-print-target="info" type="button">Print informatie (document 1)</button>
-                <button class="dropdown-item" data-print-target="abbreviations" type="button">Print afkortingen (document 2)</button>
+                <button class="dropdown-item" id="shareInfoDocumentsBtn" type="button">Maak en verstuur 2 pdf's</button>
+                <div class="px-3 py-1 small text-secondary" id="documentShareStatus" aria-live="polite"></div>
                 <button class="dropdown-item" data-print-target="lines" type="button">Print lijnverkenning</button>
               </div>
             </div>
@@ -559,7 +559,9 @@
     <div id="google_translate_element" class="google-translate-element" aria-hidden="true"></div>
     <script src="translate.js"></script>
     <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <script src="script.js?v=print-info-afkortingen-los"></script>
+    <script src="jspdf.umd.min.js"></script>
+    <script src="jspdf.plugin.autotable.min.js"></script>
+    <script src="script.js?v=deel-info-afkortingen-pdfs"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"

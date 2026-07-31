@@ -3167,6 +3167,122 @@ function printMentorSection(target) {
   window.print();
 }
 
+function setDocumentShareStatus(message) {
+  const status = document.getElementById("documentShareStatus");
+  if (status) status.textContent = message || "";
+}
+
+function addPdfTitle(documentPdf, title) {
+  documentPdf.setTextColor(79, 40, 123);
+  documentPdf.setFont("helvetica", "bold");
+  documentPdf.setFontSize(17);
+  documentPdf.text(title, 14, 17);
+  documentPdf.setDrawColor(0, 150, 94);
+  documentPdf.setLineWidth(0.8);
+  documentPdf.line(14, 21, documentPdf.internal.pageSize.getWidth() - 14, 21);
+}
+
+function getPdfTableTheme() {
+  return {
+    theme: "grid",
+    headStyles: { fillColor: [79, 40, 123], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [247, 245, 250] },
+    styles: { font: "helvetica", fontSize: 8, cellPadding: 2, overflow: "linebreak" },
+    margin: { left: 14, right: 14 },
+  };
+}
+
+function createInformationPdf() {
+  const { jsPDF } = window.jspdf;
+  const documentPdf = new jsPDF({ unit: "mm", format: "a4" });
+  addPdfTitle(documentPdf, "Mentormap - Informatie");
+  documentPdf.setTextColor(33, 21, 47);
+  documentPdf.setFontSize(11);
+  documentPdf.text("Belangrijke telefoonnummers", 14, 29);
+  documentPdf.autoTable({
+    ...getPdfTableTheme(),
+    startY: 33,
+    head: [["Functie", "Naam", "Telefoon", "WhatsApp"]],
+    body: contacts.map(([role, name, phone, whatsapp]) => [role, name || "-", phone || "-", whatsapp || "-"]),
+  });
+  const websitesStartY = (documentPdf.lastAutoTable?.finalY || 33) + 9;
+  documentPdf.setFontSize(11);
+  documentPdf.text("Websites en apps", 14, websitesStartY);
+  documentPdf.autoTable({
+    ...getPdfTableTheme(),
+    startY: websitesStartY + 4,
+    head: [["Naam", "Omschrijving", "Link"]],
+    body: getOrderedWebsites().map(([label, text, url]) => [label, text, url || "-"]),
+  });
+  return documentPdf;
+}
+
+function createAbbreviationsPdf() {
+  const { jsPDF } = window.jspdf;
+  const documentPdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  addPdfTitle(documentPdf, "Mentormap - Afkortingen");
+  documentPdf.autoTable({
+    ...getPdfTableTheme(),
+    startY: 27,
+    head: [["Afkorting dienstenboekje", "Afkorting Webcomm", "Omschrijving"]],
+    body: abbreviationRows.map(([booklet, webcomm, description]) => [booklet, webcomm, description]),
+    columnStyles: { 0: { cellWidth: 48 }, 1: { cellWidth: 48 } },
+  });
+  return documentPdf;
+}
+
+function downloadDocumentFiles(files) {
+  files.forEach((file, index) => {
+    window.setTimeout(() => {
+      const url = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = file.name;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }, index * 350);
+  });
+}
+
+async function createAndShareInfoDocuments() {
+  const button = document.getElementById("shareInfoDocumentsBtn");
+  if (!button) return;
+  const originalLabel = button.textContent;
+  button.disabled = true;
+  button.textContent = "Pdf's maken...";
+  setDocumentShareStatus("De twee documenten worden gemaakt.");
+
+  try {
+    if (!window.jspdf?.jsPDF) throw new Error("PDF_LIBRARY_MISSING");
+    const informationFile = new File([createInformationPdf().output("blob")], "Mentormap-informatie.pdf", { type: "application/pdf" });
+    const abbreviationsFile = new File([createAbbreviationsPdf().output("blob")], "Mentormap-afkortingen.pdf", { type: "application/pdf" });
+    const files = [informationFile, abbreviationsFile];
+
+    if (navigator.share && navigator.canShare?.({ files })) {
+      await navigator.share({
+        title: "Mentormap documenten",
+        text: "Informatie en afkortingen uit de Mentormap.",
+        files,
+      });
+      setDocumentShareStatus("Beide documenten zijn gedeeld.");
+    } else {
+      downloadDocumentFiles(files);
+      setDocumentShareStatus("Beide pdf's zijn gedownload en klaar om te versturen.");
+    }
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      setDocumentShareStatus("Delen is geannuleerd.");
+    } else {
+      setDocumentShareStatus("De pdf's konden niet worden gemaakt. Probeer het opnieuw.");
+    }
+  } finally {
+    button.disabled = false;
+    button.textContent = originalLabel;
+  }
+}
+
 function buildPrintCompleteHtml() {
   return `
     <section class="print-page">${buildPrintDriverHtml()}</section>
@@ -3768,6 +3884,7 @@ function bindEvents() {
       }
     });
   });
+  document.getElementById("shareInfoDocumentsBtn")?.addEventListener("click", createAndShareInfoDocuments);
   window.addEventListener("beforeprint", () => buildPrintSummary(currentPrintTarget));
 
   document.getElementById("resetBtn").addEventListener("click", () => {
