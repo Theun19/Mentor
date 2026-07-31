@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mentormap Chauffeurs Nijmegen</title>
+    <meta name="theme-color" content="#4f287b" />
+    <link rel="icon" href="favicon.svg?v=rrreis" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=rrreis" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="styles.css?v=print-checklist-v-right" />
+  </head>
+  <body class="auth-locked">
+    <section class="auth-screen" aria-labelledby="mainLoginTitle">
+      <form class="auth-card" id="mainLoginForm">
+        <p class="text-uppercase small fw-semibold text-success mb-1">Beveiligde toegang</p>
+        <h2 class="h4 fw-bold mb-3" id="mainLoginTitle">Inloggen</h2>
+        <div class="mb-3">
+          <label class="form-label" for="loginLanguageSelect">Taal</label>
+          <select class="form-select form-select-sm translate-select notranslate" translate="no" id="loginLanguageSelect" aria-label="Taal kiezen">
+            <option value="nl">Nederlands 🇳🇱</option>
+            <option value="en">Engels 🇬🇧</option>
+            <option value="ar">Arabisch 🇸🇦</option>
+            <option value="tr">Turks 🇹🇷</option>
+            <option value="ro">Roemeens 🇷🇴</option>
+            <option value="hu">Hongaars 🇭🇺</option>
+            <option value="bg">Bulgaars 🇧🇬</option>
+                <option value="es">Spaans 🇪🇸</option>
+                <option value="pt">Portugees 🇵🇹</option>
+                <option value="it">Italiaans 🇮🇹</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="mainLoginUsername">Gebruikersnaam</label>
+          <input class="form-control" id="mainLoginUsername" type="text" autocomplete="username" required />
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="mainLoginPassword">Wachtwoord</label>
+          <div class="input-group">
+            <input class="form-control" id="mainLoginPassword" type="password" autocomplete="current-password" required />
+            <button class="btn btn-outline-secondary" type="button" data-password-toggle="mainLoginPassword" aria-label="Wachtwoord tonen">Toon</button>
+          </div>
+        </div>
+        <p class="small text-danger min-hint mb-3" id="mainLoginError" aria-live="polite"></p>
+        <button class="btn btn-success w-100" type="submit">Inloggen</button>
+      </form>
+    </section>
+
+    <header class="app-header border-bottom">
+      <div class="container-xl py-3">
+        <div class="app-topbar">
+          <div class="app-title">
+            <p class="text-uppercase small fw-semibold text-success mb-1">Transdev Nijmegen</p>
+            <h1 class="h3 fw-bold mb-0">Mentormap nieuwe chauffeurs</h1>
+          </div>
+
+          <div class="driver-profile-picker">
+            <label class="form-label" for="driverProfileSelect">Chauffeur</label>
+            <div class="d-flex gap-2">
+              <select class="form-select form-select-sm" id="driverProfileSelect"></select>
+              <button class="btn btn-outline-success btn-sm" id="newDriverProfileBtn" type="button">Nieuw</button>
+            </div>
+          </div>
+
+          <div class="app-actions" aria-label="Acties">
+            <div class="translate-control">
+              <label class="visually-hidden" for="headerLanguageSelect">Taal kiezen</label>
+              <select class="form-select form-select-sm translate-select notranslate" translate="no" id="headerLanguageSelect" aria-label="Taal kiezen">
+                <option value="nl">Nederlands 🇳🇱</option>
+                <option value="en">Engels 🇬🇧</option>
+                <option value="ar">Arabisch 🇸🇦</option>
+                <option value="tr">Turks 🇹🇷</option>
+                <option value="ro">Roemeens 🇷🇴</option>
+                <option value="hu">Hongaars 🇭🇺</option>
+                <option value="bg">Bulgaars 🇧🇬</option>
+                <option value="es">Spaans 🇪🇸</option>
+                <option value="pt">Portugees 🇵🇹</option>
+                <option value="it">Italiaans 🇮🇹</option>
+              </select>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-success btn-sm dropdown-toggle" id="printMenuBtn" type="button" data-bs-toggle="dropdown" aria-expanded="false">Print</button>
+              <div class="dropdown-menu dropdown-menu-end share-menu" aria-labelledby="printMenuBtn">
+                <button class="dropdown-item" data-print-target="complete" type="button">Tussentijds rapport</button>
+                <button class="dropdown-item" data-print-target="closure" type="button">Afsluiting Mentorfase</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" data-print-target="driver" type="button">Print chauffeursinformatie</button>
+                <button class="dropdown-item" data-print-target="dashboard" type="button">Print dashboard</button>
+                <button class="dropdown-item" data-print-target="ai" type="button">Print tekst over chauffeur</button>
+                <button class="dropdown-item" data-print-target="info" type="button">Print informatie</button>
+                <button class="dropdown-item" data-print-target="abbreviations" type="button">Print afkortingen</button>
+                <button class="dropdown-item" data-print-target="lines" type="button">Print lijnverkenning</button>
+              </div>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-success btn-sm icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <svg aria-hidden="true" class="btn-icon" viewBox="0 0 24 24">
+                  <path d="M4 7h16" />
+                  <path d="M4 12h16" />
+                  <path d="M4 17h16" />
+                </svg>
+                <span>Menu</span>
+              </button>
+              <div class="dropdown-menu dropdown-menu-end app-menu">
+                <button class="dropdown-item active" data-section="#tab-checklists" type="button">Checklists</button>
+                <button class="dropdown-item" data-section="#tab-rating" type="button">Beoordeling</button>
+                <button class="dropdown-item" data-section="#tab-logbook" type="button">Logboek</button>
+                <button class="dropdown-item" data-section="#tab-lines" type="button">Lijnverkenning</button>
+                <button class="dropdown-item" data-section="#tab-info" type="button">Info</button>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="driver.html">Gegevens chauffeur</a>
+                <a class="dropdown-item" href="security.html">Beveiliging</a>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item text-danger" id="resetBtn" type="button">Reset huidige chauffeur</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container-xl py-4 py-lg-5">
+      <section class="mb-4">
+        <div class="row g-3">
+          <div class="col-12">
+            <div class="overview-panel dashboard-panel h-100 p-4">
+              <div class="dashboard-hero d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                <div class="dashboard-hero-copy">
+                  <span class="dashboard-kicker">Mentoroverzicht</span>
+                  <h2 class="h4 mb-1">Dashboard</h2>
+                  <p class="text-secondary mb-0">Voortgang, aftekenlijsten en beoordelingen in één overzicht.</p>
+                </div>
+                <span class="status-pill" id="progressText">0% afgerond</span>
+              </div>
+
+              <div class="dashboard-donut-grid">
+                <button class="chart-card dashboard-donut-card dashboard-donut-button" id="totalSummaryBtn" type="button" aria-label="Uitleg totaalgrafiek">
+                  <div class="donut-chart" id="progressDonut">
+                    <div class="donut-center">
+                      <strong id="dashboardPercent">0%</strong>
+                      <span>totaal</span>
+                    </div>
+                  </div>
+                  <div class="dashboard-donut-meta">
+                    <strong>Totaal</strong>
+                    <span id="dashboardTotalDetail">0/0 afgerond</span>
+                  </div>
+                </button>
+                <button class="chart-card dashboard-donut-card dashboard-donut-button" type="button" data-dashboard-section="#tab-checklists" aria-label="Ga naar checklists">
+                  <div class="donut-chart donut-chart-checklists" id="checklistDonut">
+                    <div class="donut-center">
+                      <strong id="checklistPercent">0%</strong>
+                      <span>checklists</span>
+                    </div>
+                  </div>
+                  <div class="dashboard-donut-meta">
+                    <strong>Checklists</strong>
+                    <span id="checklistDetail">0/0 punten</span>
+                  </div>
+                </button>
+                <button class="chart-card dashboard-donut-card dashboard-donut-button" id="lineSummaryBtn" type="button" data-dashboard-section="#tab-lines" aria-label="Ga naar lijnverkenning">
+                  <div class="donut-chart donut-chart-lines" id="lineDonut">
+                    <div class="donut-center">
+                      <strong id="linePercent">0%</strong>
+                      <span>lijnen</span>
+                    </div>
+                  </div>
+                  <div class="dashboard-donut-meta">
+                    <strong>Lijnen</strong>
+                    <span id="lineDetail">0/0 klaar</span>
+                  </div>
+                </button>
+                <button class="chart-card dashboard-donut-card dashboard-donut-button" type="button" data-dashboard-section="#tab-rating" aria-label="Ga naar beoordeling">
+                  <div class="donut-chart donut-chart-ratings" id="ratingDonut">
+                    <div class="donut-center">
+                      <strong id="ratingDonutPercent">0%</strong>
+                      <span>beoordeling</span>
+                    </div>
+                  </div>
+                  <div class="dashboard-donut-meta">
+                    <strong>Beoordelingen</strong>
+                    <span id="ratingDonutDetail">laagste score: 0%</span>
+                  </div>
+                </button>
+              </div>
+
+              <div class="chart-card dashboard-rating-card mt-3">
+                <div class="chart-title">Progressie beoordelingen</div>
+                <div class="rating-chart" id="ratingChart"></div>
+              </div>
+              <div class="chart-card mt-3">
+                <div class="chart-title">Aftekenlijsten per onderdeel</div>
+                <div class="vstack gap-2" id="checklistChart"></div>
+              </div>
+              <div class="progress checklist-progress mt-3" role="progressbar" aria-label="Checklist voortgang">
+                <div class="progress-bar bg-success" id="progressBar"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="tab-content">
+        <section class="tab-pane fade show active" id="tab-checklists" role="tabpanel">
+          <div class="row g-3" id="checklistContainer"></div>
+          <div class="section-panel signature-section mt-3 p-3 p-md-4">
+            <h2 class="h5 fw-bold mb-3">Ondertekening checklist</h2>
+            <p class="signature-date-line" data-signature-date></p>
+            <div class="signature-meta mb-3" data-signature-meta></div>
+            <div class="row g-3">
+              <div class="col-12 col-lg-6">
+                <div class="signature-box">
+                  <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                    <label class="form-label mb-0" for="checklistDriverSignature">Handtekening chauffeur</label>
+                    <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
+                    <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="checklistDriverSignature">Wissen</button>
+                  </div>
+                  <div class="signature-name-line" data-signature-name="driver"></div>
+                  <canvas class="signature-canvas" id="checklistDriverSignature" aria-label="Handtekening chauffeur checklist"></canvas>
+                </div>
+              </div>
+              <div class="col-12 col-lg-6">
+                <div class="signature-box">
+                  <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                    <label class="form-label mb-0" for="checklistMentorSignature">Handtekening mentor</label>
+                    <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
+                    <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="checklistMentorSignature">Wissen</button>
+                  </div>
+                  <div class="signature-name-line" data-signature-name="mentor"></div>
+                  <canvas class="signature-canvas" id="checklistMentorSignature" aria-label="Handtekening mentor checklist"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-pane fade" id="tab-rating" role="tabpanel">
+          <div class="section-panel p-3 p-md-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+              <div>
+                <h2 class="h5 fw-bold mb-1">Beoordeling rijgedrag</h2>
+                <p class="text-secondary mb-0">Beoordeel elk onderdeel op een schaal van 1 tot 10.</p>
+              </div>
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <input class="form-control form-control-sm rating-date-input" id="ratingDateInput" type="text" inputmode="numeric" placeholder="dd-mm-jjjj" aria-label="Datum meetpunt" />
+                <button class="btn btn-outline-success btn-sm" id="saveRatingsBtn" type="button">Dag toevoegen / bijwerken</button>
+                <span class="status-pill" id="ratingAverage">Gemiddelde: 0</span>
+                <span class="rating-save-status" id="ratingSaveStatus" aria-live="polite"></span>
+              </div>
+            </div>
+            <div class="vstack gap-3" id="ratingContainer"></div>
+            <div class="rating-progress-table-wrap mt-3">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <h3 class="h6 fw-bold mb-0">Progressietabel laatste 30 dagen</h3>
+                <span class="text-secondary small">Datums worden automatisch op volgorde gezet</span>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-sm rating-progress-table mb-0" id="ratingProgressTable"></table>
+              </div>
+            </div>
+            <div class="mentor-ai-text mt-3">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <h3 class="h6 fw-bold mb-0">Tekst over chauffeur</h3>
+                <button class="btn btn-outline-success btn-sm" id="generateMentorTextBtn" type="button">Genereer tekst</button>
+              </div>
+              <textarea
+                class="form-control save-field"
+                id="mentorGeneratedText"
+                data-save-id="mentorGeneratedText"
+                rows="12"
+                placeholder="Klik op Genereer tekst om automatisch een samenvatting over deze chauffeur te maken."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-pane fade" id="tab-logbook" role="tabpanel">
+          <div class="section-panel p-3 p-md-4">
+            <div class="rating-logbook">
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                <div>
+                  <h2 class="h5 fw-bold mb-1">Logboek rijdag</h2>
+                  <p class="text-secondary mb-0">Beschrijf per rijdag wat er is opgevallen en vink aan wat in de tekst over de chauffeur moet komen.</p>
+                </div>
+                <div class="logbook-date-tools">
+                  <input class="form-control form-control-sm rating-date-input" id="logbookDateInput" type="text" inputmode="numeric" placeholder="dd-mm-jjjj" aria-label="Datum logboek" />
+                  <span class="logbook-date-label" id="ratingLogbookDate">Vandaag</span>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-outline-success btn-sm icon-btn logbook-action-btn" id="ratingDictationBtn" type="button" aria-pressed="false" aria-label="Microfoon" title="Microfoon">
+                    <svg aria-hidden="true" class="btn-icon" viewBox="0 0 24 24">
+                      <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z" />
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                      <path d="M12 19v3" />
+                      <path d="M8 22h8" />
+                    </svg>
+                    <span class="visually-hidden">Microfoon</span>
+                  </button>
+                  <button class="btn btn-success btn-sm icon-btn logbook-action-btn" id="saveRatingLogBtn" type="button" aria-label="Logboek opslaan" title="Opslaan">
+                    <svg aria-hidden="true" class="btn-icon" viewBox="0 0 24 24">
+                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" />
+                      <path d="M17 21v-8H7v8" />
+                      <path d="M7 3v5h8" />
+                    </svg>
+                    <span class="visually-hidden">Opslaan</span>
+                  </button>
+                  <button class="btn btn-outline-danger btn-sm icon-btn logbook-action-btn" id="deleteRatingLogBtn" type="button" aria-label="Log verwijderen" title="Verwijderen">
+                    <svg aria-hidden="true" class="btn-icon" viewBox="0 0 24 24">
+                      <path d="M3 6h18" />
+                      <path d="M8 6V4h8v2" />
+                      <path d="M19 6l-1 14H6L5 6" />
+                      <path d="M10 11v5" />
+                      <path d="M14 11v5" />
+                    </svg>
+                    <span class="visually-hidden">Verwijderen</span>
+                  </button>
+                </div>
+              </div>
+              <textarea
+                class="form-control"
+                id="ratingDayNote"
+                rows="6"
+                placeholder="Beschrijf deze rijdag. Je kunt typen of de microfoon gebruiken om te dicteren."></textarea>
+              <div class="rating-dictation-status" id="ratingDictationStatus" aria-live="polite"></div>
+              <div class="microphone-help alert alert-warning mt-2 mb-0" id="microphoneHelp" hidden>
+                <strong>Microfoon inschakelen</strong>
+                <p class="small mb-2" id="microphoneHelpText"></p>
+                <button class="btn btn-sm btn-outline-secondary" id="closeMicrophoneHelpBtn" type="button">Sluiten</button>
+              </div>
+              <div class="rating-day-log mt-3" id="ratingDayLog"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-pane fade" id="tab-lines" role="tabpanel">
+          <div class="section-panel p-3 p-md-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+              <div>
+                <h2 class="h5 fw-bold mb-1">Lijnverkenning Nijmegen</h2>
+                <p class="text-secondary mb-0">Registreer heen, terug, MAT-rit en klaar per lijn.</p>
+              </div>
+              <input class="form-control search-input" id="lineSearch" type="search" placeholder="Zoek lijn" />
+            </div>
+            <div class="line-status-strip mb-3" id="lineOverviewColumns"></div>
+            <div class="line-board" id="lineTableBody" aria-label="Lijnverkenning"></div>
+            <div class="signature-section mt-3">
+              <h2 class="h5 fw-bold mb-3">Ondertekening lijnverkenning</h2>
+              <p class="signature-date-line" data-signature-date></p>
+              <div class="signature-meta mb-3" data-signature-meta></div>
+              <div class="row g-3">
+                <div class="col-12 col-lg-6">
+                  <div class="signature-box">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                      <label class="form-label mb-0" for="lineDriverSignature">Handtekening chauffeur</label>
+                      <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
+                      <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="lineDriverSignature">Wissen</button>
+                    </div>
+                    <div class="signature-name-line" data-signature-name="driver"></div>
+                    <canvas class="signature-canvas" id="lineDriverSignature" aria-label="Handtekening chauffeur lijnverkenning"></canvas>
+                  </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                  <div class="signature-box">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                      <label class="form-label mb-0" for="lineMentorSignature">Handtekening mentor</label>
+                      <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
+                      <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="lineMentorSignature">Wissen</button>
+                    </div>
+                    <div class="signature-name-line" data-signature-name="mentor"></div>
+                    <canvas class="signature-canvas" id="lineMentorSignature" aria-label="Handtekening mentor lijnverkenning"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-pane fade" id="tab-info" role="tabpanel">
+          <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <h2 class="h5 fw-bold mb-0">Info</h2>
+          </div>
+          <div class="row g-3">
+            <div class="col-12 col-lg-7">
+              <div class="section-panel p-3 p-md-4 h-100">
+                <h2 class="h5 fw-bold mb-3">Belangrijke telefoonnummers</h2>
+                <div class="table-responsive">
+                  <table class="table table-sm align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th>Functie</th>
+                        <th>Naam</th>
+                        <th>Telefoon</th>
+                        <th>WhatsApp</th>
+                      </tr>
+                    </thead>
+                    <tbody id="contactsTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-5">
+              <div class="section-panel p-3 p-md-4 h-100">
+                <h2 class="h5 fw-bold mb-3">Websites en apps</h2>
+                <div class="vstack gap-2" id="websiteList"></div>
+              </div>
+            </div>
+          </div>
+          <div class="section-panel mt-3 p-3 p-md-4">
+            <div class="signature-section">
+              <h2 class="h5 fw-bold mb-3">Ondertekening info</h2>
+              <p class="signature-date-line" data-signature-date></p>
+              <div class="signature-meta mb-3" data-signature-meta></div>
+              <div class="row g-3">
+                <div class="col-12 col-lg-6">
+                  <div class="signature-box">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                      <label class="form-label mb-0" for="infoDriverSignature">Handtekening chauffeur</label>
+                      <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
+                      <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="infoDriverSignature">Wissen</button>
+                    </div>
+                    <div class="signature-name-line" data-signature-name="driver"></div>
+                    <canvas class="signature-canvas" id="infoDriverSignature" aria-label="Handtekening chauffeur info"></canvas>
+                  </div>
+                </div>
+                <div class="col-12 col-lg-6">
+                  <div class="signature-box">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                      <label class="form-label mb-0" for="infoMentorSignature">Handtekening mentor</label>
+                      <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
+                      <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="infoMentorSignature">Wissen</button>
+                    </div>
+                    <div class="signature-name-line" data-signature-name="mentor"></div>
+                    <canvas class="signature-canvas" id="infoMentorSignature" aria-label="Handtekening mentor info"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <div class="chart-zoom" id="chartZoom" aria-hidden="true">
+      <div class="chart-zoom-dialog" role="dialog" aria-modal="true" aria-labelledby="chartZoomTitle">
+        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+          <h2 class="h5 fw-bold mb-0" id="chartZoomTitle">Grafiek</h2>
+          <button class="btn btn-outline-secondary btn-sm" id="chartZoomClose" type="button">Sluiten</button>
+        </div>
+        <div class="chart-zoom-content" id="chartZoomContent"></div>
+      </div>
+    </div>
+
+    <div class="date-picker-modal" id="ratingDateModal" aria-hidden="true">
+      <div class="date-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="ratingDateModalTitle" tabindex="-1">
+        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+          <h2 class="h6 fw-bold mb-0" id="ratingDateModalTitle">Datum kiezen</h2>
+          <button class="btn btn-outline-secondary btn-sm" id="ratingDateModalClose" type="button">Sluiten</button>
+        </div>
+        <label class="form-label fw-bold" for="ratingDateModalInput">Datum</label>
+        <input class="form-control form-control-lg" id="ratingDateModalInput" type="date" />
+        <div class="date-picker-calendar mt-3" id="ratingDateCalendar" aria-label="Kalender">
+          <div class="date-picker-calendar-head">
+            <button class="btn btn-outline-secondary btn-sm" id="ratingDateCalendarPrev" type="button" aria-label="Vorige maand">‹</button>
+            <strong id="ratingDateCalendarMonth">Maand</strong>
+            <button class="btn btn-outline-secondary btn-sm" id="ratingDateCalendarNext" type="button" aria-label="Volgende maand">›</button>
+          </div>
+          <div class="date-picker-weekdays" aria-hidden="true">
+            <span>Ma</span>
+            <span>Di</span>
+            <span>Wo</span>
+            <span>Do</span>
+            <span>Vr</span>
+            <span>Za</span>
+            <span>Zo</span>
+          </div>
+          <div class="date-picker-days" id="ratingDateCalendarDays"></div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-success flex-fill" id="ratingDateModalSave" type="button">Opslaan</button>
+          <button class="btn btn-outline-secondary flex-fill" id="ratingDateModalCancel" type="button">Annuleren</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="print-summary" id="printSummary" aria-label="A4 samenvatting">
+      <div class="print-summary-header">
+        <div>
+          <p>Mentormap nieuwe chauffeurs</p>
+          <h1>Dashboard en chauffeursgegevens</h1>
+        </div>
+        <strong id="printDate"></strong>
+      </div>
+
+      <div class="print-grid">
+        <div class="print-panel">
+          <h2>Chauffeur</h2>
+          <dl class="print-details">
+            <div><dt>Naam</dt><dd id="printDriverName">-</dd></div>
+            <div><dt>Personeelsnummer</dt><dd id="printPersonnelNumber">-</dd></div>
+            <div><dt>Startdatum</dt><dd id="printStartDate">-</dd></div>
+            <div><dt>Einddatum</dt><dd id="printEndDate">-</dd></div>
+            <div><dt>Mentor</dt><dd id="printMentorName">-</dd></div>
+          </dl>
+        </div>
+
+        <div class="print-panel">
+          <h2>Voortgang</h2>
+          <div class="print-progress">
+            <strong id="printProgressPercent">0%</strong>
+            <span>afgerond</span>
+          </div>
+          <div class="print-metrics">
+            <div><strong id="printOpenTasks">0</strong><span>taken open</span></div>
+            <div><strong id="printDoneTasks">0</strong><span>klaar</span></div>
+            <div><strong id="printOpenChecklists">0</strong><span>checklijsten open</span></div>
+            <div><strong id="printOpenLines">0</strong><span>lijnen open</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="print-grid">
+        <div class="print-panel">
+          <h2>Aftekenlijsten</h2>
+          <div id="printChecklistRows"></div>
+        </div>
+        <div class="print-panel">
+          <h2>Beoordeling</h2>
+          <div id="printRatingRows"></div>
+        </div>
+      </div>
+
+      <div class="print-grid print-signatures">
+        <div class="print-panel">
+          <h2>Handtekening chauffeur</h2>
+          <img id="printDriverSignature" alt="Handtekening chauffeur" />
+        </div>
+        <div class="print-panel">
+          <h2>Handtekening mentor</h2>
+          <img id="printMentorSignature" alt="Handtekening mentor" />
+        </div>
+      </div>
+    </section>
+
+    <div id="google_translate_element" class="google-translate-element" aria-hidden="true"></div>
+    <script src="translate.js"></script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script src="script.js?v=print-checklist-v-right"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>

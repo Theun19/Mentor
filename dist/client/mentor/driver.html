@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gegevens chauffeur - Mentormap</title>
+    <meta name="theme-color" content="#4f287b" />
+    <link rel="icon" href="favicon.svg?v=rrreis" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png?v=rrreis" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="styles.css?v=rrreis" />
+  </head>
+  <body class="auth-locked">
+    <section class="auth-screen" aria-labelledby="driverLoginTitle">
+      <form class="auth-card" id="driverLoginForm">
+        <p class="text-uppercase small fw-semibold text-success mb-1">Beveiligde toegang</p>
+        <h2 class="h4 fw-bold mb-3" id="driverLoginTitle">Inloggen</h2>
+        <div class="mb-3">
+          <label class="form-label" for="driverLoginLanguageSelect">Taal</label>
+          <select class="form-select form-select-sm translate-select notranslate" translate="no" id="driverLoginLanguageSelect" aria-label="Taal kiezen">
+            <option value="nl">Nederlands 🇳🇱</option>
+            <option value="en">Engels 🇬🇧</option>
+            <option value="ar">Arabisch 🇸🇦</option>
+            <option value="tr">Turks 🇹🇷</option>
+            <option value="ro">Roemeens 🇷🇴</option>
+            <option value="hu">Hongaars 🇭🇺</option>
+            <option value="bg">Bulgaars 🇧🇬</option>
+                <option value="es">Spaans 🇪🇸</option>
+                <option value="pt">Portugees 🇵🇹</option>
+                <option value="it">Italiaans 🇮🇹</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label" for="driverLoginUsername">Gebruikersnaam</label>
+          <input class="form-control" id="driverLoginUsername" type="text" autocomplete="username" required />
+        </div>
+        <div class="mb-2">
+          <label class="form-label" for="driverLoginPassword">Wachtwoord</label>
+          <div class="input-group">
+            <input class="form-control" id="driverLoginPassword" type="password" autocomplete="current-password" required />
+            <button class="btn btn-outline-secondary" type="button" data-password-toggle="driverLoginPassword" aria-label="Wachtwoord tonen">Toon</button>
+          </div>
+        </div>
+        <p class="small text-danger min-hint mb-3" id="driverLoginError" aria-live="polite"></p>
+        <button class="btn btn-success w-100" type="submit">Inloggen</button>
+      </form>
+    </section>
+
+    <header class="app-header border-bottom">
+      <div class="container-xl py-3">
+        <div class="app-topbar">
+          <div class="app-title">
+            <p class="text-uppercase small fw-semibold text-success mb-1">Mentormap</p>
+            <h1 class="h3 fw-bold mb-0">Gegevens chauffeur</h1>
+          </div>
+
+          <div class="driver-profile-picker">
+            <label class="form-label" for="driverProfileSelect">Chauffeur</label>
+            <div class="d-flex gap-2">
+              <select class="form-select form-select-sm" id="driverProfileSelect"></select>
+              <button class="btn btn-outline-success btn-sm" id="newDriverProfileBtn" type="button">Nieuw</button>
+            </div>
+          </div>
+
+          <div class="app-actions" aria-label="Acties">
+            <div class="translate-control">
+              <label class="visually-hidden" for="driverHeaderLanguageSelect">Taal kiezen</label>
+              <select class="form-select form-select-sm translate-select notranslate" translate="no" id="driverHeaderLanguageSelect" aria-label="Taal kiezen">
+                <option value="nl">Nederlands 🇳🇱</option>
+                <option value="en">Engels 🇬🇧</option>
+                <option value="ar">Arabisch 🇸🇦</option>
+                <option value="tr">Turks 🇹🇷</option>
+                <option value="ro">Roemeens 🇷🇴</option>
+                <option value="hu">Hongaars 🇭🇺</option>
+                <option value="bg">Bulgaars 🇧🇬</option>
+                <option value="es">Spaans 🇪🇸</option>
+                <option value="pt">Portugees 🇵🇹</option>
+                <option value="it">Italiaans 🇮🇹</option>
+              </select>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm" href="index.html">Terug</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container-xl py-4 py-lg-5">
+      <form class="details-panel driver-panel p-4 p-md-5">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label" for="driverName">Naam chauffeur</label>
+            <input class="form-control driver-save-field" id="driverName" type="text" />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label" for="personnelNumber">Personeelsnummer</label>
+            <input class="form-control driver-save-field" id="personnelNumber" type="text" />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label" for="startDate">Startdatum</label>
+            <input class="form-control driver-save-field" id="startDate" type="date" />
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label" for="endDate">Einddatum</label>
+            <input class="form-control driver-save-field" id="endDate" type="date" />
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="mentorName">Naam mentor</label>
+            <input class="form-control driver-save-field" id="mentorName" type="text" />
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="managerName">Naam leidinggevende</label>
+            <input class="form-control driver-save-field" id="managerName" type="text" />
+          </div>
+          <div class="col-12">
+            <div class="form-check driver-check">
+              <input class="form-check-input driver-save-field" id="driverAccepted" type="checkbox" />
+              <label class="form-check-label fw-bold" for="driverAccepted">Aangenomen</label>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="signature-box">
+              <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                <label class="form-label mb-0" for="driverSignature">Handtekening chauffeur</label>
+                <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
+                <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="driverSignature">Wissen</button>
+              </div>
+              <canvas class="signature-canvas" id="driverSignature" aria-label="Handtekening chauffeur"></canvas>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="signature-box">
+              <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                <label class="form-label mb-0" for="mentorSignature">Handtekening mentor</label>
+                <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
+                <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="mentorSignature">Wissen</button>
+              </div>
+              <canvas class="signature-canvas" id="mentorSignature" aria-label="Handtekening mentor"></canvas>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="signature-box">
+              <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                <label class="form-label mb-0" for="managerSignature">Handtekening leidinggevende</label>
+                <button class="btn btn-outline-secondary btn-sm signature-close" type="button" aria-label="Handtekening sluiten">Sluiten</button>
+                <button class="btn btn-outline-secondary btn-sm signature-clear" type="button" data-target="managerSignature">Wissen</button>
+              </div>
+              <canvas class="signature-canvas" id="managerSignature" aria-label="Handtekening leidinggevende"></canvas>
+            </div>
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <div id="google_translate_element" class="google-translate-element" aria-hidden="true"></div>
+    <script src="translate.js"></script>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script src="driver.js"></script>
+  </body>
+</html>
