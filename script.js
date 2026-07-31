@@ -3154,7 +3154,7 @@ function buildPrintSummary(target = "dashboard") {
     checklist: buildPrintChecklistHtml,
     dashboard: buildPrintDashboardHtml,
     ai: buildPrintAiHtml,
-    info: buildPrintInfoHtml,
+    info: buildPrintInfoAndAbbreviationsHtml,
     abbreviations: buildPrintAbbreviationsHtml,
     lines: buildPrintLinesHtml,
   };
@@ -3464,6 +3464,15 @@ function buildPrintInfoHtml(title = "Informatie", compact = false, includeSignat
     </div>
     </div>
     ${includeSignatures ? buildPrintSectionSignatures("Ondertekening info", "infoDriverSignature", "infoMentorSignature") : ""}
+  `;
+}
+
+function buildPrintInfoAndAbbreviationsHtml() {
+  return `
+    <div class="closure-print">
+      <section class="print-page">${buildPrintInfoHtml("Informatie en belangrijke telefoonnummers")}</section>
+      <section class="print-page">${buildPrintAbbreviationsHtml()}</section>
+    </div>
   `;
 }
 
